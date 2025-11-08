@@ -1,0 +1,637 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Panel - ClubHouse Digital</title>
+    
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Estilos CSS -->
+    <link rel="stylesheet" href="{% static 'css/indexSocio.css' %}">
+</head>
+<body>
+
+    <div class="dashboard-wrapper">
+        
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <i class="fas fa-dumbbell"></i>
+                <div>
+                    <h1>ClubHouse</h1>
+                    <span class="role-badge">Socio</span>
+                </div>
+            </div>
+            
+            <ul class="sidebar-nav">
+                <li class="nav-section-title">Principal</li>
+                <li>
+                    <a href="#" class="nav-link active" data-target="dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Inicio</span>
+                    </a>
+                </li>
+                
+                <li class="nav-section-title">Mi Cuenta</li>
+                <li>
+                    <a href="#" class="nav-link" data-target="mi-plan">
+                        <i class="fas fa-id-card"></i>
+                        <span>Mi Plan</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link" data-target="mis-asistencias">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Mis Asistencias</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link" data-target="mi-qr">
+                        <i class="fas fa-qrcode"></i>
+                        <span>Mi Código QR</span>
+                    </a>
+                </li>
+                
+                <li class="nav-section-title">Gestión</li>
+                <li>
+                    <a href="#" class="nav-link" data-target="renovar">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Renovar Plan</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link" data-target="perfil">
+                        <i class="fas fa-user-cog"></i>
+                        <span>Mi Perfil</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+                    <div class="user-info">
+                        <h4>{{ user.get_full_name }}</h4>
+                        <p>Socio</p>
+                    </div>
+                </div>
+                <a href="{% url 'cerrar_sesion' %}" class="logout-button">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
+                <div class="copyright">
+                    © 2025 ClubHouse Digital
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <div class="content-header">
+                    <div>
+                        <h2 class="page-title">
+                            <i class="fas fa-home"></i>
+                            ¡Hola, {{ user.first_name }}!
+                        </h2>
+                        <p class="page-subtitle">Bienvenido a tu panel de control</p>
+                    </div>
+                </div>
+
+                <!-- Alert de vencimiento si faltan menos de 7 días -->
+                {% if membership and membership.days_remaining <= 7 and membership.days_remaining > 0 %}
+                <div class="alert-banner warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Tu plan vence pronto</strong>
+                        <p>Te quedan {{ membership.days_remaining }} días. Renueva ahora para no perder acceso.</p>
+                    </div>
+                    <a href="#" class="btn-alert" onclick="navigateTo('renovar')">Renovar Ahora</a>
+                </div>
+                {% elif not has_active_membership %}
+                <div class="alert-banner danger">
+                    <i class="fas fa-times-circle"></i>
+                    <div>
+                        <strong>Plan Vencido</strong>
+                        <p>Tu plan ha expirado. Renueva para continuar disfrutando del gimnasio.</p>
+                    </div>
+                    <a href="#" class="btn-alert" onclick="navigateTo('renovar')">Renovar Plan</a>
+                </div>
+                {% endif %}
+                
+                <!-- Estado del Plan -->
+                <div class="plan-status-card">
+                    <div class="plan-status-header">
+                        <div class="plan-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="plan-status-info">
+                            <h3>Estado de tu Membresía</h3>
+                            {% if has_active_membership %}
+                            <span class="status-badge active">
+                                <i class="fas fa-check"></i> Activo
+                            </span>
+                            {% else %}
+                            <span class="status-badge expired">
+                                <i class="fas fa-times"></i> Vencido
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if membership %}
+                    <div class="plan-details-grid">
+                        <div class="plan-detail-item">
+                            <i class="fas fa-ticket-alt"></i>
+                            <div>
+                                <span class="detail-label">Plan Actual</span>
+                                <span class="detail-value">{{ membership.plan.name }}</span>
+                            </div>
+                        </div>
+                        <div class="plan-detail-item">
+                            <i class="fas fa-calendar-day"></i>
+                            <div>
+                                <span class="detail-label">Fecha de Inicio</span>
+                                <span class="detail-value">{{ membership.start_date|date:"d/m/Y" }}</span>
+                            </div>
+                        </div>
+                        <div class="plan-detail-item">
+                            <i class="fas fa-calendar-times"></i>
+                            <div>
+                                <span class="detail-label">Fecha de Vencimiento</span>
+                                <span class="detail-value">{{ membership.end_date|date:"d/m/Y" }}</span>
+                            </div>
+                        </div>
+                        <div class="plan-detail-item">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <span class="detail-label">Días Restantes</span>
+                                <span class="detail-value {% if membership.days_remaining <= 7 %}text-warning{% endif %}">
+                                    {{ membership.days_remaining }} días
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress bar de días -->
+                    <div class="days-progress">
+                        {% widthratio membership.days_remaining membership.plan.duration_days 100 as progress_percent %}
+                        <div class="progress-label">
+                            <span>Progreso del plan</span>
+                            <span>{{ progress_percent }}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ progress_percent }}%"></div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="no-plan-message">
+                        <i class="fas fa-info-circle"></i>
+                        <p>No tienes un plan activo actualmente.</p>
+                        <a href="#" class="btn btn-primary" onclick="navigateTo('renovar')">
+                            <i class="fas fa-plus"></i>
+                            Adquirir Plan
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Acciones Rápidas -->
+                <div class="quick-actions">
+                    <h3 class="section-title">
+                        <i class="fas fa-bolt"></i>
+                        Acciones Rápidas
+                    </h3>
+                    <div class="actions-grid">
+                        <a href="#" class="action-card" onclick="navigateTo('mi-qr')">
+                            <div class="action-icon primary">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                            <h4>Ver mi QR</h4>
+                            <p>Descarga o muestra tu código de acceso</p>
+                        </a>
+                        <a href="#" class="action-card" onclick="navigateTo('renovar')">
+                            <div class="action-icon success">
+                                <i class="fas fa-sync-alt"></i>
+                            </div>
+                            <h4>Renovar Plan</h4>
+                            <p>Extiende tu membresía ahora</p>
+                        </a>
+                        <a href="#" class="action-card" onclick="navigateTo('mis-asistencias')">
+                            <div class="action-icon info">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <h4>Ver Asistencias</h4>
+                            <p>Revisa tu historial de visitas</p>
+                        </a>
+                        <a href="#" class="action-card" onclick="navigateTo('perfil')">
+                            <div class="action-icon warning">
+                                <i class="fas fa-user-edit"></i>
+                            </div>
+                            <h4>Editar Perfil</h4>
+                            <p>Actualiza tus datos personales</p>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mi Plan Section -->
+            <section id="mi-plan" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class="fas fa-id-card"></i>
+                        Mi Plan
+                    </h2>
+                </div>
+
+                {% if membership %}
+                <div class="plan-full-card">
+                    <div class="plan-card-header">
+                        <div class="plan-badge-lg">{{ membership.plan.name }}</div>
+                        <div class="plan-price">${{ membership.plan.price|floatformat:0 }}<span>/mes</span></div>
+                    </div>
+
+                    <div class="plan-info-section">
+                        <h4><i class="fas fa-info-circle"></i> Detalles del Plan</h4>
+                        <ul class="plan-features-list">
+                            <li><i class="fas fa-check"></i> {{ membership.plan.access_days }}</li>
+                            <li><i class="fas fa-check"></i> Acceso a todas las áreas</li>
+                            <li><i class="fas fa-check"></i> Código QR personal</li>
+                            {% if membership.plan.includes_classes %}
+                            <li><i class="fas fa-check"></i> Clases grupales incluidas</li>
+                            {% endif %}
+                            {% if membership.plan.includes_nutritionist %}
+                            <li><i class="fas fa-check"></i> Asesoría nutricional</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <div class="plan-info-section">
+                        <h4><i class="fas fa-calendar-alt"></i> Vigencia</h4>
+                        <div class="date-range">
+                            <div class="date-item">
+                                <span class="date-label">Inicio</span>
+                                <span class="date-value">{{ membership.start_date|date:"d/m/Y" }}</span>
+                            </div>
+                            <div class="date-separator">→</div>
+                            <div class="date-item">
+                                <span class="date-label">Vencimiento</span>
+                                <span class="date-value">{{ membership.end_date|date:"d/m/Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="plan-actions">
+                        <button class="btn btn-primary" onclick="navigateTo('renovar')">
+                            <i class="fas fa-sync-alt"></i>
+                            Renovar Plan
+                        </button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No tienes un plan activo</h3>
+                    <p>Adquiere un plan para comenzar a disfrutar del gimnasio</p>
+                    <button class="btn btn-primary" onclick="navigateTo('renovar')">
+                        <i class="fas fa-plus"></i>
+                        Ver Planes Disponibles
+                    </button>
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- Mis Asistencias Section -->
+            <section id="mis-asistencias" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class="fas fa-calendar-check"></i>
+                        Mis Asistencias
+                    </h2>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-calendar-week"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Este Mes</h3>
+                            <div class="stat-value">{{ access_logs.count }}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon info">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Esta Semana</h3>
+                            <div class="stat-value">{{ weekly_access }}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Racha Actual</h3>
+                            <div class="stat-value">{{ streak_days }} días</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="management-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Historial de Accesos
+                    </h3>
+
+                    {% if access_logs %}
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Plan Activo</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in access_logs %}
+                            <tr>
+                                <td><strong>{{ log.timestamp|date:"d/m/Y" }}</strong></td>
+                                <td>{{ log.timestamp|time:"H:i" }}</td>
+                                <td>{{ log.membership.plan.name }}</td>
+                                <td>
+                                    <span class="status-badge allowed">
+                                        <i class="fas fa-check-circle"></i>
+                                        Permitido
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <h3>Sin registros aún</h3>
+                        <p>Tus asistencias al gimnasio aparecerán aquí</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Mi QR Section -->
+            <section id="mi-qr" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class="fas fa-qrcode"></i>
+                        Mi Código QR
+                    </h2>
+                </div>
+
+                <div class="qr-display-card">
+                    <div class="qr-instructions">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Este es tu código QR personal para acceder al gimnasio. Muéstralo en recepción o descárgalo para tenerlo siempre disponible en tu móvil.</p>
+                    </div>
+
+                    {% if user.qr_code %}
+                    <div class="qr-image-container">
+                        <img src="{{ user.qr_code.url }}" alt="Mi Código QR" class="qr-image">
+                    </div>
+
+                    <div class="qr-actions">
+                        <a href="{{ user.qr_code.url }}" download="mi_qr_clubhouse.png" class="btn btn-primary">
+                            <i class="fas fa-download"></i>
+                            Descargar QR
+                        </a>
+                        <button class="btn btn-secondary" onclick="printQR()">
+                            <i class="fas fa-print"></i>
+                            Imprimir
+                        </button>
+                        <button class="btn btn-secondary" onclick="shareQR()">
+                            <i class="fas fa-share-alt"></i>
+                            Compartir
+                        </button>
+                    </div>
+
+                    <div class="qr-info">
+                        <p><strong>ID Único:</strong> {{ user.qr_unique_id|slice:":20" }}...</p>
+                        <p><strong>RUT:</strong> {{ user.rut }}</p>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-qrcode"></i>
+                        <h3>QR no disponible</h3>
+                        <p>Contacta con recepción para generar tu código QR</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Renovar Plan Section -->
+            <section id="renovar" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class="fas fa-sync-alt"></i>
+                        Renovar o Cambiar Plan
+                    </h2>
+                </div>
+
+                <div class="plans-grid">
+                    <div class="plan-option-card">
+                        <div class="plan-option-badge">Fines de Semana</div>
+                        <h3>Plan Finde</h3>
+                        <div class="plan-option-price">$15.000<span>/mes</span></div>
+                        <ul class="plan-option-features">
+                            <li><i class="fas fa-check"></i> Sábados y Domingos</li>
+                            <li><i class="fas fa-check"></i> Todas las áreas</li>
+                            <li><i class="fas fa-check"></i> Acceso QR</li>
+                        </ul>
+                        <button class="btn btn-outline" onclick="selectPlanForRenewal('finde', 15000)">
+                            Seleccionar
+                        </button>
+                    </div>
+
+                    <div class="plan-option-card">
+                        <h3>Plan Diario</h3>
+                        <div class="plan-option-price">$22.000<span>/mes</span></div>
+                        <ul class="plan-option-features">
+                            <li><i class="fas fa-check"></i> Lunes a Viernes</li>
+                            <li><i class="fas fa-check"></i> Todas las áreas</li>
+                            <li><i class="fas fa-check"></i> Acceso QR</li>
+                            <li><i class="fas fa-check"></i> 1 Clase grupal</li>
+                        </ul>
+                        <button class="btn btn-outline" onclick="selectPlanForRenewal('diario', 22000)">
+                            Seleccionar
+                        </button>
+                    </div>
+
+                    <div class="plan-option-card featured">
+                        <div class="plan-option-badge popular">Más Popular</div>
+                        <h3>Plan Completo</h3>
+                        <div class="plan-option-price">$25.000<span>/mes</span></div>
+                        <ul class="plan-option-features">
+                            <li><i class="fas fa-check"></i> Todos los días</li>
+                            <li><i class="fas fa-check"></i> Todas las áreas</li>
+                            <li><i class="fas fa-check"></i> Acceso QR</li>
+                            <li><i class="fas fa-check"></i> Clases ilimitadas</li>
+                            <li><i class="fas fa-check"></i> Nutricionista</li>
+                        </ul>
+                        <button class="btn btn-primary" onclick="selectPlanForRenewal('completo', 25000)">
+                            Seleccionar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="renewal-notice">
+                    <i class="fas fa-info-circle"></i>
+                    <p>Para completar la renovación, por favor acércate a recepción o contáctanos. Próximamente podrás renovar directamente desde aquí.</p>
+                </div>
+            </section>
+
+            <!-- Perfil Section -->
+            <section id="perfil" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class="fas fa-user-cog"></i>
+                        Mi Perfil
+                    </h2>
+                </div>
+
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar-large">
+                            {{ user.first_name.0 }}{{ user.last_name.0 }}
+                        </div>
+                        <div class="profile-header-info">
+                            <h3>{{ user.get_full_name }}</h3>
+                            <p>{{ user.email }}</p>
+                            <span class="member-since">
+                                <i class="fas fa-calendar"></i>
+                                Miembro desde {{ user.created_at|date:"F Y" }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="profile-details">
+                        <h4><i class="fas fa-id-card"></i> Información Personal</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">RUT</span>
+                                <span class="detail-value">{{ user.rut }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Correo</span>
+                                <span class="detail-value">{{ user.email }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Teléfono</span>
+                                <span class="detail-value">{{ user.phone }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Fecha de Nacimiento</span>
+                                <span class="detail-value">{{ user.birthdate|date:"d/m/Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button class="btn btn-primary" onclick="alert('Función en desarrollo')">
+                            <i class="fas fa-edit"></i>
+                            Editar Perfil
+                        </button>
+                        <button class="btn btn-secondary" onclick="alert('Función en desarrollo')">
+                            <i class="fas fa-key"></i>
+                            Cambiar Contraseña
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navegación entre secciones
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+
+            navLinks.forEach(link => {
+                if(link.getAttribute('data-target')) {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        const targetId = this.getAttribute('data-target');
+                        
+                        navLinks.forEach(nav => nav.classList.remove('active'));
+                        sections.forEach(sec => sec.classList.remove('active'));
+                        
+                        this.classList.add('active');
+                        document.getElementById(targetId).classList.add('active');
+
+                        document.querySelector('.main-content').scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    });
+                }
+            });
+        });
+
+        // Función helper para navegar entre secciones
+        function navigateTo(sectionId) {
+            event.preventDefault();
+            const targetSection = document.getElementById(sectionId);
+            const targetLink = document.querySelector(`[data-target="${sectionId}"]`);
+            
+            if (targetSection && targetLink) {
+                document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+                
+                targetLink.classList.add('active');
+                targetSection.classList.add('active');
+                
+                document.querySelector('.main-content').scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // Funciones para QR
+        function printQR() {
+            window.print();
+        }
+
+        function shareQR() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Mi QR ClubHouse',
+                    text: 'Mi código QR de acceso al gimnasio',
+                    url: window.location.href
+                }).catch(console.error);
+            } else {
+                alert('Función de compartir no disponible en este navegador');
+            }
+        }
+
+        // Función para seleccionar plan
+        function selectPlanForRenewal(planType, price) {
+            alert(`Has seleccionado el plan: ${planType}\nPrecio: $${price.toLocaleString('es-CL')}\n\nPor favor acércate a recepción para completar la renovación.`);
+        }
+    </script>
+
+</body>
+</html>

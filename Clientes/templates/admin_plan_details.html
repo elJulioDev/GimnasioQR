@@ -1,0 +1,588 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles Plan - ClubHouse Digital</title>
+    <link rel="stylesheet" href="{% static 'css/indexAdmin.css' %}">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+<style>
+    /* Modal de Confirmación de Eliminación */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .modal-content {
+        background: rgba(20, 20, 20, 0.95);
+        border: 2px solid rgba(255, 71, 87, 0.5);
+        border-radius: 20px;
+        padding: 2.5rem;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 20px 60px rgba(255, 71, 87, 0.3);
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-icon {
+        font-size: 5rem;
+        color: var(--danger-color);
+        margin-bottom: 1rem;
+        animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-10deg); }
+        75% { transform: rotate(10deg); }
+    }
+
+    .modal-title {
+        font-size: 1.8rem;
+        color: var(--danger-color);
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .modal-message {
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .modal-plan-info {
+        background: rgba(255, 71, 87, 0.1);
+        border: 1px solid rgba(255, 71, 87, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+    }
+
+    .modal-plan-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-plan-type {
+        color: var(--text-secondary);
+        font-size: 1rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .modal-btn {
+        padding: 0.875rem 2rem;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .modal-btn-cancel {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+
+    .modal-btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .modal-btn-delete {
+        background: var(--danger-color);
+        color: white;
+    }
+
+    .modal-btn-delete:hover {
+        background: #ff2f47;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 71, 87, 0.4);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all var(--transition-speed) ease;
+    }
+
+    .info-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(0, 255, 157, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .info-label {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .info-value {
+        color: var(--text-primary);
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .badge-active {
+        background: rgba(0, 255, 157, 0.15);
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+    }
+
+    .badge-inactive {
+        background: rgba(255, 71, 87, 0.15);
+        color: var(--danger-color);
+        border: 1px solid var(--danger-color);
+    }
+
+    .benefits-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 0.5rem;
+    }
+
+    .benefits-list li {
+        padding: 8px 0;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all var(--transition-speed) ease;
+    }
+
+    .benefits-list li:hover {
+        transform: translateX(5px);
+        color: var(--primary-color);
+    }
+
+    .benefits-list li i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+    }
+
+    .btn-danger {
+        background: var(--danger-color);
+        color: white;
+        box-shadow: 0 4px 16px rgba(255, 71, 87, 0.3);
+    }
+
+    .btn-danger:hover {
+        background: #ff2f47;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 24px rgba(255, 71, 87, 0.4);
+    }
+</style>
+</head>
+<body>
+<div class="main-content">
+    <div class="content-header">
+        <div>
+            <div class="breadcrumb">
+                <a href="{% url 'index_admin' %}">
+                    <i class='bx bx-home'></i> Dashboard
+                </a>
+                <span>/</span>
+                <span>Detalles del Plan</span>
+            </div>
+            <h1 class="page-title">
+                <i class='bx bx-package'></i>
+                {{ plan.name }}
+            </h1>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'admin_plan_edit' plan.id %}" class="btn btn-primary">
+                <i class='bx bx-edit'></i> Editar Plan
+            </a>
+            <button onclick="showDeleteModal('{{ plan.id }}', '{{ plan.name }}', '{{ plan.plan_type }}')" class="btn btn-danger">
+                <i class='bx bx-trash'></i> Eliminar
+            </button>
+            <a href="{% url 'index_admin' %}" class="btn btn-secondary">
+                <i class='bx bx-arrow-back'></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+        <div style="margin-bottom: 2rem;">
+            {% for message in messages %}
+                <div style="padding: 1rem; background: rgba(0, 255, 157, 0.1); border: 1px solid var(--primary-color); border-radius: 10px; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+                    <i class='bx bx-info-circle' style="font-size: 1.3rem; color: var(--primary-color);"></i>
+                    <span style="color: var(--text-primary);">{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Información General -->
+    <div class="management-section" style="margin-bottom: 2rem;">
+        <h2 class="section-title">
+            <i class='bx bx-info-circle'></i>
+            Información General
+        </h2>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">Estado</div>
+                <div class="info-value">
+                    {% if plan.is_active %}
+                        <span class="badge badge-active">
+                            <i class='bx bx-check-circle'></i> Activo
+                        </span>
+                    {% else %}
+                        <span class="badge badge-inactive">
+                            <i class='bx bx-x-circle'></i> Inactivo
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label">Tipo de Plan</div>
+                <div class="info-value" style="text-transform: capitalize;">{{ plan.get_plan_type_display }}</div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label">Precio</div>
+                <div class="info-value" style="color: var(--success-color);">${{ plan.price|floatformat:0 }}</div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label">Duración</div>
+                <div class="info-value">{{ plan.duration_days }} días</div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label">Días de Acceso</div>
+                <div class="info-value">{{ plan.access_days }} días</div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label">Incluye Clases</div>
+                <div class="info-value">
+                    {% if plan.includes_classes %}
+                        <i class='bx bx-check' style="color: var(--success-color); font-size: 1.5rem;"></i>
+                    {% else %}
+                        <i class='bx bx-x' style="color: var(--danger-color); font-size: 1.5rem;"></i>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label">Nutricionista</div>
+                <div class="info-value">
+                    {% if plan.includes_nutritionist %}
+                        <i class='bx bx-check' style="color: var(--success-color); font-size: 1.5rem;"></i>
+                    {% else %}
+                        <i class='bx bx-x' style="color: var(--danger-color); font-size: 1.5rem;"></i>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label">Fecha de Creación</div>
+                <div class="info-value" style="font-size: 1.1rem;">{{ plan.created_at|date:"d/m/Y" }}</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+            <div class="info-label" style="margin-bottom: 1rem;">Descripción</div>
+            <p style="color: var(--text-primary); line-height: 1.8; font-size: 1rem;">{{ plan.description }}</p>
+        </div>
+
+        {% if beneficios_lista %}
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                <div class="info-label" style="margin-bottom: 1rem;">Beneficios Adicionales</div>
+                <ul class="benefits-list">
+                    {% for beneficio in beneficios_lista %}
+                        <li>
+                            <i class='bx bx-check-circle'></i>
+                            {{ beneficio }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="management-section" style="margin-bottom: 2rem;">
+        <h2 class="section-title">
+            <i class='bx bx-bar-chart-alt-2'></i>
+            Estadísticas del Plan
+        </h2>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon primary">
+                        <i class='bx bx-user-check'></i>
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <h3>Membresías Activas</h3>
+                    <div class="stat-value">{{ active_count }}</div>
+                    <div class="stat-footer">
+                        <i class='bx bx-trending-up'></i>
+                        <span>Usuarios activos ahora</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon info">
+                        <i class='bx bx-package'></i>
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <h3>Total Membresías</h3>
+                    <div class="stat-value">{{ total_memberships }}</div>
+                    <div class="stat-footer">
+                        <i class='bx bx-receipt'></i>
+                        <span>Históricas del plan</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon" style="background: var(--success-color); color: #0a0a0a;">
+                        <i class='bx bx-dollar-circle'></i>
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <h3>Ingresos Totales</h3>
+                    <div class="stat-value" style="color: var(--success-color);">${{ total_revenue|floatformat:0 }}</div>
+                    <div class="stat-footer">
+                        <i class='bx bx-trending-up'></i>
+                        <span>Desde su creación</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon warning">
+                        <i class='bx bx-calendar'></i>
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <h3>Ingresos del Mes</h3>
+                    <div class="stat-value" style="color: var(--warning-color);">${{ monthly_revenue|floatformat:0 }}</div>
+                    <div class="stat-footer">
+                        <i class='bx bx-time'></i>
+                        <span>Mes actual</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usuarios con este Plan -->
+    {% if active_memberships %}
+        <div class="management-section">
+            <h2 class="section-title">
+                <i class='bx bx-user-check'></i>
+                Usuarios con Membresía Activa ({{ active_count }})
+            </h2>
+
+            <div style="overflow-x: auto;">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>RUT</th>
+                            <th>Email</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Días Restantes</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for membership in active_memberships %}
+                            <tr>
+                                <td style="color: var(--text-primary); font-weight: 600;">
+                                    {{ membership.user.get_full_name }}
+                                </td>
+                                <td>{{ membership.user.rut }}</td>
+                                <td>{{ membership.user.email }}</td>
+                                <td>{{ membership.start_date|date:"d/m/Y" }}</td>
+                                <td>{{ membership.end_date|date:"d/m/Y" }}</td>
+                                <td>
+                                    {% with dias=membership.days_until_expiration %}
+                                        {% if dias > 0 %}
+                                            <span class="status-badge active">
+                                                <i class='bx bx-check-circle'></i>
+                                                {{ dias }} días
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge expired">
+                                                <i class='bx bx-x-circle'></i>
+                                                Vencido
+                                            </span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{% url 'admin_user_details' membership.user.id %}" class="btn-icon view" title="Ver Detalles">
+                                            <i class='bx bx-show'></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="management-section" style="text-align: center; padding: 3rem;">
+            <i class='bx bx-user-x' style="font-size: 4rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+            <h3 style="color: var(--text-secondary); font-size: 1.2rem; font-weight: 500;">
+                No hay usuarios con membresía activa en este plan
+            </h3>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-content">
+        <i class='bx bx-error-circle modal-icon'></i>
+        <h2 class="modal-title">¿Eliminar Plan?</h2>
+        <p class="modal-message">
+            Esta acción es permanente y no se puede deshacer.
+            {% if active_count > 0 %}
+                <br><br>
+                <strong style="color: var(--danger-color);">
+                    ADVERTENCIA: Este plan tiene {{ active_count }} membresía(s) activa(s).
+                </strong>
+            {% endif %}
+        </p>
+        
+        <div class="modal-plan-info">
+            <div class="modal-plan-name" id="modalPlanName"></div>
+            <div class="modal-plan-type" id="modalPlanType"></div>
+        </div>
+        
+        <div class="modal-actions">
+            <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">
+                <i class='bx bx-x'></i>
+                Cancelar
+            </button>
+            
+            <form id="deleteForm" method="POST" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="modal-btn modal-btn-delete" id="confirmDeleteBtn">
+                    <i class='bx bx-trash'></i>
+                    Sí, Eliminar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Funciones del Modal de Eliminación
+    let deletePlanId = null;
+
+    function showDeleteModal(planId, planName, planType) {
+        deletePlanId = planId;
+        document.getElementById('modalPlanName').textContent = planName;
+        document.getElementById('modalPlanType').textContent = 'Tipo: ' + planType;
+        document.getElementById('deleteModal').classList.add('active');
+        
+        // Actualizar la acción del formulario
+        const deleteForm = document.getElementById('deleteForm');
+        deleteForm.action = `/management/plans/${planId}/delete/`;
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        deletePlanId = null;
+    }
+
+    // Cerrar modal al hacer clic fuera de él
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+
+    // Cerrar modal con tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
+</script>
+</body>
+</html>

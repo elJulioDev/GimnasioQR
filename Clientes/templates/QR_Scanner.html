@@ -1,0 +1,544 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escáner QR - ClubHouse Digital</title>
+    
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- HTML5 QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <style>
+        /* --- Variables CSS --- */
+        :root {
+            --primary-color: #00ff9d;
+            --primary-dark: #00cc7d;
+            --danger-color: #ff4757;
+            --success-color: #00ff9d;
+            --text-primary: #ffffff;
+            --text-secondary: #b4b4b4;
+            --bg-card: rgba(255, 255, 255, 0.06);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --blur-amount: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            color: var(--text-primary);
+            background: linear-gradient(-45deg, #0a0a0a, #1a1a1a, #0f0f0f, #151515);
+            background-size: 400% 400%;
+            animation: animatedGradient 15s ease infinite;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        @keyframes animatedGradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* --- Header --- */
+        .qr-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .qr-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color), #00ccff);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 255, 157, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .qr-logo i {
+            font-size: 2.5rem;
+            color: #0a0a0a;
+        }
+
+        .qr-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color), #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .qr-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- Scanner Container --- */
+        .scanner-container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 3rem;
+            backdrop-filter: blur(var(--blur-amount));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            animation: fadeInUp 0.8s ease 0.2s backwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* QR Reader */
+        #qr-reader {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        /* Estado inicial */
+        .qr-idle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            border: 2px dashed var(--border-color);
+        }
+
+        .qr-idle i {
+            font-size: 8rem;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .qr-idle p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Botón de inicio */
+        .btn-start {
+            padding: 16px 40px;
+            background: linear-gradient(135deg, var(--primary-color), #00ccff);
+            color: #0a0a0a;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 255, 157, 0.3);
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 28px rgba(0, 255, 157, 0.5);
+        }
+
+        /* Resultado del escaneo */
+        .scan-result {
+            display: none;
+            padding: 2rem;
+            background: rgba(0, 255, 157, 0.1);
+            border: 2px solid var(--primary-color);
+            border-radius: 16px;
+            margin-top: 2rem;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .scan-result.show {
+            display: block;
+        }
+
+        .scan-result.denied {
+            background: rgba(255, 71, 87, 0.1);
+            border-color: var(--danger-color);
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-icon.success {
+            color: var(--success-color);
+        }
+
+        .result-icon.error {
+            color: var(--danger-color);
+        }
+
+        .user-info {
+            margin-bottom: 2rem;
+        }
+
+        .user-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .user-details {
+            text-align: left;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-details p {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .user-details p:last-child {
+            margin-bottom: 0;
+        }
+
+        .user-details strong {
+            color: var(--text-secondary);
+        }
+
+        .user-details span {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Status badge */
+        .access-status {
+            font-size: 1.3rem;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+
+        .access-status.allowed {
+            background: rgba(0, 255, 157, 0.2);
+            color: var(--success-color);
+        }
+
+        .access-status.denied {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--danger-color);
+        }
+
+        /* Countdown timer */
+        .countdown {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+        }
+
+        .countdown span {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        /* Status */
+        .scanner-status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success-color);
+            margin-right: 8px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="qr-header">
+        <div class="qr-logo">
+            <i class="fas fa-qrcode"></i>
+        </div>
+        <h1 class="qr-title">Control de Acceso</h1>
+        <p class="qr-subtitle">Escanea el código QR para ingresar</p>
+    </div>
+
+    <!-- Scanner Container -->
+    <div class="scanner-container">
+        
+        <!-- Estado inicial -->
+        <div class="qr-idle" id="qrIdle">
+            <i class="fas fa-qrcode"></i>
+            <p>Listo para escanear</p>
+            <button class="btn-start" onclick="startScanner()">
+                <i class="fas fa-camera"></i> Activar Escáner
+            </button>
+        </div>
+
+        <!-- Visor de la cámara -->
+        <div id="qr-reader"></div>
+
+        <!-- Resultado del escaneo -->
+        <div class="scan-result" id="scanResult">
+            <div class="result-icon success" id="resultIcon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-name" id="userName">Alexis Gonzalez</div>
+                <div class="access-status allowed" id="accessStatus">
+                    <i class="fas fa-check-circle"></i> ACCESO PERMITIDO
+                </div>
+                
+                <div class="user-details">
+                    <p><strong>RUT:</strong> <span id="userRut">11.222.333-4</span></p>
+                    <p><strong>Plan:</strong> <span id="userPlan">Plan Completo</span></p>
+                    <p><strong>Vencimiento:</strong> <span id="userExpiry">15/11/2025</span></p>
+                    <p><strong>Hora de ingreso:</strong> <span id="entryTime">14:35:22</span></p>
+                </div>
+            </div>
+
+            <div class="countdown">
+                Nuevo escaneo en <span id="countdownTimer">5</span> segundos...
+            </div>
+        </div>
+
+        <!-- Status del scanner -->
+        <div class="scanner-status" id="scannerStatus">
+            <span class="status-indicator"></span>
+            Sistema listo para escanear
+        </div>
+    </div>
+
+    <script>
+        let html5QrcodeScanner = null;
+        let isScanning = false;
+        let countdownInterval = null;
+
+        // Iniciar el escáner
+        function startScanner() {
+            document.getElementById('qrIdle').style.display = 'none';
+            document.getElementById('qr-reader').style.display = 'block';
+            document.getElementById('scannerStatus').innerHTML = '<span class="status-indicator"></span>Escáner activo...';
+
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "qr-reader",
+                { 
+                    fps: 10,
+                    qrbox: { width: 300, height: 300 },
+                    aspectRatio: 1.0
+                },
+                false
+            );
+
+            html5QrcodeScanner.render(onScanSuccess, onScanError);
+            isScanning = true;
+        }
+
+        // Cuando se escanea exitosamente
+        function onScanSuccess(decodedText, decodedResult) {
+            if (!isScanning) return;
+            
+            // Detener el escáner temporalmente
+            html5QrcodeScanner.clear();
+            document.getElementById('qr-reader').style.display = 'none';
+            isScanning = false;
+
+            // Simular consulta a la base de datos
+            processQRCode(decodedText);
+        }
+
+        // Errores (ignorar)
+        function onScanError(error) {
+            // Ignorar errores continuos de escaneo
+        }
+
+        // Procesar el código QR
+        function processQRCode(qrCode) {
+            // Aquí iría la lógica real de consulta a la BD
+            // Por ahora simulamos con datos de ejemplo
+            
+            const scanResult = document.getElementById('scanResult');
+            const resultIcon = document.getElementById('resultIcon');
+            const accessStatus = document.getElementById('accessStatus');
+            
+            // Simular validación (50% permitido, 50% denegado)
+            const isAllowed = Math.random() > 0.3;
+            
+            if (isAllowed) {
+                // Acceso permitido
+                scanResult.classList.remove('denied');
+                scanResult.classList.add('show');
+                resultIcon.classList.remove('error');
+                resultIcon.classList.add('success');
+                resultIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                accessStatus.classList.remove('denied');
+                accessStatus.classList.add('allowed');
+                accessStatus.innerHTML = '<i class="fas fa-check-circle"></i> ACCESO PERMITIDO';
+                
+                // Datos del usuario (simulados)
+                document.getElementById('userName').textContent = 'Alexis Gonzalez';
+                document.getElementById('userRut').textContent = '11.222.333-4';
+                document.getElementById('userPlan').textContent = 'Plan Completo';
+                document.getElementById('userExpiry').textContent = '15/11/2025';
+                document.getElementById('entryTime').textContent = new Date().toLocaleTimeString();
+                
+                // Sonido de éxito (opcional)
+                playSuccessSound();
+            } else {
+                // Acceso denegado
+                scanResult.classList.add('denied');
+                scanResult.classList.add('show');
+                resultIcon.classList.remove('success');
+                resultIcon.classList.add('error');
+                resultIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+                accessStatus.classList.remove('allowed');
+                accessStatus.classList.add('denied');
+                accessStatus.innerHTML = '<i class="fas fa-times-circle"></i> ACCESO DENEGADO';
+                
+                document.getElementById('userName').textContent = 'Usuario Vencido';
+                document.getElementById('userRut').textContent = '9.888.777-6';
+                document.getElementById('userPlan').textContent = 'Plan Completo';
+                document.getElementById('userExpiry').textContent = '01/10/2025 (VENCIDO)';
+                document.getElementById('entryTime').textContent = new Date().toLocaleTimeString();
+                
+                // Sonido de error (opcional)
+                playErrorSound();
+            }
+
+            // Iniciar countdown de 5 segundos
+            startCountdown();
+        }
+
+        // Countdown antes del próximo escaneo
+        function startCountdown() {
+            let seconds = 5;
+            const countdownTimer = document.getElementById('countdownTimer');
+            
+            countdownTimer.textContent = seconds;
+            
+            countdownInterval = setInterval(() => {
+                seconds--;
+                countdownTimer.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    resetScanner();
+                }
+            }, 1000);
+        }
+
+        // Resetear el escáner para el próximo código
+        function resetScanner() {
+            document.getElementById('scanResult').classList.remove('show');
+            document.getElementById('qr-reader').style.display = 'block';
+            document.getElementById('scannerStatus').innerHTML = '<span class="status-indicator"></span>Escáner activo...';
+            
+            // Reiniciar el escáner
+            html5QrcodeScanner.render(onScanSuccess, onScanError);
+            isScanning = true;
+        }
+
+        // Sonidos (opcionales - requieren archivos de audio)
+        function playSuccessSound() {
+            // const audio = new Audio('success.mp3');
+            // audio.play();
+        }
+
+        function playErrorSound() {
+            // const audio = new Audio('error.mp3');
+            // audio.play();
+        }
+
+        // Cerrar ventana con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (confirm('¿Cerrar el escáner QR?')) {
+                    window.close();
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

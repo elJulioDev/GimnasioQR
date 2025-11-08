@@ -1,0 +1,372 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar {{ user_edit.get_full_name }} - ClubHouse Digital</title>
+    <link rel="stylesheet" href="{% static 'css/indexAdmin.css' %}">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .edit-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .edit-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .edit-header h1 {
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(0, 255, 157, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-input, .form-select {
+            padding: 0.875rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-select {
+            cursor: pointer;
+        }
+
+        .form-select option {
+            background: #1a1a1a;
+            color: var(--text-primary);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-group:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .info-notice {
+            background: rgba(0, 255, 157, 0.1);
+            border-left: 3px solid var(--primary-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .info-notice strong {
+            color: var(--primary-color);
+        }
+
+        .warning-notice {
+            background: rgba(255, 167, 2, 0.1);
+            border-left: 3px solid var(--warning-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .warning-notice strong {
+            color: var(--warning-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="edit-container">
+        <div class="edit-header">
+            <h1>
+                <i class='bx bx-edit'></i>
+                Editar Usuario
+            </h1>
+
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="info-notice" style="{% if message.tags == 'error' %}border-left-color: var(--danger-color); background: rgba(255, 71, 87, 0.1);{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <!-- Información Personal -->
+            <div class="form-card">
+                <h3 class="section-title">
+                    <i class='bx bx-user'></i>
+                    Información Personal
+                </h3>
+
+                <div class="info-notice">
+                    <strong>Nota:</strong> El RUT del usuario no puede ser modificado después de la creación.
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>RUT</label>
+                        <input type="text" class="form-input" value="{{ user_edit.rut }}" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" class="form-input" value="{{ user_edit.username }}" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nombre *</label>
+                        <input type="text" name="first_name" class="form-input" value="{{ user_edit.first_name }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Apellido *</label>
+                        <input type="text" name="last_name" class="form-input" value="{{ user_edit.last_name }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Correo Electrónico *</label>
+                        <input type="email" name="email" class="form-input" value="{{ user_edit.email }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" name="phone" class="form-input" value="{{ user_edit.phone }}" placeholder="+56 9 1234 5678">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Fecha de Nacimiento</label>
+                        <input type="date" name="birthdate" class="form-input" value="{{ user_edit.birthdate|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nueva Contraseña</label>
+                        <input type="password" name="password" class="form-input" placeholder="Dejar vacío para mantener actual">
+                        <small style="color: var(--text-secondary); margin-top: 0.25rem; font-size: 0.85rem;">
+                            Mínimo 8 caracteres
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Rol y Estado -->
+            <div class="form-card">
+                <h3 class="section-title">
+                    <i class='bx bx-shield'></i>
+                    Rol y Estado del Usuario
+                </h3>
+
+                <div class="warning-notice">
+                    <strong>Advertencia:</strong> Cambiar el rol de un usuario puede afectar sus permisos y accesos en el sistema.
+                    {% if user_edit.role == 'socio' %}
+                    Si cambias el rol de un socio a moderador o admin, perderá acceso a sus membresías activas.
+                    {% endif %}
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Rol del Usuario *</label>
+                        <select name="role" class="form-select" required>
+                            <option value="socio" {% if user_edit.role == 'socio' %}selected{% endif %}>
+                                👤 Socio
+                            </option>
+                            <option value="moderador" {% if user_edit.role == 'moderador' %}selected{% endif %}>
+                                🛡️ Moderador
+                            </option>
+                            <option value="admin" {% if user_edit.role == 'admin' %}selected{% endif %}>
+                                👑 Administrador
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Estado de Cuenta</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" name="is_active" id="isActive" 
+                                   {% if user_edit.is_active %}checked{% endif %}>
+                            <label for="isActive">
+                                Cuenta activa (puede iniciar sesión)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                {% if user_edit.role == 'socio' %}
+                <div class="form-grid" style="margin-top: 1rem;">
+                    <div class="form-group">
+                        <label>Estado de Membresía</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" name="is_active_member" id="isActiveMember" 
+                                   {% if user_edit.is_active_member %}checked{% endif %}>
+                            <label for="isActiveMember">
+                                Membresía activa (puede acceder al gimnasio)
+                            </label>
+                        </div>
+                        <small style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;">
+                            Nota: Este estado normalmente se actualiza automáticamente según las membresías del usuario.
+                        </small>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Información del Sistema -->
+            <div class="form-card">
+                <h3 class="section-title">
+                    <i class='bx bx-info-circle'></i>
+                    Información del Sistema
+                </h3>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Fecha de Registro</label>
+                        <input type="text" class="form-input" value="{{ user_edit.created_at|date:'d/m/Y H:i' }}" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Última Actualización</label>
+                        <input type="text" class="form-input" value="{{ user_edit.updated_at|date:'d/m/Y H:i'|default:'No disponible' }}" disabled>
+                    </div>
+
+                    {% if user_edit.qr_unique_id %}
+                    <div class="form-group">
+                        <label>ID Único QR</label>
+                        <input type="text" class="form-input" value="{{ user_edit.qr_unique_id }}" disabled>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'index_admin' %}" class="btn btn-secondary">
+                    <i class='bx bx-x'></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class='bx bx-save'></i>
+                    Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

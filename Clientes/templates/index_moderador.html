@@ -1,0 +1,737 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Moderador - ClubHouse Digital</title>
+    
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Estilos CSS -->
+    <link rel="stylesheet" href="{% static 'css/indexModerador.css' %}">
+</head>
+<body>
+
+    <div class="dashboard-wrapper">
+        
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <i class="fas fa-dumbbell"></i>
+                <div>
+                    <h1>ClubHouse</h1>
+                    <span class="role-badge">Moderador</span>
+                </div>
+            </div>
+            
+            <ul class="sidebar-nav">
+                <li class="nav-section-title">Principal</li>
+                <li>
+                    <a href="#" class="nav-link active" data-target="dashboard">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                
+                <li class="nav-section-title">Gestión</li>
+                <li>
+                    <a href="#" class="nav-link" data-target="usuarios">
+                        <i class="fas fa-users"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link" data-target="pagos">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Pagos / Renovación</span>
+                    </a>
+                </li>
+                
+                <li class="nav-section-title">Control de Acceso</li>
+                <li>
+                    <a href="#" class="nav-link" data-target="qr-scanner">
+                        <i class="fas fa-qrcode"></i>
+                        <span>Escáner QR</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">MO</div>
+                    <div class="user-info">
+                        <h4 id="userName">Moderador</h4>
+                        <p id="userRole">Recepcionista</p>
+                    </div>
+                </div>
+                <a href="{% url 'cerrar_sesion' %}" class="logout-button">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
+                <div class="copyright">
+                    © 2025 ClubHouse Digital
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class="fas fa-chart-line"></i>
+                        Dashboard
+                    </h2>
+                    <div class="header-actions">
+                        <button class="btn btn-qr" onclick="openQRWindow()">
+                            <i class="fas fa-qrcode"></i>
+                            Abrir Escáner QR (2° Monitor)
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon primary">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Accesos Hoy</h3>
+                            <div class="stat-value">89</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon info">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Usuarios Activos</h3>
+                            <div class="stat-value">142</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-user-clock"></i>
+                            </div>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Planes por Vencer</h3>
+                            <div class="stat-value">18</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Últimos Accesos -->
+                <div class="management-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Últimos Accesos (Hoy)
+                    </h3>
+                    
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Socio</th>
+                                <th>Hora de Acceso</th>
+                                <th>Plan</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Alexis Gonzalez</strong></td>
+                                <td>09:15 AM</td>
+                                <td>Plan Completo</td>
+                                <td>
+                                    <span class="status-badge allowed">
+                                        <i class="fas fa-check-circle"></i>
+                                        Permitido
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Usuario Vencido</strong></td>
+                                <td>09:05 AM</td>
+                                <td>Plan Completo</td>
+                                <td>
+                                    <span class="status-badge denied">
+                                        <i class="fas fa-times-circle"></i>
+                                        Denegado
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Joaquin Henriquez</strong></td>
+                                <td>08:30 AM</td>
+                                <td>Plan Finde</td>
+                                <td>
+                                    <span class="status-badge allowed">
+                                        <i class="fas fa-check-circle"></i>
+                                        Permitido
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Usuarios Section -->
+            <section id="usuarios" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class="fas fa-users"></i>
+                        Gestión de Usuarios
+                    </h2>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Nuevo Usuario
+                    </button>
+                </div>
+                
+                <div class="management-section">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Buscar por RUT, nombre o correo...">
+                    </div>
+                    
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>RUT</th>
+                                <th>Nombre</th>
+                                <th>Correo Electrónico</th>
+                                <th>Plan Actual</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>11.222.333-4</td>
+                                <td><strong>Alexis Gonzalez</strong></td>
+                                <td>alexis@correo.com</td>
+                                <td>Plan Completo</td>
+                                <td>
+                                    <span class="status-badge active">
+                                        <i class="fas fa-check-circle"></i>
+                                        Activo
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon view" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon edit" title="Editar">
+                                            <i class="fas fa-pencil-alt"></i>
+                                        </button>
+                                        <button class="btn-icon delete" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>22.333.444-5</td>
+                                <td><strong>Joaquin Henriquez</strong></td>
+                                <td>joaquin@correo.com</td>
+                                <td>Plan Finde</td>
+                                <td>
+                                    <span class="status-badge active">
+                                        <i class="fas fa-check-circle"></i>
+                                        Activo
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon view" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon edit" title="Editar">
+                                            <i class="fas fa-pencil-alt"></i>
+                                        </button>
+                                        <button class="btn-icon delete" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>9.888.777-6</td>
+                                <td><strong>Usuario Vencido</strong></td>
+                                <td>vencido@correo.com</td>
+                                <td>Plan Completo</td>
+                                <td>
+                                    <span class="status-badge expired">
+                                        <i class="fas fa-times-circle"></i>
+                                        Vencido
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon view" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon edit" title="Editar">
+                                            <i class="fas fa-pencil-alt"></i>
+                                        </button>
+                                        <button class="btn-icon delete" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Pagos Section -->
+            <section id="pagos" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class="fas fa-credit-card"></i>
+                        Registrar Pago / Renovación
+                    </h2>
+                </div>
+                
+                <div class="management-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-search"></i>
+                        Buscar Socio
+                    </h3>
+                    
+                    <form id="searchUserForm">
+                        <div class="form-group">
+                            <label for="search-user">Buscar Socio (por RUT o Nombre)</label>
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input 
+                                    type="text" 
+                                    id="search-user" 
+                                    placeholder="Ej: 11.222.333-4 o Alexis Gonzalez"
+                                    required
+                                >
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            <i class="fas fa-search"></i>
+                            Buscar Usuario
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Detalles del pago -->
+                <div class="management-section" id="payment-details-section" style="display: none; margin-top: 2rem;">
+                    <h3 class="section-title">
+                        <i class="fas fa-user-circle"></i>
+                        Datos del Socio
+                    </h3>
+                    
+                    <div class="user-payment-card">
+                        <div class="user-payment-header">
+                            <div class="user-payment-avatar" id="payment-avatar">AG</div>
+                            <div class="user-payment-info">
+                                <h3 id="payment-name">Alexis Gonzalez</h3>
+                                <p id="payment-rut">RUT: 11.222.333-4</p>
+                                <p id="payment-email">alexis@correo.com</p>
+                            </div>
+                            <div class="user-payment-status">
+                                <span class="status-badge" id="payment-status-badge">
+                                    <i class="fas fa-check-circle"></i>
+                                    Activo
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="user-payment-plan-info">
+                            <div class="plan-info-item">
+                                <i class="fas fa-clipboard-list"></i>
+                                <div>
+                                    <span class="plan-label">Plan Actual</span>
+                                    <span class="plan-value" id="payment-plan">Plan Completo</span>
+                                </div>
+                            </div>
+                            <div class="plan-info-item">
+                                <i class="fas fa-calendar-check"></i>
+                                <div>
+                                    <span class="plan-label">Fecha de Inicio</span>
+                                    <span class="plan-value" id="payment-start">01/10/2025</span>
+                                </div>
+                            </div>
+                            <div class="plan-info-item">
+                                <i class="fas fa-calendar-times"></i>
+                                <div>
+                                    <span class="plan-label">Fecha de Vencimiento</span>
+                                    <span class="plan-value warning" id="payment-expiry">31/10/2025</span>
+                                </div>
+                            </div>
+                            <div class="plan-info-item">
+                                <i class="fas fa-clock"></i>
+                                <div>
+                                    <span class="plan-label">Días Restantes</span>
+                                    <span class="plan-value" id="payment-days-left">5 días</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="renewalForm" style="margin-top: 2rem;">
+                        <h3 class="section-title">
+                            <i class="fas fa-sync-alt"></i>
+                            Renovar Plan
+                        </h3>
+                        
+                        <div class="form-group">
+                            <label for="select-plan">Seleccionar Plan a Renovar</label>
+                            <select id="select-plan" required>
+                                <option value="">-- Seleccione un plan --</option>
+                                <option value="25000" data-name="Plan Completo" data-duration="30">Plan Completo - $25.000 (30 días)</option>
+                                <option value="22000" data-name="Plan Diario" data-duration="30">Plan Diario - $22.000 (30 días)</option>
+                                <option value="15000" data-name="Plan Finde" data-duration="30">Plan Finde - $15.000 (30 días, Sáb-Dom)</option>
+                                <option value="10000" data-name="Plan Semanal" data-duration="7">Plan Semanal - $10.000 (7 días)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment-method">Método de Pago</label>
+                            <select id="payment-method" required>
+                                <option value="">-- Seleccione método --</option>
+                                <option value="efectivo">Efectivo</option>
+                                <option value="tarjeta">Tarjeta (Transbank)</option>
+                                <option value="transferencia">Transferencia Bancaria</option>
+                                <option value="webpay">Webpay</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="payment-amount">Monto a Pagar</label>
+                            <input 
+                                type="text" 
+                                id="payment-amount" 
+                                placeholder="$0" 
+                                readonly
+                                style="background: rgba(255, 255, 255, 0.08); cursor: not-allowed;"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="payment-notes">Notas Adicionales (Opcional)</label>
+                            <textarea 
+                                id="payment-notes" 
+                                rows="3" 
+                                placeholder="Ej: Cliente pagó en efectivo, Transferencia comprobada, etc."
+                                style="width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 0.95rem; font-family: 'Inter', sans-serif; resize: vertical;"
+                            ></textarea>
+                        </div>
+
+                        <div class="payment-summary" id="payment-summary" style="display: none;">
+                            <h4><i class="fas fa-receipt"></i> Resumen de Renovación</h4>
+                            <div class="summary-item">
+                                <span>Plan seleccionado:</span>
+                                <strong id="summary-plan">-</strong>
+                            </div>
+                            <div class="summary-item">
+                                <span>Duración:</span>
+                                <strong id="summary-duration">-</strong>
+                            </div>
+                            <div class="summary-item">
+                                <span>Nueva fecha de vencimiento:</span>
+                                <strong id="summary-new-expiry">-</strong>
+                            </div>
+                            <div class="summary-item total">
+                                <span>Total a pagar:</span>
+                                <strong id="summary-amount">$0</strong>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">
+                            <i class="fas fa-check-circle"></i> 
+                            Confirmar Renovación y Activar Plan
+                        </button>
+
+                        <button type="button" class="btn btn-secondary" onclick="cancelPayment()" style="width: 100%; margin-top: 1rem;">
+                            <i class="fas fa-times"></i>
+                            Cancelar
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- QR Scanner Section -->
+            <section id="qr-scanner" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class="fas fa-qrcode"></i>
+                        Control de Acceso QR
+                    </h2>
+                </div>
+                
+                <div class="management-section" style="text-align: center; padding: 4rem 2rem;">
+                    <i class="fas fa-desktop" style="font-size: 5rem; color: var(--primary-color); margin-bottom: 2rem; display: block;"></i>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Escáner QR en Segundo Monitor</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+                        El escáner QR está diseñado para funcionar en un segundo monitor dedicado. 
+                        Haz clic en el botón de abajo para abrir la ventana del escáner en pantalla completa.
+                    </p>
+                    <button class="btn btn-qr" onclick="openQRWindow()" style="font-size: 1.1rem; padding: 16px 32px;">
+                        <i class="fas fa-qrcode"></i>
+                        Abrir Escáner QR en Nueva Ventana
+                    </button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+
+            navLinks.forEach(link => {
+                if(link.getAttribute('data-target')) {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        const targetId = this.getAttribute('data-target');
+                        
+                        navLinks.forEach(nav => nav.classList.remove('active'));
+                        sections.forEach(sec => sec.classList.remove('active'));
+                        
+                        this.classList.add('active');
+                        document.getElementById(targetId).classList.add('active');
+
+                        document.querySelector('.main-content').scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    });
+                }
+            });
+        });
+
+        function loadUserInfo() {
+            const loggedUser = sessionStorage.getItem('loggedUser');
+            
+            if (loggedUser) {
+                try {
+                    const user = JSON.parse(loggedUser);
+                    updateUserProfile(user.name, user.role, user.initials);
+                } catch(e) {
+                    console.error('Error parsing user data:', e);
+                }
+            } else {
+                updateUserProfile('María González', 'Moderador', 'MG');
+            }
+        }
+
+        function updateUserProfile(name, role, initials) {
+            document.getElementById('userName').textContent = name;
+            document.getElementById('userRole').textContent = role;
+            document.getElementById('userAvatar').textContent = initials;
+        }
+
+        function openQRWindow() {
+            const screenWidth = window.screen.availWidth;
+            const screenHeight = window.screen.availHeight;
+            
+            const qrWindow = window.open(
+                'qr_scanner.html',
+                'QRScanner',
+                `width=${screenWidth},height=${screenHeight},left=${screenWidth},top=0,fullscreen=yes`
+            );
+            
+            if (qrWindow) {
+                qrWindow.focus();
+            } else {
+                alert('Por favor, permite las ventanas emergentes para abrir el escáner QR');
+            }
+        }
+
+        // --- FUNCIONES PARA LA SECCIÓN DE PAGOS ---
+
+        const usersDatabase = {
+            '11.222.333-4': {
+                name: 'Alexis Gonzalez',
+                rut: '11.222.333-4',
+                email: 'alexis@correo.com',
+                currentPlan: 'Plan Completo',
+                startDate: '2025-10-01',
+                expiryDate: '2025-10-31',
+                status: 'active',
+                initials: 'AG'
+            },
+            '22.333.444-5': {
+                name: 'Joaquin Henriquez',
+                rut: '22.333.444-5',
+                email: 'joaquin@correo.com',
+                currentPlan: 'Plan Finde',
+                startDate: '2025-10-05',
+                expiryDate: '2025-11-05',
+                status: 'active',
+                initials: 'JH'
+            },
+            '9.888.777-6': {
+                name: 'Usuario Vencido',
+                rut: '9.888.777-6',
+                email: 'vencido@correo.com',
+                currentPlan: 'Plan Completo',
+                startDate: '2025-09-01',
+                expiryDate: '2025-10-01',
+                status: 'expired',
+                initials: 'UV'
+            }
+        };
+
+        document.getElementById('searchUserForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const searchValue = document.getElementById('search-user').value.trim();
+            const user = usersDatabase[searchValue] || Object.values(usersDatabase).find(u => 
+                u.name.toLowerCase().includes(searchValue.toLowerCase())
+            );
+            
+            if (user) {
+                displayUserPaymentInfo(user);
+            } else {
+                alert('Usuario no encontrado. Intente con otro RUT o nombre.');
+            }
+        });
+
+        function displayUserPaymentInfo(user) {
+            const today = new Date();
+            const expiry = new Date(user.expiryDate);
+            const daysLeft = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+            
+            document.getElementById('payment-avatar').textContent = user.initials;
+            document.getElementById('payment-name').textContent = user.name;
+            document.getElementById('payment-rut').textContent = `RUT: ${user.rut}`;
+            document.getElementById('payment-email').textContent = user.email;
+            document.getElementById('payment-plan').textContent = user.currentPlan;
+            document.getElementById('payment-start').textContent = formatDate(user.startDate);
+            document.getElementById('payment-expiry').textContent = formatDate(user.expiryDate);
+            
+            const daysLeftElement = document.getElementById('payment-days-left');
+            if (daysLeft < 0) {
+                daysLeftElement.textContent = 'Plan vencido';
+                daysLeftElement.style.color = 'var(--danger-color)';
+            } else if (daysLeft <= 7) {
+                daysLeftElement.textContent = `${daysLeft} días (próximo a vencer)`;
+                daysLeftElement.style.color = 'var(--warning-color)';
+            } else {
+                daysLeftElement.textContent = `${daysLeft} días`;
+                daysLeftElement.style.color = 'var(--text-primary)';
+            }
+            
+            const statusBadge = document.getElementById('payment-status-badge');
+            if (user.status === 'active') {
+                statusBadge.className = 'status-badge active';
+                statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Activo';
+            } else {
+                statusBadge.className = 'status-badge expired';
+                statusBadge.innerHTML = '<i class="fas fa-times-circle"></i> Vencido';
+            }
+            
+            document.getElementById('payment-details-section').style.display = 'block';
+            document.getElementById('payment-details-section').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'nearest' 
+            });
+            
+            document.getElementById('renewalForm').reset();
+            document.getElementById('payment-summary').style.display = 'none';
+        }
+
+        document.getElementById('select-plan').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const amount = this.value;
+            const planName = selectedOption.getAttribute('data-name');
+            const duration = selectedOption.getAttribute('data-duration');
+            
+            if (amount) {
+                document.getElementById('payment-amount').value = `$${formatCurrency(amount)}`;
+                
+                const currentExpiry = new Date(document.getElementById('payment-expiry').textContent.split('/').reverse().join('-'));
+                const today = new Date();
+                const startDate = currentExpiry > today ? currentExpiry : today;
+                const newExpiry = new Date(startDate);
+                newExpiry.setDate(newExpiry.getDate() + parseInt(duration));
+                
+                document.getElementById('summary-plan').textContent = planName;
+                document.getElementById('summary-duration').textContent = `${duration} días`;
+                document.getElementById('summary-new-expiry').textContent = formatDate(newExpiry.toISOString().split('T')[0]);
+                document.getElementById('summary-amount').textContent = `$${formatCurrency(amount)}`;
+                
+                document.getElementById('payment-summary').style.display = 'block';
+            } else {
+                document.getElementById('payment-amount').value = '';
+                document.getElementById('payment-summary').style.display = 'none';
+            }
+        });
+
+        document.getElementById('renewalForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const plan = document.getElementById('select-plan');
+            const method = document.getElementById('payment-method');
+            
+            if (!plan.value || !method.value) {
+                alert('Por favor complete todos los campos requeridos');
+                return;
+            }
+            
+            const userName = document.getElementById('payment-name').textContent;
+            const planName = plan.options[plan.selectedIndex].getAttribute('data-name');
+            const amount = plan.value;
+            
+            if (confirm(`¿Confirmar renovación de ${userName} al ${planName} por $${formatCurrency(amount)}?`)) {
+                alert(`✅ Renovación exitosa!\n\nUsuario: ${userName}\nPlan: ${planName}\nMonto: $${formatCurrency(amount)}\nMétodo: ${method.options[method.selectedIndex].text}\n\nEl plan ha sido activado correctamente.`);
+                
+                document.getElementById('renewalForm').reset();
+                document.getElementById('payment-summary').style.display = 'none';
+                document.getElementById('payment-details-section').style.display = 'none';
+                document.getElementById('search-user').value = '';
+            }
+        });
+
+        function cancelPayment() {
+            if (confirm('¿Está seguro que desea cancelar la renovación?')) {
+                document.getElementById('renewalForm').reset();
+                document.getElementById('payment-summary').style.display = 'none';
+                document.getElementById('payment-details-section').style.display = 'none';
+                document.getElementById('search-user').value = '';
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-CL').format(amount);
+        }
+    </script>
+
+</body>
+</html>
