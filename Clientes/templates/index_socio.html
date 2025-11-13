@@ -317,77 +317,176 @@
                         Mis Asistencias
                     </h2>
                 </div>
-
+            
+                <!-- Indicador si ya ingresó hoy -->
+                {% if accessed_today %}
+                <div class="alert alert-info" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-check-circle" style="font-size: 24px;"></i>
+                    <div>
+                        <strong>¡Ya ingresaste hoy al gimnasio!</strong>
+                        <p style="margin: 5px 0 0 0; font-size: 0.9em;">Tu asistencia ha sido registrada correctamente.</p>
+                    </div>
+                </div>
+                {% endif %}
+            
+                <!-- Estadísticas de Asistencia -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon primary">
-                            <i class="fas fa-calendar-week"></i>
+                            <i class="fas fa-calendar-alt"></i>
                         </div>
                         <div class="stat-content">
                             <h3>Este Mes</h3>
-                            <div class="stat-value">{{ access_logs.count }}</div>
+                            <div class="stat-value">{{ monthly_access }}</div>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                                {% if monthly_access > 0 %}
+                                    Asistencias registradas
+                                {% else %}
+                                    Sin asistencias aún
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
+                    
                     <div class="stat-card">
                         <div class="stat-icon info">
-                            <i class="fas fa-calendar-day"></i>
+                            <i class="fas fa-calendar-week"></i>
                         </div>
                         <div class="stat-content">
                             <h3>Esta Semana</h3>
                             <div class="stat-value">{{ weekly_access }}</div>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                                Últimos 7 días
+                            </p>
                         </div>
                     </div>
+                    
                     <div class="stat-card">
                         <div class="stat-icon success">
                             <i class="fas fa-fire"></i>
                         </div>
                         <div class="stat-content">
                             <h3>Racha Actual</h3>
-                            <div class="stat-value">{{ streak_days }} días</div>
+                            <div class="stat-value">{{ streak_days }}</div>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                                {% if streak_days > 0 %}
+                                    Días consecutivos 🔥
+                                {% else %}
+                                    ¡Empieza tu racha!
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Total</h3>
+                            <div class="stat-value">{{ total_access }}</div>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                                Asistencias totales
+                            </p>
                         </div>
                     </div>
                 </div>
-
-                <div class="management-section">
+            
+                <!-- Historial de Asistencias -->
+                <div class="management-section" style="margin-top: 30px;">
                     <h3 class="section-title">
                         <i class="fas fa-history"></i>
-                        Historial de Accesos
+                        Historial de Accesos (Últimos 30 días)
                     </h3>
-
+            
                     {% if access_logs %}
-                    <table class="modern-table">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Hora</th>
-                                <th>Plan Activo</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for log in access_logs %}
-                            <tr>
-                                <td><strong>{{ log.timestamp|date:"d/m/Y" }}</strong></td>
-                                <td>{{ log.timestamp|time:"H:i" }}</td>
-                                <td>{{ log.membership.plan.name }}</td>
-                                <td>
-                                    <span class="status-badge allowed">
-                                        <i class="fas fa-check-circle"></i>
-                                        Permitido
-                                    </span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-calendar"></i> Fecha</th>
+                                    <th><i class="fas fa-clock"></i> Hora</th>
+                                    <th><i class="fas fa-calendar-day"></i> Día</th>
+                                    <th><i class="fas fa-tag"></i> Plan Activo</th>
+                                    <th><i class="fas fa-check-circle"></i> Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in access_logs %}
+                                <tr>
+                                    <td><strong>{{ log.timestamp|date:"d/m/Y" }}</strong></td>
+                                    <td>{{ log.timestamp|time:"H:i" }}</td>
+                                    <td>
+                                        {% if log.timestamp|date:"l" == "Monday" %}Lunes
+                                        {% elif log.timestamp|date:"l" == "Tuesday" %}Martes
+                                        {% elif log.timestamp|date:"l" == "Wednesday" %}Miércoles
+                                        {% elif log.timestamp|date:"l" == "Thursday" %}Jueves
+                                        {% elif log.timestamp|date:"l" == "Friday" %}Viernes
+                                        {% elif log.timestamp|date:"l" == "Saturday" %}Sábado
+                                        {% elif log.timestamp|date:"l" == "Sunday" %}Domingo
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if log.membership %}
+                                            {{ log.membership.plan.name }}
+                                        {% else %}
+                                            <span style="color: #999;">Sin plan</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="status-badge allowed">
+                                            <i class="fas fa-check-circle"></i>
+                                            Permitido
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if access_logs.count > 20 %}
+                    <p style="text-align: center; color: #666; margin-top: 15px; font-size: 0.9em;">
+                        <i class="fas fa-info-circle"></i> Mostrando las últimas 20 asistencias
+                    </p>
+                    {% endif %}
+                    
                     {% else %}
                     <div class="empty-state">
                         <i class="fas fa-clipboard-list"></i>
                         <h3>Sin registros aún</h3>
-                        <p>Tus asistencias al gimnasio aparecerán aquí</p>
+                        <p>Tus asistencias al gimnasio aparecerán aquí después de escanear tu código QR en la entrada.</p>
+                        <p style="margin-top: 10px; color: #666;">
+                            <i class="fas fa-qrcode"></i> Escanea tu QR en recepción para registrar tu ingreso
+                        </p>
                     </div>
                     {% endif %}
                 </div>
+            
+                <!-- Información adicional -->
+                {% if has_active_membership and membership %}
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #4CAF50;">
+                    <h4 style="margin: 0 0 10px 0; color: #333;">
+                        <i class="fas fa-info-circle"></i> Información de tu Membresía
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div>
+                            <p style="margin: 0; color: #666; font-size: 0.9em;">Plan Activo</p>
+                            <p style="margin: 5px 0 0 0; font-weight: bold; color: #333;">{{ membership.plan.name }}</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0; color: #666; font-size: 0.9em;">Fecha de Vencimiento</p>
+                            <p style="margin: 5px 0 0 0; font-weight: bold; color: #333;">{{ membership.end_date|date:"d/m/Y" }}</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0; color: #666; font-size: 0.9em;">Días Restantes</p>
+                            <p style="margin: 5px 0 0 0; font-weight: bold; color: {% if membership.days_remaining > 7 %}#4CAF50{% elif membership.days_remaining > 3 %}#FF9800{% else %}#f44336{% endif %};">
+                                {{ membership.days_remaining }} días
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </section>
 
             <!-- Mi QR Section -->
@@ -415,10 +514,6 @@
                             <i class="fas fa-download"></i>
                             Descargar QR
                         </a>
-                        <button class="btn btn-secondary" onclick="printQR()">
-                            <i class="fas fa-print"></i>
-                            Imprimir
-                        </button>
                         <button class="btn btn-secondary" onclick="shareQR()">
                             <i class="fas fa-share-alt"></i>
                             Compartir

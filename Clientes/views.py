@@ -358,45 +358,90 @@ def index_moderador(request):
     return render(request, 'index_moderador.html')
 
 
-@login_required(login_url='inicio_sesion')  # AÃ‘ADIDO
+@login_required(login_url='inicio_sesion')
 def index_socio(request):
-    """Panel de socio - solo para socios"""
+    """Panel de socio con asistencias actualizadas"""
     if not request.user.role or request.user.role != 'socio':
-        messages.error(request, 'No tienes permisos para acceder a esta Ã¡rea.')
+        messages.error(request, 'No tienes permisos para acceder a esta área.')
         return redirect_by_role(request.user)
     
-    # Obtener la membresÃ­a activa del socio
+    # Obtener la membresía activa del socio
     membership = request.user.get_active_membership()
     
-    # Obtener asistencias (Ãºltimos 30 dÃ­as para ejemplo)
+    # Obtener asistencias (últimos 30 días)
     from datetime import date, timedelta
-    thirty_days_ago = date.today() - timedelta(days=30)
-    access_logs = request.user.access_logs.filter(
-        timestamp__gte=thirty_days_ago
-    ).order_by('-timestamp')[:20]
+    today = date.today()
+    thirty_days_ago = today - timedelta(days=30)
     
-    # Calcular asistencias semanales
-    seven_days_ago = date.today() - timedelta(days=7)
+    # Todas las asistencias del último mes
+    access_logs = request.user.access_logs.filter(
+        timestamp__date__gte=thirty_days_ago,
+        status='allowed'
+    ).order_by('-timestamp')
+    
+    # Asistencias por semana
+    seven_days_ago = today - timedelta(days=7)
     weekly_access = request.user.access_logs.filter(
-        timestamp__gte=seven_days_ago
+        timestamp__date__gte=seven_days_ago,
+        status='allowed'
     ).count()
     
-    # Racha (ejemplo simple)
-    streak_days = 0  # Implementar lÃ³gica de racha si lo deseas
+    # Asistencias del mes actual
+    primer_dia_mes = today.replace(day=1)
+    monthly_access = request.user.access_logs.filter(
+        timestamp__date__gte=primer_dia_mes,
+        status='allowed'
+    ).count()
+    
+    # Asistencias totales
+    total_access = request.user.access_logs.filter(status='allowed').count()
+    
+    # Calcular racha (días consecutivos)
+    streak_days = calculate_streak(request.user)
+    
+    # Acceso de hoy
+    accessed_today = request.user.access_logs.filter(
+        timestamp__date=today,
+        status='allowed'
+    ).exists()
     
     context = {
         'user': request.user,
         'membership': membership,
         'has_active_membership': request.user.has_active_membership(),
-        'access_logs': access_logs,
+        'access_logs': access_logs[:20],  # Mostrar últimas 20
         'weekly_access': weekly_access,
+        'monthly_access': monthly_access,
+        'total_access': total_access,
         'streak_days': streak_days,
+        'accessed_today': accessed_today,
     }
     
     return render(request, 'index_socio.html', context)
 
-
-# --- RESTO DE TUS VISTAS (sin cambios) ---
+def calculate_streak(user):
+    """Calcula la racha de días consecutivos de asistencia"""
+    from datetime import date, timedelta
+    
+    today = date.today()
+    streak = 0
+    current_date = today
+    
+    # Verificar los últimos 30 días
+    for i in range(30):
+        has_access = AccessLog.objects.filter(
+            user=user,
+            timestamp__date=current_date,
+            status='allowed'
+        ).exists()
+        
+        if has_access:
+            streak += 1
+            current_date -= timedelta(days=1)
+        else:
+            break
+    
+    return streak
 
 def mostrar_registro(request):
     """Vista para el registro de nuevos socios."""
@@ -1040,7 +1085,238 @@ def admin_plan_delete(request, plan_id):
         messages.error(request, 'Plan no encontrado')
         return redirect('index_admin')
 
-
+@require_http_methods(["POST"])
+def process_qr_scan(request):
+    """
+    Procesa el escaneo de QR y registra el acceso del usuario.
+    Valida la membresía y guarda en AccessLog.
+    SOLO PERMITE UN REGISTRO POR DÍA por usuario.
+    """
+    try:
+        # Obtener datos del QR
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+        else:
+            data = request.POST
+        
+        qr_data = data.get('qr_data')
+        
+        # LOG para debugging
+        print(f"[DEBUG] QR Data recibido: {qr_data}")
+        print(f"[DEBUG] Tipo de qr_data: {type(qr_data)}")
+        
+        if not qr_data:
+            return JsonResponse({
+                'success': False,
+                'error': 'No se proporcionó información del QR'
+            }, status=400)
+        
+        # Parsear datos del QR con múltiples intentos
+        user_id = None
+        qr_id = None
+        rut = None
+        
+        try:
+            # Intento 1: Si es un string que parece un diccionario Python
+            if isinstance(qr_data, str):
+                # Limpiar el string
+                qr_data_clean = qr_data.strip()
+                
+                print(f"[DEBUG] QR Data limpio: {qr_data_clean}")
+                
+                # Intentar parsear como diccionario de Python
+                import ast
+                qr_dict = ast.literal_eval(qr_data_clean)
+                
+                print(f"[DEBUG] QR Dict parseado: {qr_dict}")
+                
+                user_id = qr_dict.get('user_id')
+                qr_id = qr_dict.get('qr_id')
+                rut = qr_dict.get('rut')
+            
+            # Intento 2: Si ya es un diccionario
+            elif isinstance(qr_data, dict):
+                user_id = qr_data.get('user_id')
+                qr_id = qr_data.get('qr_id')
+                rut = qr_data.get('rut')
+            
+            else:
+                # Intento 3: Intentar como JSON
+                try:
+                    qr_dict = json.loads(qr_data)
+                    user_id = qr_dict.get('user_id')
+                    qr_id = qr_dict.get('qr_id')
+                    rut = qr_dict.get('rut')
+                except:
+                    pass
+            
+            print(f"[DEBUG] Datos extraídos - user_id: {user_id}, qr_id: {qr_id}, rut: {rut}")
+            
+            # Validar que se extrajeron los datos
+            if not user_id or not qr_id or not rut:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Formato de QR inválido. Datos recibidos: {qr_data[:100]}'
+                }, status=400)
+                
+        except Exception as parse_error:
+            print(f"[DEBUG ERROR] Error al parsear QR: {str(parse_error)}")
+            return JsonResponse({
+                'success': False,
+                'error': f'Error al parsear QR: {str(parse_error)}. Formato recibido: {str(qr_data)[:100]}'
+            }, status=400)
+        
+        # Buscar usuario
+        try:
+            user = CustomUser.objects.get(id=user_id, rut=rut, qr_unique_id=qr_id)
+            print(f"[DEBUG] Usuario encontrado: {user.get_full_name()}")
+        except CustomUser.DoesNotExist:
+            print(f"[DEBUG ERROR] Usuario no encontrado con: id={user_id}, rut={rut}, qr_id={qr_id}")
+            return JsonResponse({
+                'success': False,
+                'status': 'denied',
+                'error': 'Usuario no encontrado o QR inválido',
+                'user': {
+                    'name': 'Desconocido',
+                    'rut': rut or 'N/A'
+                }
+            }, status=404)
+        
+        # Verificar membresía activa
+        membership = user.get_active_membership()
+        print(f"[DEBUG] Membresía activa: {membership}")
+        
+        if not membership or not membership.is_valid():
+            # Registrar acceso DENEGADO
+            AccessLog.objects.create(
+                user=user,
+                status='denied',
+                membership=membership,
+                denial_reason='Membresía vencida o inexistente'
+            )
+            
+            print(f"[DEBUG] Acceso DENEGADO para {user.get_full_name()} - Membresía vencida")
+            
+            return JsonResponse({
+                'success': False,
+                'status': 'denied',
+                'error': 'Membresía vencida o inexistente',
+                'user': {
+                    'name': user.get_full_name(),
+                    'rut': user.rut,
+                    'membership_status': 'Vencida' if membership else 'Sin membresía'
+                }
+            })
+        
+        # ✅ VERIFICAR SI YA INGRESÓ HOY - BLOQUEAR SI EXISTE REGISTRO
+        today = timezone.now().date()
+        already_accessed_today = AccessLog.objects.filter(
+            user=user,
+            timestamp__date=today,
+            status='allowed'
+        ).exists()
+        
+        # ✅ SI YA INGRESÓ HOY, DENEGAR Y NO CREAR NUEVO REGISTRO
+        if already_accessed_today:
+            # Obtener el registro de hoy para mostrar la hora
+            todays_access = AccessLog.objects.filter(
+                user=user,
+                timestamp__date=today,
+                status='allowed'
+            ).first()
+            
+            print(f"[DEBUG] ⚠️  Usuario {user.get_full_name()} YA INGRESÓ HOY a las {todays_access.timestamp.strftime('%H:%M:%S')}")
+            
+            # Calcular asistencias para mostrar en la respuesta
+            primer_dia_mes = today.replace(day=1)
+            monthly_access = AccessLog.objects.filter(
+                user=user,
+                timestamp__date__gte=primer_dia_mes,
+                status='allowed'
+            ).count()
+            
+            seven_days_ago = today - timedelta(days=7)
+            weekly_access = AccessLog.objects.filter(
+                user=user,
+                timestamp__date__gte=seven_days_ago,
+                status='allowed'
+            ).count()
+            
+            return JsonResponse({
+                'success': False,
+                'status': 'denied',
+                'error': f'Ya registraste tu entrada hoy a las {todays_access.timestamp.strftime("%H:%M:%S")}',
+                'already_accessed_today': True,
+                'user': {
+                    'name': user.get_full_name(),
+                    'rut': user.rut,
+                    'email': user.email,
+                    'membership_plan': membership.plan.name,
+                    'membership_end': membership.end_date.isoformat(),
+                    'days_remaining': membership.days_remaining(),
+                    'monthly_access': monthly_access,
+                    'weekly_access': weekly_access,
+                    'access_time': todays_access.timestamp.strftime('%H:%M:%S'),
+                    'first_access_today': todays_access.timestamp.strftime('%H:%M:%S')
+                }
+            }, status=403)  # 403 Forbidden - Ya ingresó hoy
+        
+        # ✅ SI NO HA INGRESADO HOY, CREAR REGISTRO DE ACCESO
+        access_log = AccessLog.objects.create(
+            user=user,
+            status='allowed',
+            membership=membership
+        )
+        
+        print(f"[DEBUG] ✅ Acceso PERMITIDO para {user.get_full_name()} - ID Log: {access_log.id}")
+        print(f"[DEBUG] ✅ Primera entrada del día registrada exitosamente")
+        
+        # Calcular asistencias del mes actual
+        primer_dia_mes = today.replace(day=1)
+        monthly_access = AccessLog.objects.filter(
+            user=user,
+            timestamp__date__gte=primer_dia_mes,
+            status='allowed'
+        ).count()
+        
+        # Calcular asistencias semanales
+        seven_days_ago = today - timedelta(days=7)
+        weekly_access = AccessLog.objects.filter(
+            user=user,
+            timestamp__date__gte=seven_days_ago,
+            status='allowed'
+        ).count()
+        
+        print(f"[DEBUG] Asistencias - Semanal: {weekly_access}, Mensual: {monthly_access}")
+        
+        return JsonResponse({
+            'success': True,
+            'status': 'allowed',
+            'message': '¡Acceso permitido! Bienvenido al gimnasio',
+            'already_accessed_today': False,
+            'user': {
+                'id': user.id,
+                'name': user.get_full_name(),
+                'rut': user.rut,
+                'email': user.email,
+                'membership_plan': membership.plan.name,
+                'membership_end': membership.end_date.isoformat(),
+                'days_remaining': membership.days_remaining(),
+                'monthly_access': monthly_access,
+                'weekly_access': weekly_access,
+                'access_time': access_log.timestamp.strftime('%H:%M:%S')
+            }
+        })
+        
+    except Exception as e:
+        print(f"[DEBUG ERROR GENERAL] {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        return JsonResponse({
+            'success': False,
+            'error': f'Error al procesar QR: {str(e)}'
+        }, status=500)
 
 def mostrar_Scanner(request):
     """Esta vista renderiza la pÃ¡gina del Scanner."""

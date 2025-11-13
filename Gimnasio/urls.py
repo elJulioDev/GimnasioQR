@@ -43,6 +43,9 @@ urlpatterns = [
     path('api/plans/', views.get_plans, name='get_plans'),
     path('api/validate-rut/', views.validate_rut, name='validate_rut'),
     path('api/validate-email/', views.validate_email, name='validate_email'),
+    
+    # Nueva ruta para procesar QR
+    path('api/process-qr-scan/', views.process_qr_scan, name='process_qr_scan'),
 ]
 
 if settings.DEBUG:
