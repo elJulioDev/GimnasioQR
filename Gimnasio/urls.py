@@ -9,8 +9,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Autenticación
-    path('', views.inicio_sesion, name='inicio_sesion'),
-    path('login/', views.inicio_sesion, name='login'),
+    path('', views.landing_page, name='home'),
+    path('login/', views.inicio_sesion, name='inicio_sesion'),
     path('login/procesar/', views.process_login, name='process_login'),
     path('logout/', views.cerrar_sesion, name='cerrar_sesion'),
     

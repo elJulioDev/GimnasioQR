@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClubHouse Digital - Tu Mejor Versión</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+</head>
+<body>
+
+    <div class="bg-decoration bg-decoration-1"></div>
+    <div class="bg-decoration bg-decoration-2"></div>
+
+    <nav class="navbar">
+        <div class="nav-logo">
+            <i class="fas fa-dumbbell"></i>
+            <span>ClubHouse</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#nosotros">Nosotros</a></li>
+            <li><a href="#planes">Planes</a></li>
+            <li><a href="#ubicacion">Ubicación</a></li>
+        </ul>
+        <div class="nav-auth">
+            <a href="{% url 'inicio_sesion' %}" class="btn btn-secondary">Ingresar</a>
+            <a href="{% url 'mostrar_registro' %}" class="btn btn-primary">Registrarse</a>
+        </div>
+    </nav>
+
+    <section id="inicio" class="hero-section">
+        <div class="hero-content">
+            <h1>TRANSFORMA TU <span class="gradient-text">CUERPO</span><br>LIBERA TU <span class="gradient-text">MENTE</span></h1>
+            <p>Únete al gimnasio más moderno de la ciudad. Tecnología QR, planes flexibles y el mejor ambiente para entrenar.</p>
+            <div class="hero-buttons">
+                <a href="{% url 'mostrar_registro' %}" class="btn btn-primary btn-lg">Comenzar Ahora <i class="fas fa-arrow-right"></i></a>
+                <a href="#planes" class="btn btn-outline btn-lg">Ver Planes</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="image-placeholder">
+                <i class="fas fa-running"></i>
+            </div>
+        </div>
+    </section>
+
+    <section id="nosotros" class="info-section">
+        <div class="section-header">
+            <h2>Nuestra Visión</h2>
+            <p>Más que un gimnasio, somos una comunidad</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon-box"><i class="fas fa-bullseye"></i></div>
+                <h3>Misión</h3>
+                <p>Inspirar a nuestra comunidad a alcanzar su máximo potencial físico y mental a través de tecnología e innovación.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-box"><i class="fas fa-eye"></i></div>
+                <h3>Visión</h3>
+                <p>Ser el referente en gimnasios inteligentes, donde el acceso es fluido y el enfoque está 100% en tus resultados.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-box"><i class="fas fa-heart"></i></div>
+                <h3>Valores</h3>
+                <p>Pasión por el deporte, compromiso con la tecnología y dedicación total al bienestar de nuestros socios.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="planes" class="plans-section">
+        <div class="section-header">
+            <h2>Nuestros Planes</h2>
+            <p>Elige la opción que mejor se adapte a tu ritmo</p>
+        </div>
+
+        <div class="plans-container">
+            {% for plan in planes %}
+            <div class="plan-card {% if plan.plan_type == 'completo' %}featured{% endif %}">
+                {% if plan.plan_type == 'completo' %}
+                    <div class="plan-badge">RECOMENDADO</div>
+                {% endif %}
+                <h3>{{ plan.name }}</h3>
+                <div class="price">
+                    ${{ plan.price|floatformat:0 }} <span>/mes</span>
+                </div>
+                <p class="duration">{{ plan.access_days }}</p>
+                
+                <ul class="plan-benefits">
+                    {% if plan.benefits %}
+                        <li><i class="fas fa-check"></i> Acceso QR Rápido</li>
+                        <li><i class="fas fa-check"></i> Duchas y Lockers</li>
+                        {% if plan.includes_classes %}
+                        <li><i class="fas fa-check"></i> Clases Grupales</li>
+                        {% endif %}
+                        {% if plan.includes_nutritionist %}
+                        <li><i class="fas fa-check"></i> Nutricionista</li>
+                        {% endif %}
+                    {% else %}
+                        <li><i class="fas fa-check"></i> Acceso Total</li>
+                    {% endif %}
+                </ul>
+
+                <a href="{% url 'mostrar_registro' %}" class="btn btn-block {% if plan.plan_type == 'completo' %}btn-primary{% else %}btn-secondary{% endif %}">
+                    Elegir Plan
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section id="ubicacion" class="location-section">
+        <div class="location-content">
+            <h2>Encuéntranos</h2>
+            <p><i class="fas fa-map-marker-alt"></i> camino monte grande, Coltauco, O'Higgins</p>
+            <p><i class="fas fa-envelope"></i> contacto@clubhousedigital.com</p>
+            <p><i class="fas fa-phone"></i> +56 9 6504 9281</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="map-container">
+            <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3297.0489375025813!2d-71.03392763829082!3d-34.27280425595033!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x96637ae67f518cd7%3A0xf2fadef7af072dc8!2sGym%20Club%20House%20Coltauco!5e0!3m2!1ses-419!2scl!4v1764051253875!5m2!1ses-419!2scl" 
+                width="100%" 
+                height="400" 
+                style="border:0;" 
+                allowfullscreen="" 
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2025 ClubHouse Digital. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        // Efecto de navbar al hacer scroll
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

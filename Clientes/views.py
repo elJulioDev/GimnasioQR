@@ -13,21 +13,21 @@ from .forms import CustomUserCreationForm
 from .utils import send_qr_email
 
 
-# --- VISTAS DE AUTENTICACIÃ“N ---
+# --- VISTAS DE AUTENTICACIONN ---
 
 def inicio_sesion(request):
     """
-    Vista de inicio de sesiÃ³n que maneja GET y POST.
+    Vista de inicio de sesion que maneja GET y POST.
     """
     # CAMBIO: Verificar que el usuario tenga rol antes de redirigir
     if request.user.is_authenticated:
-        # Si es superusuario, cerrar sesiÃ³n y mostrar error
+        # Si es superusuario, cerrar sesion y mostrar error
         if request.user.is_superuser:
             logout(request)
             messages.error(request, 'Los superusuarios deben acceder por /admin')
             return render(request, 'IniciarSesion.html')
         
-        # Si no tiene rol, cerrar sesiÃ³n y mostrar error
+        # Si no tiene rol, cerrar sesion y mostrar error
         if not request.user.role:
             logout(request)
             messages.error(request, 'Usuario sin rol asignado. Contacte al administrador.')
@@ -88,7 +88,7 @@ def process_login(request):
             
             return JsonResponse({
                 'success': True,
-                'message': 'Inicio de sesiÃ³n exitoso',
+                'message': 'Inicio de sesion exitoso',
                 'redirect_url': redirect_url,
                 'user': {
                     'id': user.id,
@@ -106,20 +106,20 @@ def process_login(request):
     except Exception as e:
         return JsonResponse({
             'success': False,
-            'error': f'Error al procesar el inicio de sesiÃ³n: {str(e)}'
+            'error': f'Error al procesar el inicio de sesion: {str(e)}'
         }, status=500)
 
 
 def get_redirect_url_by_role(user):
     """
-    Retorna la URL de redirecciÃ³n segÃºn el rol del usuario.
+    Retorna la URL de redireccion segÃºn el rol del usuario.
     """
     role_urls = {
         'admin': '/admin-panel/',
         'moderador': '/moderador-panel/',
         'socio': '/socio-panel/',
     }
-    # CAMBIO: Si no tiene rol, ir a una pÃ¡gina de error en lugar de loop
+    # CAMBIO: Si no tiene rol, ir a una pagina de error en lugar de loop
     return role_urls.get(user.role, '/error-sin-rol/')
 
 
@@ -129,7 +129,7 @@ def redirect_by_role(user):
     """
     # CAMBIO: Manejar usuarios sin rol sin crear loop
     if not user.role:
-        # Cerrar sesiÃ³n de usuarios sin rol
+        # Cerrar sesion de usuarios sin rol
         logout(user)
         return redirect('inicio_sesion')
     
@@ -139,34 +139,50 @@ def redirect_by_role(user):
         'socio': redirect('index_socio'),
     }
     
-    # Si el rol no estÃ¡ en el diccionario, ir a inicio_sesion
-    # Pero solo si el usuario NO estÃ¡ ya en inicio_sesion
+    # Si el rol no esta en el diccionario, ir a inicio_sesion
+    # Pero solo si el usuario NO esta ya en inicio_sesion
     return role_redirects.get(user.role, redirect('inicio_sesion'))
 
 
 def cerrar_sesion(request):
     """
-    Cierra la sesiÃ³n del usuario y redirige al login.
+    Cierra la sesion del usuario y redirige al login.
     """
     logout(request)
-    messages.success(request, 'Has cerrado sesiÃ³n exitosamente.')
+    messages.success(request, 'Has cerrado sesion exitosamente.')
     return redirect('inicio_sesion')
 
 
-# --- VISTAS DE PANELES (con protecciÃ³n de rol) ---
+def landing_page(request):
+    """
+    Vista para la página de inicio (Landing Page).
+    Muestra planes, información del gimnasio y ubicación.
+    """
+    # Si el usuario ya está logueado, lo redirigimos a su panel correspondiente
+    if request.user.is_authenticated:
+        return redirect_by_role(request.user)
+
+    # Obtener planes activos para mostrar en la sección de precios
+    planes = Plan.objects.filter(is_active=True).order_by('price')
+    
+    return render(request, 'landing.html', {
+        'planes': planes
+    })
+
+# --- VISTAS DE PANELES (con proteccion de rol) ---
 
 @login_required(login_url='inicio_sesion')
 def index_admin(request):
-    """Panel de administrador con estadÃ­sticas reales - solo para admins"""
+    """Panel de administrador con estadisticas reales - solo para admins"""
     if not request.user.role or request.user.role != 'admin':
-        messages.error(request, 'No tienes permisos para acceder a esta Ã¡rea.')
+        messages.error(request, 'No tienes permisos para acceder a esta area.')
         return redirect_by_role(request.user)
     
-    # ==================== ESTADÃSTICAS DEL DASHBOARD ====================
+    # ==================== ESTADISTICAS DEL DASHBOARD ====================
     from django.db.models import Count, Sum, Q
     from datetime import date, timedelta
     
-    # 1. Usuarios Activos (socios con membresÃ­a activa)
+    # 1. Usuarios Activos (socios con membresia activa)
     usuarios_activos = CustomUser.objects.filter(
         role='socio',
         is_active_member=True
@@ -183,14 +199,14 @@ def index_admin(request):
     
     cambio_usuarios = calcular_porcentaje_cambio(usuarios_activos_mes_pasado, usuarios_activos)
     
-    # 2. Ingresos Mensuales (suma de membresÃ­as del mes actual)
+    # 2. Ingresos Mensuales (suma de membresias del mes actual)
     primer_dia_mes = today.replace(day=1)
     ingresos_mensuales = Membership.objects.filter(
         payment_date__gte=primer_dia_mes,
         status__in=['active', 'pending']
     ).aggregate(total=Sum('amount_paid'))['total'] or 0
     
-    # Ingresos del mes anterior para comparaciÃ³n
+    # Ingresos del mes anterior para comparacion
     mes_anterior_inicio = (primer_dia_mes - timedelta(days=1)).replace(day=1)
     mes_anterior_fin = primer_dia_mes - timedelta(days=1)
     ingresos_mes_anterior = Membership.objects.filter(
@@ -201,7 +217,7 @@ def index_admin(request):
     
     cambio_ingresos = calcular_porcentaje_cambio(ingresos_mes_anterior, ingresos_mensuales)
     
-    # 3. Planes por Vencer (prÃ³ximos 7 dÃ­as)
+    # 3. Planes por Vencer (proximos 7 dias)
     fecha_limite = today + timedelta(days=7)
     planes_por_vencer = Membership.objects.filter(
         is_active=True,
@@ -209,7 +225,7 @@ def index_admin(request):
         end_date__lte=fecha_limite
     ).count()
     
-    # ComparaciÃ³n con la semana anterior
+    # Comparacion con la semana anterior
     semana_pasada_inicio = today - timedelta(days=7)
     semana_pasada_fin = today
     planes_venciendo_semana_pasada = Membership.objects.filter(
@@ -227,7 +243,7 @@ def index_admin(request):
         status='allowed'
     ).count()
     
-    # ComparaciÃ³n con ayer
+    # Comparacion con ayer
     ayer = today - timedelta(days=1)
     accesos_ayer = AccessLog.objects.filter(
         timestamp__date=ayer,
@@ -236,7 +252,7 @@ def index_admin(request):
     
     cambio_accesos = calcular_porcentaje_cambio(accesos_ayer, accesos_hoy)
     
-    # ==================== GESTIÃ“N DE USUARIOS ====================
+    # ==================== GESTION DE USUARIOS ====================
     
     # Obtener SOCIOS (excluyendo admins y moderadores)
     socios = CustomUser.objects.filter(
@@ -244,7 +260,7 @@ def index_admin(request):
         is_superuser=False
     ).select_related().prefetch_related('memberships').order_by('-created_at')
     
-    # Enriquecer cada socio con su membresÃ­a activa
+    # Enriquecer cada socio con su membresia activa
     socios_data = []
     for socio in socios:
         membership = socio.get_active_membership()
@@ -262,13 +278,13 @@ def index_admin(request):
         is_superuser=False
     ).order_by('-created_at')
     
-    # EstadÃ­sticas adicionales de usuarios
+    # Estadisticas adicionales de usuarios
     total_socios = socios.count()
     total_moderadores = moderadores.count()
     socios_activos = socios.filter(is_active_member=True).count()
     socios_inactivos = socios.filter(is_active_member=False).count()
     
-    # ==================== GESTIÃ“N DE PLANES ====================
+    # ==================== GESTION DE PLANES ====================
     
     planes = Plan.objects.filter(is_active=True).annotate(
         usuarios_inscritos=Count(
@@ -277,7 +293,7 @@ def index_admin(request):
         )
     ).order_by('price')
 
-    # En la secciÃ³n de planes, reemplaza:
+    # En la seccion de planes, reemplaza:
     planes_data = []
     for plan in planes:
         # Calcular ingresos generados por este plan
@@ -296,13 +312,13 @@ def index_admin(request):
             'plan': plan,
             'usuarios_inscritos': plan.usuarios_inscritos,
             'ingresos_mes': ingresos_plan,
-            'beneficios_lista': beneficios_lista  # Nueva lÃ­nea
+            'beneficios_lista': beneficios_lista  # Nueva linea
         })
 
     # ==================== CONTEXTO PARA EL TEMPLATE ====================
     
     context = {
-        # EstadÃ­sticas Dashboard
+        # Estadisticas Dashboard
         'usuarios_activos': usuarios_activos,
         'cambio_usuarios': cambio_usuarios,
         'ingresos_mensuales': ingresos_mensuales,
@@ -312,7 +328,7 @@ def index_admin(request):
         'accesos_hoy': accesos_hoy,
         'cambio_accesos': cambio_accesos,
         
-        # GestiÃ³n de Usuarios
+        # Gestion de Usuarios
         'socios': socios_data,
         'moderadores': moderadores,
         'total_socios': total_socios,
@@ -320,7 +336,7 @@ def index_admin(request):
         'socios_activos': socios_activos,
         'socios_inactivos': socios_inactivos,
         
-        # GestiÃ³n de Planes
+        # Gestion de Planes
         'planes': planes_data,
         'total_planes': planes.count(),
     }
@@ -328,7 +344,7 @@ def index_admin(request):
     return render(request, 'index_admin.html', context)
 
 
-# ==================== FUNCIÃ“N AUXILIAR ====================
+# ==================== FUNCION AUXILIAR ====================
 
 def calcular_porcentaje_cambio(valor_anterior, valor_actual):
     """
@@ -348,11 +364,11 @@ def calcular_porcentaje_cambio(valor_anterior, valor_actual):
 
 
 
-@login_required(login_url='inicio_sesion')  # AÃ‘ADIDO
+@login_required(login_url='inicio_sesion')  # AÑADIDO
 def index_moderador(request):
     """Panel de moderador - solo para moderadores"""
     if not request.user.role or request.user.role != 'moderador':
-        messages.error(request, 'No tienes permisos para acceder a esta Ã¡rea.')
+        messages.error(request, 'No tienes permisos para acceder a esta area.')
         return redirect_by_role(request.user)
     
     return render(request, 'index_moderador.html')
@@ -471,13 +487,13 @@ def process_registration(request):
         if CustomUser.objects.filter(rut=data['rut']).exists():
             return JsonResponse({
                 'success': False,
-                'error': 'El RUT ingresado ya estÃ¡ registrado'
+                'error': 'El RUT ingresado ya esta registrado'
             }, status=400)
         
         if CustomUser.objects.filter(email=data['email']).exists():
             return JsonResponse({
                 'success': False,
-                'error': 'El correo electrÃ³nico ya estÃ¡ registrado'
+                'error': 'El correo electronico ya esta registrado'
             }, status=400)
         
         try:
@@ -485,7 +501,7 @@ def process_registration(request):
         except Plan.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'error': 'Plan no vÃ¡lido'
+                'error': 'Plan no valido'
             }, status=400)
         
         # Crear el usuario
@@ -507,12 +523,12 @@ def process_registration(request):
         # Esto asegura que el QR fue generado en el save()
         user.refresh_from_db()
         
-        # â­ Si el QR no se generÃ³ automÃ¡ticamente, generarlo manualmente
+        # â­ Si el QR no se genero automaticamente, generarlo manualmente
         if not user.qr_code:
             user.generate_qr_code()
             user.refresh_from_db()
         
-        # Crear la membresÃ­a
+        # Crear la membresia
         start_date = timezone.now().date()
         membership = Membership.objects.create(
             user=user,
@@ -525,8 +541,8 @@ def process_registration(request):
             notes=f"Registro inicial - Pago mediante {data['paymentMethod']}"
         )
         
-        # â­ AHORA SÃ: Enviar QR por email si lo solicitÃ³
-        # El QR ya estÃ¡ generado y guardado
+        # â­ AHORA Si: Enviar QR por email si lo solicito
+        # El QR ya esta generado y guardado
         email_sent = False
         if data.get('sendQREmail', False):
             try:
@@ -575,7 +591,7 @@ def validate_rut(request):
     exists = CustomUser.objects.filter(rut=rut).exists()
     return JsonResponse({
         'valid': not exists,
-        'error': 'Este RUT ya estÃ¡ registrado' if exists else None
+        'error': 'Este RUT ya esta registrado' if exists else None
     })
 
 
@@ -587,29 +603,29 @@ def validate_email(request):
     exists = CustomUser.objects.filter(email=email).exists()
     return JsonResponse({
         'valid': not exists,
-        'error': 'Este correo ya estÃ¡ registrado' if exists else None
+        'error': 'Este correo ya esta registrado' if exists else None
     })
 
 
-# ==================== GESTIÃ“N DE USUARIOS (ADMIN) ====================
+# ==================== GESTION DE USUARIOS (ADMIN) ====================
 
 @login_required(login_url='inicio_sesion')
 def admin_user_details(request, user_id):
     """Ver detalles completos de un usuario - Solo admin"""
     if not request.user.role or request.user.role != 'admin':
-        messages.error(request, 'No tienes permisos para acceder a esta Ã¡rea.')
+        messages.error(request, 'No tienes permisos para acceder a esta area.')
         return redirect('index_admin')
     
     try:
         user = CustomUser.objects.get(id=user_id, is_superuser=False)
         
-        # Obtener membresÃ­as del usuario
+        # Obtener membresias del usuario
         memberships = user.memberships.all().select_related('plan').order_by('-created_at')
         
         # Obtener accesos recientes (Ãºltimos 20)
         access_logs = user.access_logs.all().order_by('-timestamp')[:20]
         
-        # Calcular estadÃ­sticas
+        # Calcular estadisticas
         total_accesos = user.access_logs.count()
         accesos_permitidos = user.access_logs.filter(status='allowed').count()
         accesos_denegados = user.access_logs.filter(status='denied').count()
@@ -699,15 +715,15 @@ def admin_user_edit(request, user_id):
 def admin_user_delete(request, user_id):
     """Eliminar usuario - Solo admin"""
     if not request.user.role or request.user.role != 'admin':
-        messages.error(request, 'No tienes permisos para acceder a esta Ã¡rea.')
+        messages.error(request, 'No tienes permisos para acceder a esta area.')
         return redirect('index_admin')
     
     try:
         user = CustomUser.objects.get(id=user_id, is_superuser=False)
         
         if request.method == 'GET':
-            # Mostrar pÃ¡gina de confirmaciÃ³n
-            # Obtener informaciÃ³n relevante antes de eliminar
+            # Mostrar pagina de confirmacion
+            # Obtener informacion relevante antes de eliminar
             memberships_count = user.memberships.count()
             access_logs_count = user.access_logs.count()
             
@@ -719,7 +735,7 @@ def admin_user_delete(request, user_id):
             return render(request, 'admin_user_delete.html', context)
         
         elif request.method == 'POST':
-            # Confirmar eliminaciÃ³n
+            # Confirmar eliminacion
             user_name = user.get_full_name()
             user_rut = user.rut
             user.delete()
@@ -736,11 +752,11 @@ def admin_user_delete(request, user_id):
 def admin_user_create(request):
     """Crear nuevo usuario desde panel admin"""
     if not request.user.role or request.user.role != 'admin':
-        messages.error(request, 'No tienes permisos para acceder a esta Ã¡rea.')
+        messages.error(request, 'No tienes permisos para acceder a esta area.')
         return redirect('index_admin')
     
     if request.method == 'GET':
-        # Mostrar formulario de creaciÃ³n
+        # Mostrar formulario de creacion
         plans = Plan.objects.filter(is_active=True)
         context = {
             'plans': plans,
@@ -753,7 +769,7 @@ def admin_user_create(request):
 
 
 def process_admin_user_creation(request):
-    """Procesa la creaciÃ³n de usuario por el admin"""
+    """Procesa la creacion de usuario por el admin"""
     if not request.user.role or request.user.role != 'admin':
         return JsonResponse({
             'success': False,
@@ -781,14 +797,14 @@ def process_admin_user_creation(request):
         if CustomUser.objects.filter(rut=data['rut']).exists():
             return JsonResponse({
                 'success': False,
-                'error': 'El RUT ingresado ya estÃ¡ registrado'
+                'error': 'El RUT ingresado ya esta registrado'
             }, status=400)
         
         # Validar que el email no exista
         if CustomUser.objects.filter(email=data['email']).exists():
             return JsonResponse({
                 'success': False,
-                'error': 'El correo electrÃ³nico ya estÃ¡ registrado'
+                'error': 'El correo electronico ya esta registrado'
             }, status=400)
         
         # Crear el usuario
@@ -806,19 +822,19 @@ def process_admin_user_creation(request):
             is_active_member=False
         )
         
-        # Si es socio y se seleccionÃ³ plan, crear membresÃ­a
+        # Si es socio y se selecciono plan, crear membresia
         if data['role'] == 'socio' and data.get('plan'):
             try:
                 # Buscar plan por plan_type
                 plan = Plan.objects.get(plan_type=data['plan'])
                 
-                # Generar QR si no se generÃ³ automÃ¡ticamente
+                # Generar QR si no se genero automaticamente
                 user.refresh_from_db()
                 if not user.qr_code:
                     user.generate_qr_code()
                     user.refresh_from_db()
                 
-                # Crear membresÃ­a
+                # Crear membresia
                 start_date = timezone.now().date()
                 membership = Membership.objects.create(
                     user=user,
@@ -831,7 +847,7 @@ def process_admin_user_creation(request):
                     notes=f"Registro administrativo por {request.user.get_full_name()}"
                 )
                 
-                # Enviar QR por email si se solicitÃ³
+                # Enviar QR por email si se solicito
                 email_sent = False
                 if data.get('sendQREmail'):
                     try:
@@ -867,17 +883,17 @@ def process_admin_user_creation(request):
         }, status=500)
 
 
-# ==================== GESTIÃ“N DE PLANES (ADMIN) ====================
+# ==================== GESTION DE PLANES (ADMIN) ====================
 
 @login_required(login_url='inicio_sesion')
 def admin_plan_create(request):
     """Crear nuevo plan - Solo admin"""
     if not request.user.role or request.user.role != 'admin':
-        messages.error(request, 'No tienes permisos para acceder a esta Ã¡rea.')
+        messages.error(request, 'No tienes permisos para acceder a esta area.')
         return redirect('index_admin')
     
     if request.method == 'GET':
-        # Mostrar formulario de creaciÃ³n
+        # Mostrar formulario de creacion
         context = {
             'is_admin_creation': True
         }
@@ -887,7 +903,7 @@ def admin_plan_create(request):
         return process_admin_plan_creation(request)
 
 def process_admin_plan_creation(request):
-    """Procesa la creaciÃ³n de plan por el admin"""
+    """Procesa la creacion de plan por el admin"""
     if not request.user.role or request.user.role != 'admin':
         return JsonResponse({
             'success': False,
@@ -948,19 +964,19 @@ def process_admin_plan_creation(request):
 def admin_plan_details(request, plan_id):
     """Ver detalles completos de un plan - Solo admin"""
     if not request.user.role or request.user.role != 'admin':
-        messages.error(request, 'No tienes permisos para acceder a esta Ã¡rea.')
+        messages.error(request, 'No tienes permisos para acceder a esta area.')
         return redirect('index_admin')
     
     try:
         plan = Plan.objects.get(id=plan_id)
         
-        # Obtener membresÃ­as activas de este plan
+        # Obtener membresias activas de este plan
         active_memberships = Membership.objects.filter(
             plan=plan,
             is_active=True
         ).select_related('user').order_by('-created_at')
         
-        # Obtener estadÃ­sticas del plan
+        # Obtener estadisticas del plan
         total_memberships = Membership.objects.filter(plan=plan).count()
         active_count = active_memberships.count()
         
@@ -1003,16 +1019,16 @@ def admin_plan_details(request, plan_id):
 def admin_plan_edit(request, plan_id):
     """Editar plan - Solo admin"""
     if not request.user.role or request.user.role != 'admin':
-        messages.error(request, 'No tienes permisos para acceder a esta Ã¡rea.')
+        messages.error(request, 'No tienes permisos para acceder a esta area.')
         return redirect('index_admin')
     
     try:
         plan = Plan.objects.get(id=plan_id)
         
         if request.method == 'GET':
-            # âœ… PASAR EL OBJETO 'plan' AL CONTEXTO CON EL NOMBRE CORRECTO
+            # PASAR EL OBJETO 'plan' AL CONTEXTO CON EL NOMBRE CORRECTO
             context = {
-                'plan': plan,  # â† Nombre correcto que usa el template
+                'plan': plan,  # Nombre correcto que usa el template
             }
             return render(request, 'admin_plan_edit.html', context)
         
@@ -1060,21 +1076,21 @@ def admin_plan_edit(request, plan_id):
 def admin_plan_delete(request, plan_id):
     """Eliminar plan - Solo admin"""
     if not request.user.role or request.user.role != 'admin':
-        messages.error(request, 'No tienes permisos para acceder a esta Ã¡rea.')
+        messages.error(request, 'No tienes permisos para acceder a esta area.')
         return redirect('index_admin')
     
     try:
         plan = Plan.objects.get(id=plan_id)
         
         if request.method == 'POST':
-            # Verificar si tiene membresÃ­as activas
+            # Verificar si tiene membresias activas
             active_memberships = Membership.objects.filter(plan=plan, is_active=True).count()
             
             if active_memberships > 0:
-                messages.error(request, f'No se puede eliminar el plan porque tiene {active_memberships} membresÃ­as activas.')
+                messages.error(request, f'No se puede eliminar el plan porque tiene {active_memberships} membresias activas.')
                 return redirect('admin_plan_details', plan_id=plan.id)
             
-            # Confirmar eliminaciÃ³n
+            # Confirmar eliminacion
             plan_name = plan.name
             plan.delete()
             
@@ -1319,10 +1335,10 @@ def process_qr_scan(request):
         }, status=500)
 
 def mostrar_Scanner(request):
-    """Esta vista renderiza la pÃ¡gina del Scanner."""
+    """Esta vista renderiza la pagina del Scanner."""
     return render(request, 'QR_Scanner.html')
 
 
 def mostrar_QRCodeEmail(request):
-    """Esta vista renderiza la pÃ¡gina email."""
+    """Esta vista renderiza la pagina email."""
     return render(request, 'qr_code_email.html')
