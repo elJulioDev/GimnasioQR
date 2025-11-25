@@ -200,14 +200,6 @@
 
         </div>
 
-        {% if messages %}
-            {% for message in messages %}
-            <div class="info-notice" style="{% if message.tags == 'error' %}border-left-color: var(--danger-color); background: rgba(255, 71, 87, 0.1);{% endif %}">
-                {{ message }}
-            </div>
-            {% endfor %}
-        {% endif %}
-
         <form method="POST">
             {% csrf_token %}
             

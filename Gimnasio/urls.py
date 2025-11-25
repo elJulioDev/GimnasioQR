@@ -22,6 +22,9 @@ urlpatterns = [
     path('admin-panel/', views.index_admin, name='index_admin'),
     path('moderador-panel/', views.index_moderador, name='index_moderador'),
     path('socio-panel/', views.index_socio, name='index_socio'),
+
+    # Editar perfil - Socio
+    path('socio-panel/perfil/editar/', views.edit_profile_socio, name='edit_profile_socio'),
     
     # === Gestión de Usuarios (Panel Administrativo) ===
     path('management/users/create/', views.admin_user_create, name='admin_user_create'),
@@ -43,7 +46,9 @@ urlpatterns = [
     path('api/plans/', views.get_plans, name='get_plans'),
     path('api/validate-rut/', views.validate_rut, name='validate_rut'),
     path('api/validate-email/', views.validate_email, name='validate_email'),
-    
+    path('api/verify-password/', views.verify_password, name='verify_password'),
+    path('api/change-password/', views.change_password_socio, name='change_password_socio'),
+
     # Nueva ruta para procesar QR
     path('api/process-qr-scan/', views.process_qr_scan, name='process_qr_scan'),
 ]

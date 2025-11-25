@@ -5,15 +5,173 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Panel - ClubHouse Digital</title>
-    
     <!-- Fuentes -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <!-- Estilos CSS -->
     <link rel="stylesheet" href="{% static 'css/indexSocio.css' %}">
+    <style>
+        /* --- Estilos Modal Multipasos --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: #121212;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 3rem;
+            width: 90%;
+            max-width: 480px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Iconos animados */
+        .modal-icon-large {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+
+        .icon-lock { color: var(--warning-color); text-shadow: 0 0 20px rgba(255, 165, 2, 0.3); }
+        .icon-key { color: var(--primary-color); text-shadow: 0 0 20px rgba(0, 255, 157, 0.3); }
+        .icon-success { color: var(--success-color); animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Pasos */
+        .step-container {
+            display: none; /* Se controla por JS */
+            animation: slideInRight 0.4s ease;
+        }
+
+        .step-container.active {
+            display: block;
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Inputs mejorados */
+        .input-wrapper-modern {
+            position: relative;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .input-wrapper-modern label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .modern-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .modern-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(0, 255, 157, 0.1);
+        }
+
+        /* Validación visual */
+        .modern-input.valid { border-color: var(--success-color); }
+        .modern-input.invalid { border-color: var(--danger-color); }
+
+        .match-indicator {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            height: 20px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .text-match { color: var(--success-color); }
+        .text-mismatch { color: var(--danger-color); }
+
+        /* Botones */
+        .btn-full {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-text {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        .btn-text:hover { color: white; text-decoration: underline; }
+
+        /* Loader spinner dentro del botón */
+        .loader-spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-left-color: #ffffff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none; /* Oculto por defecto */
+            margin: 0 auto;
+        }
+
+        @keyframes spin { 
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
 
@@ -533,85 +691,85 @@
                     {% endif %}
                 </div>
             </section>
-<!-- Renovar Plan Section -->
-<section id="renovar" class="content-section">
-    <div class="content-header">
-        <h2 class="page-title">
-            <i class="fas fa-sync-alt"></i>
-            Renovar o Cambiar Plan
-        </h2>
-    </div>
-
-    <div class="plans-horizontal-container">
-        {% for item in planes_renovacion %}
-        <div class="plan-card-horizontal {% if item.obj.plan_type == 'completo' or item.obj.plan_type == 'vip' %}featured-horizontal{% endif %}">
             
-            {% if item.obj.plan_type == 'completo' or item.obj.plan_type == 'vip' %}
-                <div class="horizontal-badge">RECOMENDADO</div>
-            {% endif %}
+            <!-- Renovar Plan Section -->
+            <section id="renovar" class="content-section">
+                <div class="content-header">
+                    <h2 class="page-title">
+                        <i class="fas fa-sync-alt"></i>
+                        Renovar o Cambiar Plan
+                    </h2>
+                </div>
 
-            <div class="plan-horizontal-left">
-                <div class="plan-horizontal-header">
-                    <h3>{{ item.obj.name }}</h3>
-                    <div class="plan-horizontal-price">
-                        ${{ item.obj.price|floatformat:0 }}<span>/mes</span>
+                <div class="plans-horizontal-container">
+                    {% for item in planes_renovacion %}
+                    <div class="plan-card-horizontal {% if item.obj.plan_type == 'completo' or item.obj.plan_type == 'vip' %}featured-horizontal{% endif %}">
+                        
+                        {% if item.obj.plan_type == 'completo' or item.obj.plan_type == 'vip' %}
+                            <div class="horizontal-badge">RECOMENDADO</div>
+                        {% endif %}
+
+                        <div class="plan-horizontal-left">
+                            <div class="plan-horizontal-header">
+                                <h3>{{ item.obj.name }}</h3>
+                                <div class="plan-horizontal-price">
+                                    ${{ item.obj.price|floatformat:0 }}<span>/mes</span>
+                                </div>
+                            </div>
+                            
+                            <ul class="plan-horizontal-features">
+                                <li><i class="fas fa-calendar-alt"></i> {{ item.obj.access_days }}</li>
+                                <li><i class="fas fa-qrcode"></i> Acceso QR Automatizado</li>
+                                
+                                {% if item.obj.includes_classes %}
+                                    <li><i class="fas fa-dumbbell"></i> Clases grupales</li>
+                                {% endif %}
+                                
+                                {% if item.obj.includes_nutritionist %}
+                                    <li><i class="fas fa-apple-alt"></i> Nutricionista</li>
+                                {% endif %}
+
+                                {% for beneficio in item.beneficios_extra %}
+                                    <li><i class="fas fa-check-circle"></i> {{ beneficio }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div class="plan-horizontal-right">
+                            <button class="btn {% if item.obj.plan_type == 'completo' %}btn-primary{% else %}btn-outline{% endif %}" 
+                                    onclick="selectPlanForRenewal('{{ item.obj.name }}', {{ item.obj.price }})">
+                                <i class="fas fa-check"></i>
+                                Seleccionar Plan
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                        <p style="color: var(--text-secondary);">No hay planes disponibles en este momento.</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Modal existente -->
+                <div id="renewalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
+                    <div style="background: #151515; padding: 2rem; border-radius: 16px; max-width: 400px; width: 90%; border: 1px solid var(--primary-color); text-align: center;">
+                        <i class="fas fa-receipt" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                        <h3 style="color: white; margin-bottom: 1rem;">Confirmar Renovación</h3>
+                        <p style="color: #ccc; margin-bottom: 1.5rem;">
+                            Has seleccionado: <br>
+                            <strong id="modalPlanName" style="color: var(--primary-color); font-size: 1.2rem;">-</strong><br>
+                            Precio: <strong id="modalPlanPrice">-</strong>
+                        </p>
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: left;">
+                            <p style="font-size: 0.9rem; color: #aaa; margin-bottom: 0.5rem;">Próximos pasos:</p>
+                            <ol style="color: #ccc; font-size: 0.9rem; padding-left: 1.2rem;">
+                                <li>Acércate a recepción.</li>
+                                <li>Indica tu RUT y el plan seleccionado.</li>
+                                <li>Realiza el pago (Efectivo/Tarjeta).</li>
+                            </ol>
+                        </div>
+                        <button class="btn btn-secondary" onclick="document.getElementById('renewalModal').style.display='none'">Cerrar</button>
                     </div>
                 </div>
-                
-                <ul class="plan-horizontal-features">
-                    <li><i class="fas fa-calendar-alt"></i> {{ item.obj.access_days }}</li>
-                    <li><i class="fas fa-qrcode"></i> Acceso QR Automatizado</li>
-                    
-                    {% if item.obj.includes_classes %}
-                        <li><i class="fas fa-dumbbell"></i> Clases grupales</li>
-                    {% endif %}
-                    
-                    {% if item.obj.includes_nutritionist %}
-                        <li><i class="fas fa-apple-alt"></i> Nutricionista</li>
-                    {% endif %}
-
-                    {% for beneficio in item.beneficios_extra %}
-                        <li><i class="fas fa-check-circle"></i> {{ beneficio }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <div class="plan-horizontal-right">
-                <button class="btn {% if item.obj.plan_type == 'completo' %}btn-primary{% else %}btn-outline{% endif %}" 
-                        onclick="selectPlanForRenewal('{{ item.obj.name }}', {{ item.obj.price }})">
-                    <i class="fas fa-check"></i>
-                    Seleccionar Plan
-                </button>
-            </div>
-        </div>
-        {% empty %}
-            <p style="color: var(--text-secondary);">No hay planes disponibles en este momento.</p>
-        {% endfor %}
-    </div>
-
-    <!-- Modal existente -->
-    <div id="renewalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
-        <div style="background: #151515; padding: 2rem; border-radius: 16px; max-width: 400px; width: 90%; border: 1px solid var(--primary-color); text-align: center;">
-            <i class="fas fa-receipt" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
-            <h3 style="color: white; margin-bottom: 1rem;">Confirmar Renovación</h3>
-            <p style="color: #ccc; margin-bottom: 1.5rem;">
-                Has seleccionado: <br>
-                <strong id="modalPlanName" style="color: var(--primary-color); font-size: 1.2rem;">-</strong><br>
-                Precio: <strong id="modalPlanPrice">-</strong>
-            </p>
-            <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: left;">
-                <p style="font-size: 0.9rem; color: #aaa; margin-bottom: 0.5rem;">Próximos pasos:</p>
-                <ol style="color: #ccc; font-size: 0.9rem; padding-left: 1.2rem;">
-                    <li>Acércate a recepción.</li>
-                    <li>Indica tu RUT y el plan seleccionado.</li>
-                    <li>Realiza el pago (Efectivo/Tarjeta).</li>
-                </ol>
-            </div>
-            <button class="btn btn-secondary" onclick="document.getElementById('renewalModal').style.display='none'">Cerrar</button>
-        </div>
-    </div>
-</section>
-
+            </section>
 
             <!-- Perfil Section -->
             <section id="perfil" class="content-section">
@@ -660,11 +818,11 @@
                     </div>
 
                     <div class="profile-actions">
-                        <button class="btn btn-primary" onclick="alert('Función en desarrollo')">
+                        <a href="{% url 'edit_profile_socio' %}" class="btn btn-primary">
                             <i class="fas fa-edit"></i>
                             Editar Perfil
-                        </button>
-                        <button class="btn btn-secondary" onclick="alert('Función en desarrollo')">
+                        </a>
+                        <button class="btn btn-secondary" onclick="openPasswordModal()">
                             <i class="fas fa-key"></i>
                             Cambiar Contraseña
                         </button>
@@ -675,7 +833,99 @@
         </main>
     </div>
 
+    <div id="passwordModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            
+            <button type="button" onclick="closePasswordModal()" style="position: absolute; top: 20px; right: 20px; background:none; border:none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; z-index: 10;">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div id="step-1" class="step-container active">
+                <div class="modal-icon-large icon-lock">
+                    <i class="fas fa-user-lock"></i>
+                </div>
+                <h3 class="modal-title">Seguridad</h3>
+                <p class="modal-subtitle">Ingresa tu contraseña actual para continuar.</p>
+
+                <form id="formStep1" onsubmit="handleVerifyStep(event)">
+                    <div class="input-wrapper-modern">
+                        <label>Contraseña Actual</label>
+                        <input type="password" id="current_password_input" class="modern-input" placeholder="••••••••" required autofocus>
+                        <div id="step1-error" style="color: var(--danger-color); font-size: 0.85rem; margin-top: 5px; display: none;"></div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full" id="btn-verify">
+                        <span class="btn-text-content">Continuar <i class="fas fa-arrow-right"></i></span>
+                        <div class="loader-spinner"></div>
+                    </button>
+                </form>
+            </div>
+
+            <div id="step-2" class="step-container">
+                <div class="modal-icon-large icon-key">
+                    <i class="fas fa-key"></i>
+                </div>
+                <h3 class="modal-title">Nueva Contraseña</h3>
+                <p class="modal-subtitle">Define tu nueva clave de acceso.</p>
+
+                <form id="formStep2" onsubmit="handleSubmitNewPass(event)">
+                    <div class="input-wrapper-modern">
+                        <label>Nueva Contraseña</label>
+                        <input type="password" id="new_password_input" class="modern-input" placeholder="Mínimo 8 caracteres" required oninput="validatePasswordsUI()">
+                    </div>
+
+                    <div class="input-wrapper-modern">
+                        <label>Confirmar</label>
+                        <input type="password" id="confirm_password_input" class="modern-input" placeholder="Repite la contraseña" required oninput="validatePasswordsUI()">
+                        <div id="match-feedback" class="match-indicator"></div>
+                    </div>
+
+                    <div id="step2-error" style="color: var(--danger-color); font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
+
+                    <button type="submit" class="btn btn-primary btn-full" id="btn-save-pass">
+                        <span class="btn-text-content">Cambiar Contraseña</span>
+                        <div class="loader-spinner"></div>
+                    </button>
+                    
+                    <button type="button" class="btn-text" onclick="showStep(1)">
+                        Volver
+                    </button>
+                </form>
+            </div>
+
+            <div id="step-3" class="step-container">
+                <div class="modal-icon-large icon-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="modal-title">¡Listo!</h3>
+                <p class="modal-subtitle">Tu contraseña ha sido actualizada correctamente.</p>
+
+                <button type="button" class="btn btn-primary btn-full" onclick="closePasswordModal()">
+                    Cerrar
+                </button>
+            </div>
+
+        </div>
+    </div>
+
     <script>
+
+        function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        // ¿Este string de cookie comienza con el nombre que queremos?
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Navegación entre secciones
             const navLinks = document.querySelectorAll('.nav-link');
@@ -760,6 +1010,190 @@
             if (event.target == modal) {
                 modal.style.display = "none";
             }
+        }
+
+        /* --- Lógica Segura del Modal de Contraseña --- */
+        // 1. Abrir Modal
+        function openPasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            
+            // Limpiar campos
+            document.getElementById('formStep1').reset();
+            document.getElementById('formStep2').reset();
+            
+            // Limpiar errores
+            document.getElementById('step1-error').style.display = 'none';
+            document.getElementById('step2-error').style.display = 'none';
+            document.getElementById('match-feedback').textContent = '';
+            
+            // Resetear clases visuales
+            document.querySelectorAll('.modern-input').forEach(i => i.classList.remove('valid', 'invalid'));
+
+            // Mostrar paso 1
+            showStep(1);
+            
+            modal.style.display = 'flex';
+        }
+
+        // 2. Cerrar Modal
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+        }
+
+        // 3. Cambiar de paso (UI)
+        function showStep(step) {
+            document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+        }
+
+        // 4. Lógica Paso 1: VERIFICAR CONTRASEÑA ACTUAL (Conexión Servidor)
+        async function handleVerifyStep(e) {
+            e.preventDefault();
+            
+            const passInput = document.getElementById('current_password_input');
+            const currentPass = passInput.value;
+            const errorDiv = document.getElementById('step1-error');
+            const btn = document.getElementById('btn-verify');
+            const btnText = btn.querySelector('.btn-text-content');
+            const loader = btn.querySelector('.loader-spinner');
+
+            if (!currentPass) return;
+
+            // UI Loading
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            loader.style.display = 'block';
+            errorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/verify-password/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ password: currentPass })
+                });
+
+                const data = await response.json();
+
+                if (data.valid) {
+                    // Éxito: Pasar al paso 2
+                    showStep(2);
+                } else {
+                    // Error: Contraseña incorrecta
+                    errorDiv.textContent = data.error || "Contraseña incorrecta";
+                    errorDiv.style.display = 'block';
+                    passInput.classList.add('invalid');
+                }
+            } catch (error) {
+                console.error(error);
+                errorDiv.textContent = "Error de conexión. Intente nuevamente.";
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btnText.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        }
+
+        // 5. Validación visual en Paso 2 (Mientras escribe)
+        function validatePasswordsUI() {
+            const p1 = document.getElementById('new_password_input');
+            const p2 = document.getElementById('confirm_password_input');
+            const feedback = document.getElementById('match-feedback');
+
+            // Longitud
+            if (p1.value.length > 0 && p1.value.length < 8) p1.classList.add('invalid');
+            else p1.classList.remove('invalid');
+
+            // Coincidencia
+            if (p2.value.length > 0) {
+                if (p1.value === p2.value) {
+                    p2.classList.remove('invalid');
+                    p2.classList.add('valid');
+                    feedback.innerHTML = '<span class="text-match"><i class="fas fa-check"></i> Coinciden</span>';
+                } else {
+                    p2.classList.remove('valid');
+                    p2.classList.add('invalid');
+                    feedback.innerHTML = '<span class="text-mismatch"><i class="fas fa-times"></i> No coinciden</span>';
+                }
+            } else {
+                feedback.innerHTML = '';
+                p2.classList.remove('valid', 'invalid');
+            }
+        }
+
+        // 6. Lógica Paso 2: GUARDAR NUEVA CONTRASEÑA
+        async function handleSubmitNewPass(e) {
+            e.preventDefault();
+
+            const newPass = document.getElementById('new_password_input').value;
+            const confirmPass = document.getElementById('confirm_password_input').value;
+            const errorDiv = document.getElementById('step2-error');
+            const btn = document.getElementById('btn-save-pass');
+            const btnText = btn.querySelector('.btn-text-content');
+            const loader = btn.querySelector('.loader-spinner');
+
+            // Validaciones locales finales
+            if (newPass.length < 8) {
+                errorDiv.textContent = "La contraseña debe tener mínimo 8 caracteres.";
+                errorDiv.style.display = 'block';
+                return;
+            }
+            if (newPass !== confirmPass) {
+                errorDiv.textContent = "Las contraseñas no coinciden.";
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // UI Loading
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            loader.style.display = 'block';
+            errorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/change-password/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        new_password: newPass,
+                        confirm_password: confirmPass
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStep(3); // Mostrar éxito
+                } else {
+                    errorDiv.textContent = data.error || "Error al actualizar.";
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error(error);
+                errorDiv.textContent = "Error de conexión con el servidor.";
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btnText.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        }
+
+        // PREVENIR CIERRE ACCIDENTAL: Solo cerramos si es el modal de renovación (si quieres)
+        // Pero para el de contraseña, NO ponemos lógica aquí para cerrar al hacer click afuera.
+        window.onclick = function(event) {
+            const renewalModal = document.getElementById('renewalModal');
+            // Solo cerramos el modal de renovación si se hace click fuera
+            if (event.target == renewalModal) {
+                renewalModal.style.display = "none";
+            }
+            // El passwordModal ya NO se cierra aquí.
         }
     </script>
 

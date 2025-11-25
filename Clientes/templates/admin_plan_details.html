@@ -267,18 +267,6 @@
         </div>
     </div>
 
-    <!-- Mensajes -->
-    {% if messages %}
-        <div style="margin-bottom: 2rem;">
-            {% for message in messages %}
-                <div style="padding: 1rem; background: rgba(0, 255, 157, 0.1); border: 1px solid var(--primary-color); border-radius: 10px; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
-                    <i class='bx bx-info-circle' style="font-size: 1.3rem; color: var(--primary-color);"></i>
-                    <span style="color: var(--text-primary);">{{ message }}</span>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
     <!-- Información General -->
     <div class="management-section" style="margin-bottom: 2rem;">
         <h2 class="section-title">

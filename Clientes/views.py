@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -11,7 +11,6 @@ import json
 from .models import CustomUser, Plan, Membership, AccessLog
 from .forms import CustomUserCreationForm
 from .utils import send_qr_email
-
 
 # --- VISTAS DE AUTENTICACIONN ---
 
@@ -450,6 +449,46 @@ def index_socio(request):
     }
     
     return render(request, 'index_socio.html', context)
+
+@login_required(login_url='inicio_sesion')
+def edit_profile_socio(request):
+    """Vista para que el socio edite sus datos personales"""
+    if not request.user.role or request.user.role != 'socio':
+        messages.error(request, 'No tienes permisos para acceder a esta área.')
+        return redirect_by_role(request.user)
+
+    user = request.user
+
+    if request.method == 'POST':
+        try:
+            # Obtener datos del formulario
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            email = request.POST.get('email')
+            phone = request.POST.get('phone')
+            
+            # Validaciones básicas
+            if not first_name or not last_name or not email:
+                messages.error(request, 'Nombre, Apellido y Email son obligatorios.')
+            else:
+                # Verificar si el email cambió y si ya existe en otro usuario
+                if email != user.email and CustomUser.objects.filter(email=email).exists():
+                    messages.error(request, 'Este correo electrónico ya está en uso.')
+                else:
+                    # Guardar cambios
+                    user.first_name = first_name
+                    user.last_name = last_name
+                    user.email = email
+                    user.phone = phone
+                    user.save()
+                    
+                    messages.success(request, 'Perfil actualizado correctamente.')
+                    return redirect('index_socio') # Redirigir al panel principal tras guardar
+
+        except Exception as e:
+            messages.error(request, f'Ocurrió un error al actualizar: {str(e)}')
+
+    return render(request, 'edit_profile_socio.html', {'user': user})
 
 def calculate_streak(user):
     """Calcula la racha de días consecutivos de asistencia"""
@@ -1358,3 +1397,52 @@ def mostrar_Scanner(request):
 def mostrar_QRCodeEmail(request):
     """Esta vista renderiza la pagina email."""
     return render(request, 'qr_code_email.html')
+
+
+@require_http_methods(["POST"])
+@login_required(login_url='inicio_sesion')
+def verify_password(request):
+    """API para verificar la contraseña actual (Paso 1 del modal)"""
+    try:
+        data = json.loads(request.body)
+        current_password = data.get('password', '')
+        
+        # Verificar contraseña
+        if request.user.check_password(current_password):
+            return JsonResponse({'valid': True})
+        else:
+            return JsonResponse({'valid': False, 'error': 'La contraseña ingresada es incorrecta.'})
+            
+    except Exception as e:
+        return JsonResponse({'valid': False, 'error': f'Error de servidor: {str(e)}'}, status=500)
+
+@require_http_methods(["POST"])
+@login_required(login_url='inicio_sesion')
+def change_password_socio(request):
+    """API para guardar la nueva contraseña (Paso 2 del modal)"""
+    try:
+        data = json.loads(request.body)
+        user = request.user
+        
+        new_password = data.get('new_password')
+        confirm_password = data.get('confirm_password')
+        
+        # Validaciones del servidor
+        if new_password != confirm_password:
+            return JsonResponse({'success': False, 'error': 'Las nuevas contraseñas no coinciden.'})
+            
+        if len(new_password) < 8:
+            return JsonResponse({'success': False, 'error': 'La contraseña debe tener al menos 8 caracteres.'})
+
+        # Guardar nueva contraseña
+        user.set_password(new_password)
+        user.save()
+        
+        # IMPORTANTE: Mantener la sesión activa después del cambio
+        update_session_auth_hash(request, user)
+        
+        return JsonResponse({'success': True, 'message': 'Contraseña actualizada correctamente.'})
+
+    except Exception as e:
+        print(f"Error cambiando password: {e}") # Esto saldrá en tu consola de comandos para debug
+        return JsonResponse({'success': False, 'error': f'Error interno: {str(e)}'}, status=500)
