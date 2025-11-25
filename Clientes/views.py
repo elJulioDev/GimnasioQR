@@ -420,6 +420,21 @@ def index_socio(request):
         timestamp__date=today,
         status='allowed'
     ).exists()
+
+    # === NUEVO CÓDIGO: Obtener planes para renovación ===
+    planes_db = Plan.objects.filter(is_active=True).order_by('price')
+    planes_data = []
+    
+    for plan in planes_db:
+        # Procesar beneficios de texto (separar por comas)
+        beneficios_extra = []
+        if plan.benefits:
+            beneficios_extra = [b.strip() for b in plan.benefits.split(',') if b.strip()]
+            
+        planes_data.append({
+            'obj': plan,
+            'beneficios_extra': beneficios_extra
+        })
     
     context = {
         'user': request.user,
@@ -431,6 +446,7 @@ def index_socio(request):
         'total_access': total_access,
         'streak_days': streak_days,
         'accessed_today': accessed_today,
+        'planes_renovacion': planes_data,
     }
     
     return render(request, 'index_socio.html', context)

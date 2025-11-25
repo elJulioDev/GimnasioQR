@@ -533,67 +533,85 @@
                     {% endif %}
                 </div>
             </section>
+<!-- Renovar Plan Section -->
+<section id="renovar" class="content-section">
+    <div class="content-header">
+        <h2 class="page-title">
+            <i class="fas fa-sync-alt"></i>
+            Renovar o Cambiar Plan
+        </h2>
+    </div>
 
-            <!-- Renovar Plan Section -->
-            <section id="renovar" class="content-section">
-                <div class="content-header">
-                    <h2 class="page-title">
-                        <i class="fas fa-sync-alt"></i>
-                        Renovar o Cambiar Plan
-                    </h2>
-                </div>
+    <div class="plans-horizontal-container">
+        {% for item in planes_renovacion %}
+        <div class="plan-card-horizontal {% if item.obj.plan_type == 'completo' or item.obj.plan_type == 'vip' %}featured-horizontal{% endif %}">
+            
+            {% if item.obj.plan_type == 'completo' or item.obj.plan_type == 'vip' %}
+                <div class="horizontal-badge">RECOMENDADO</div>
+            {% endif %}
 
-                <div class="plans-grid">
-                    <div class="plan-option-card">
-                        <div class="plan-option-badge">Fines de Semana</div>
-                        <h3>Plan Finde</h3>
-                        <div class="plan-option-price">$15.000<span>/mes</span></div>
-                        <ul class="plan-option-features">
-                            <li><i class="fas fa-check"></i> Sábados y Domingos</li>
-                            <li><i class="fas fa-check"></i> Todas las áreas</li>
-                            <li><i class="fas fa-check"></i> Acceso QR</li>
-                        </ul>
-                        <button class="btn btn-outline" onclick="selectPlanForRenewal('finde', 15000)">
-                            Seleccionar
-                        </button>
-                    </div>
-
-                    <div class="plan-option-card">
-                        <h3>Plan Diario</h3>
-                        <div class="plan-option-price">$22.000<span>/mes</span></div>
-                        <ul class="plan-option-features">
-                            <li><i class="fas fa-check"></i> Lunes a Viernes</li>
-                            <li><i class="fas fa-check"></i> Todas las áreas</li>
-                            <li><i class="fas fa-check"></i> Acceso QR</li>
-                            <li><i class="fas fa-check"></i> 1 Clase grupal</li>
-                        </ul>
-                        <button class="btn btn-outline" onclick="selectPlanForRenewal('diario', 22000)">
-                            Seleccionar
-                        </button>
-                    </div>
-
-                    <div class="plan-option-card featured">
-                        <div class="plan-option-badge popular">Más Popular</div>
-                        <h3>Plan Completo</h3>
-                        <div class="plan-option-price">$25.000<span>/mes</span></div>
-                        <ul class="plan-option-features">
-                            <li><i class="fas fa-check"></i> Todos los días</li>
-                            <li><i class="fas fa-check"></i> Todas las áreas</li>
-                            <li><i class="fas fa-check"></i> Acceso QR</li>
-                            <li><i class="fas fa-check"></i> Clases ilimitadas</li>
-                            <li><i class="fas fa-check"></i> Nutricionista</li>
-                        </ul>
-                        <button class="btn btn-primary" onclick="selectPlanForRenewal('completo', 25000)">
-                            Seleccionar
-                        </button>
+            <div class="plan-horizontal-left">
+                <div class="plan-horizontal-header">
+                    <h3>{{ item.obj.name }}</h3>
+                    <div class="plan-horizontal-price">
+                        ${{ item.obj.price|floatformat:0 }}<span>/mes</span>
                     </div>
                 </div>
+                
+                <ul class="plan-horizontal-features">
+                    <li><i class="fas fa-calendar-alt"></i> {{ item.obj.access_days }}</li>
+                    <li><i class="fas fa-qrcode"></i> Acceso QR Automatizado</li>
+                    
+                    {% if item.obj.includes_classes %}
+                        <li><i class="fas fa-dumbbell"></i> Clases grupales</li>
+                    {% endif %}
+                    
+                    {% if item.obj.includes_nutritionist %}
+                        <li><i class="fas fa-apple-alt"></i> Nutricionista</li>
+                    {% endif %}
 
-                <div class="renewal-notice">
-                    <i class="fas fa-info-circle"></i>
-                    <p>Para completar la renovación, por favor acércate a recepción o contáctanos. Próximamente podrás renovar directamente desde aquí.</p>
-                </div>
-            </section>
+                    {% for beneficio in item.beneficios_extra %}
+                        <li><i class="fas fa-check-circle"></i> {{ beneficio }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="plan-horizontal-right">
+                <button class="btn {% if item.obj.plan_type == 'completo' %}btn-primary{% else %}btn-outline{% endif %}" 
+                        onclick="selectPlanForRenewal('{{ item.obj.name }}', {{ item.obj.price }})">
+                    <i class="fas fa-check"></i>
+                    Seleccionar Plan
+                </button>
+            </div>
+        </div>
+        {% empty %}
+            <p style="color: var(--text-secondary);">No hay planes disponibles en este momento.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Modal existente -->
+    <div id="renewalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background: #151515; padding: 2rem; border-radius: 16px; max-width: 400px; width: 90%; border: 1px solid var(--primary-color); text-align: center;">
+            <i class="fas fa-receipt" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+            <h3 style="color: white; margin-bottom: 1rem;">Confirmar Renovación</h3>
+            <p style="color: #ccc; margin-bottom: 1.5rem;">
+                Has seleccionado: <br>
+                <strong id="modalPlanName" style="color: var(--primary-color); font-size: 1.2rem;">-</strong><br>
+                Precio: <strong id="modalPlanPrice">-</strong>
+            </p>
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: left;">
+                <p style="font-size: 0.9rem; color: #aaa; margin-bottom: 0.5rem;">Próximos pasos:</p>
+                <ol style="color: #ccc; font-size: 0.9rem; padding-left: 1.2rem;">
+                    <li>Acércate a recepción.</li>
+                    <li>Indica tu RUT y el plan seleccionado.</li>
+                    <li>Realiza el pago (Efectivo/Tarjeta).</li>
+                </ol>
+            </div>
+            <button class="btn btn-secondary" onclick="document.getElementById('renewalModal').style.display='none'">Cerrar</button>
+        </div>
+    </div>
+</section>
+
 
             <!-- Perfil Section -->
             <section id="perfil" class="content-section">
@@ -722,9 +740,26 @@
             }
         }
 
-        // Función para seleccionar plan
-        function selectPlanForRenewal(planType, price) {
-            alert(`Has seleccionado el plan: ${planType}\nPrecio: $${price.toLocaleString('es-CL')}\n\nPor favor acércate a recepción para completar la renovación.`);
+        // Función mejorada para seleccionar plan
+        function selectPlanForRenewal(planName, price) {
+            // Actualizar contenido del modal
+            document.getElementById('modalPlanName').textContent = planName;
+            document.getElementById('modalPlanPrice').textContent = '$' + price.toLocaleString('es-CL');
+            
+            // Mostrar modal
+            const modal = document.getElementById('renewalModal');
+            modal.style.display = 'flex';
+            
+            // Animación simple de entrada
+            modal.querySelector('div').style.animation = 'fadeInUp 0.3s ease';
+        }
+
+        // Cerrar modal al hacer click fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('renewalModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
         }
     </script>
 
