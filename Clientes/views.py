@@ -44,7 +44,7 @@ def inicio_sesion(request):
 @require_http_methods(["POST"])
 def process_login(request):
     """
-    Procesa el login con RUT o Email y contraseÃ±a.
+    Procesa el login con RUT o Email y contraseña.
     BLOQUEA superusuarios para que NO puedan entrar por la web.
     """
     try:
@@ -59,7 +59,7 @@ def process_login(request):
         if not username or not password:
             return JsonResponse({
                 'success': False,
-                'error': 'Por favor ingresa tu RUT/Email y contraseÃ±a'
+                'error': 'Por favor ingresa tu RUT/Email y contraseña'
             }, status=400)
         
         # Autenticar usuario
@@ -99,7 +99,7 @@ def process_login(request):
         else:
             return JsonResponse({
                 'success': False,
-                'error': 'RUT/Email o contraseÃ±a incorrectos'
+                'error': 'RUT/Email o contraseña incorrectos'
             }, status=401)
             
     except Exception as e:
@@ -111,7 +111,7 @@ def process_login(request):
 
 def get_redirect_url_by_role(user):
     """
-    Retorna la URL de redireccion segÃºn el rol del usuario.
+    Retorna la URL de redireccion según el rol del usuario.
     """
     role_urls = {
         'admin': '/admin-panel/',
@@ -124,7 +124,7 @@ def get_redirect_url_by_role(user):
 
 def redirect_by_role(user):
     """
-    Redirige al usuario segÃºn su rol.
+    Redirige al usuario según su rol.
     """
     # CAMBIO: Manejar usuarios sin rol sin crear loop
     if not user.role:
@@ -677,7 +677,7 @@ def admin_user_details(request, user_id):
         # Obtener membresias del usuario
         memberships = user.memberships.all().select_related('plan').order_by('-created_at')
         
-        # Obtener accesos recientes (Ãºltimos 20)
+        # Obtener accesos recientes (últimos 20)
         access_logs = user.access_logs.all().order_by('-timestamp')[:20]
         
         # Calcular estadisticas

@@ -620,31 +620,6 @@
                     </div>
                     {% endif %}
                 </div>
-            
-                <!-- Información adicional -->
-                {% if has_active_membership and membership %}
-                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #4CAF50;">
-                    <h4 style="margin: 0 0 10px 0; color: #333;">
-                        <i class="fas fa-info-circle"></i> Información de tu Membresía
-                    </h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                        <div>
-                            <p style="margin: 0; color: #666; font-size: 0.9em;">Plan Activo</p>
-                            <p style="margin: 5px 0 0 0; font-weight: bold; color: #333;">{{ membership.plan.name }}</p>
-                        </div>
-                        <div>
-                            <p style="margin: 0; color: #666; font-size: 0.9em;">Fecha de Vencimiento</p>
-                            <p style="margin: 5px 0 0 0; font-weight: bold; color: #333;">{{ membership.end_date|date:"d/m/Y" }}</p>
-                        </div>
-                        <div>
-                            <p style="margin: 0; color: #666; font-size: 0.9em;">Días Restantes</p>
-                            <p style="margin: 5px 0 0 0; font-weight: bold; color: {% if membership.days_remaining > 7 %}#4CAF50{% elif membership.days_remaining > 3 %}#FF9800{% else %}#f44336{% endif %};">
-                                {{ membership.days_remaining }} días
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
             </section>
 
             <!-- Mi QR Section -->

@@ -1477,3 +1477,166 @@ body {
         padding: 6px 14px;
     }
 }
+
+/* --- Mejoras Visuales: Sección Mis Asistencias --- */
+
+/* 1. Tarjeta de Información de Membresía (Reemplazo de estilos inline) */
+.membership-info-card {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Efecto de brillo de fondo */
+.membership-info-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 150px; height: 150px;
+    background: radial-gradient(circle, rgba(0, 255, 157, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.membership-info-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+}
+
+.membership-info-header h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.membership-info-header i {
+    font-size: 1.2rem;
+}
+
+.membership-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.info-box .label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.info-box .value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.info-box .value.highlight {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    text-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+}
+
+.info-box .value.highlight.warning {
+    color: var(--danger-color);
+    text-shadow: 0 0 15px rgba(255, 71, 87, 0.3);
+}
+
+/* 2. Mejoras en la Tabla de Historial */
+/* Hacemos que la tabla tenga filas separadas como tarjetas */
+#mis-asistencias .modern-table {
+    border-collapse: separate;
+    border-spacing: 0 8px; /* Espacio entre filas */
+}
+
+#mis-asistencias .modern-table thead tr {
+    background: transparent;
+}
+
+#mis-asistencias .modern-table thead th {
+    border-bottom: none;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-left: 1.5rem;
+}
+
+#mis-asistencias .modern-table tbody tr {
+    background: rgba(255, 255, 255, 0.03);
+    transition: transform 0.2s ease, background 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#mis-asistencias .modern-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Bordes redondeados para las filas */
+#mis-asistencias .modern-table td {
+    border: none;
+    padding: 1.2rem 1.5rem;
+}
+
+#mis-asistencias .modern-table td:first-child {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+#mis-asistencias .modern-table td:last-child {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+/* Estilo específico para la columna de fecha */
+#mis-asistencias .modern-table td strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* 3. Mejoras en los Cards de Estadísticas Superiores */
+#mis-asistencias .stat-card {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+}
+
+
+
+/* Responsive para la tabla */
+@media (max-width: 768px) {
+    .membership-info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    /* Hacer la tabla scrolleable en móviles sin romper el diseño */
+    .table-responsive {
+        margin: 0 -1rem;
+        padding: 0 1rem;
+        overflow-x: auto;
+    }
+    
+    #mis-asistencias .modern-table {
+        min-width: 600px; /* Asegura que no se aplaste */
+    }
+}
