@@ -5,500 +5,457 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro - ClubHouse Digital</title>
-    
-    <!-- CSRF Token para Django -->
     <meta name="csrf-token" content="{{ csrf_token }}">
-    
-    <!-- Fuentes -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Estilos CSS -->
     <link rel="stylesheet" href="{% static 'css/Registrarse.css' %}">
 </head>
 <body>
 
-    <!-- Decoraciones -->
     <div class="bg-decoration bg-decoration-1"></div>
     <div class="bg-decoration bg-decoration-2"></div>
 
-    <div class="register-container">
-        
-        <!-- Header -->
-        <div class="register-header">
-            <div class="logo-container">
-                <div class="logo-icon">
-                    <i class="fas fa-dumbbell"></i>
+    <div class="main-wrapper">
+        <div class="register-card">
+            
+            <div class="card-sidebar">
+                <div class="sidebar-header">
+                    <div class="logo-icon"><i class="fas fa-dumbbell"></i></div>
+                    <span>ClubHouse</span>
                 </div>
-                <span class="logo-text">ClubHouse Digital</span>
+
+                <div class="progress-vertical">
+                    <div class="step-item active" data-step="1">
+                        <div class="step-indicator">1</div>
+                        <div class="step-text">
+                            <strong>Elige tu Plan</strong>
+                            <span>Comienza aquí</span>
+                        </div>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item" data-step="2">
+                        <div class="step-indicator">2</div>
+                        <div class="step-text">
+                            <strong>Tus Datos</strong>
+                            <span>Información personal</span>
+                        </div>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item" data-step="3">
+                        <div class="step-indicator">3</div>
+                        <div class="step-text">
+                            <strong>Pago</strong>
+                            <span>Finalizar</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-footer">
+                    <p>¿Ya tienes cuenta?</p>
+                    <a href="{% url 'inicio_sesion' %}" class="btn-outline-sm">Iniciar Sesión</a>
+                </div>
             </div>
-            <h1>Únete a Nuestra Comunidad</h1>
-            <p>Regístrate en minutos y comienza tu transformación</p>
-        </div>
 
-        <!-- Progress Bar -->
-        <div class="progress-container">
-            <div class="progress-steps">
-                <div class="progress-line" id="progressLine"></div>
-                <div class="progress-step active" data-step="1">
-                    <div class="step-number">1</div>
-                    <span class="step-label">Datos Personales</span>
-                </div>
-                <div class="progress-step" data-step="2">
-                    <div class="step-number">2</div>
-                    <span class="step-label">Plan</span>
-                </div>
-                <div class="progress-step" data-step="3">
-                    <div class="step-number">3</div>
-                    <span class="step-label">Pago</span>
-                </div>
-                <div class="progress-step" data-step="4">
-                    <div class="step-number">4</div>
-                    <span class="step-label">Confirmación</span>
-                </div>
-            </div>
-        </div>
+            <div class="card-content">
+                <form id="registerForm">
+                    {% csrf_token %}
 
-        <!-- Form Card -->
-        <div class="form-card">
-            <form id="registerForm">
-                {% csrf_token %}
-                
-                <!-- Step 1: Datos Personales -->
-                <div class="step-content active" id="step1">
-                    <h2 class="step-title">Datos Personales</h2>
-                    <p class="step-subtitle">Completa tu información básica</p>
+                    <div class="step-panel active" id="step1">
+                        <div class="panel-header">
+                            <h2>Selecciona tu Objetivo</h2>
+                            <p>Elige el plan que mejor se adapte a tu ritmo.</p>
+                        </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>RUT <span class="required">*</span></label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-id-card input-icon"></i>
+                        <div class="plans-scroll-container">
+                            {% for plan in plans %}
+                            <label class="plan-card-horizontal">
+                                <input type="radio" name="selected_plan" value="{{ plan.plan_type }}" 
+                                    data-price="{{ plan.price }}" 
+                                    data-name="{{ plan.name }}"
+                                    onclick="selectPlan(this)">
+                                
+                                {% if plan.plan_type == 'completo' or plan.plan_type == 'vip' %}
+                                    <div class="horizontal-badge">RECOMENDADO</div>
+                                {% endif %}
+
+                                <div class="plan-horizontal-content">
+                                    <div class="plan-header-row">
+                                        <span class="plan-name">{{ plan.name }}</span>
+                                        <div class="plan-price">
+                                            ${{ plan.price|floatformat:0 }}<span>/mes</span>
+                                        </div>
+                                    </div>
+
+                                    {% if plan.description %}
+                                        <p class="plan-description-text">
+                                            {{ plan.description }}
+                                        </p>
+                                    {% endif %}
+
+                                    <div class="plan-features-grid">
+                                        <div class="feature-item">
+                                            <i class="fas fa-calendar-alt"></i> {{ plan.access_days }}
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-clock"></i> {{ plan.duration_days }} días
+                                        </div>
+                                        
+                                        {% if plan.includes_classes %}
+                                            <div class="feature-item">
+                                                <i class="fas fa-dumbbell"></i> Clases Grupales
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {% if plan.includes_nutritionist %}
+                                            <div class="feature-item">
+                                                <i class="fas fa-apple-alt"></i> Nutricionista
+                                            </div>
+                                        {% endif %}
+
+                                        {% if plan.benefits %}
+                                            <div class="feature-item" style="grid-column: 1 / -1; color: #fff;">
+                                                <i class="fas fa-star" style="color: gold;"></i> {{ plan.benefits }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="select-indicator-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+
+                        <div class="panel-actions">
+                            <button type="button" class="btn btn-primary" id="btnStep1" onclick="nextStep()" disabled>
+                                Siguiente <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="step-panel" id="step2">
+                        <div class="panel-header">
+                            <h2>Crea tu Perfil</h2>
+                            <p>Datos necesarios para generar tu acceso QR.</p>
+                        </div>
+
+                        <div class="compact-form-grid">
+                            <div class="form-group">
+                                <label>RUT</label>
                                 <input type="text" id="rut" name="rut" placeholder="12.345.678-9" required>
                             </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Fecha de Nacimiento <span class="required">*</span></label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-calendar input-icon"></i>
+                            <div class="form-group">
+                                <label>Fecha Nacimiento</label>
                                 <input type="date" id="birthdate" name="birthdate" required>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Nombre <span class="required">*</span></label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-user input-icon"></i>
-                                <input type="text" id="firstName" name="firstName" placeholder="Juan" required>
+                            <div class="form-group">
+                                <label>Nombre</label>
+                                <input type="text" id="firstName" name="firstName" placeholder="Tu nombre" required>
                             </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Apellido <span class="required">*</span></label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-user input-icon"></i>
-                                <input type="text" id="lastName" name="lastName" placeholder="Pérez" required>
+                            <div class="form-group">
+                                <label>Apellido</label>
+                                <input type="text" id="lastName" name="lastName" placeholder="Tu apellido" required>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Correo Electrónico <span class="required">*</span></label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-envelope input-icon"></i>
+                            <div class="form-group full-width">
+                                <label>Email</label>
                                 <input type="email" id="email" name="email" placeholder="correo@ejemplo.com" required>
                             </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Teléfono <span class="required">*</span></label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-phone input-icon"></i>
-                                <input type="tel" id="phone" name="phone" placeholder="+56 9 1234 5678" required>
+                            <div class="form-group">
+                                <label>Teléfono</label>
+                                <input type="tel" id="phone" name="phone" placeholder="+56 9..." required>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Contraseña <span class="required">*</span></label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-lock input-icon"></i>
-                                <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres" required>
+                            <div class="form-group">
+                                <label>Contraseña</label>
+                                <input type="password" id="password" name="password" placeholder="Min 8 caracteres" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Confirmar</label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repetir contraseña" required>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label>Confirmar Contraseña <span class="required">*</span></label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-lock input-icon"></i>
-                                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repite tu contraseña" required>
+                        <div class="panel-actions">
+                            <button type="button" class="btn btn-text" onclick="prevStep()">Volver</button>
+                            <button type="button" class="btn btn-primary" onclick="nextStep()">
+                                Ir al Pago <i class="fas fa-credit-card"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="step-panel" id="step3">
+                        <div class="panel-header">
+                            <h2>Finalizar Inscripción</h2>
+                            <p>Selecciona tu método de pago preferido.</p>
+                        </div>
+
+                        <div class="payment-summary-box">
+                            <div class="summary-row">
+                                <span id="summaryPlanName">Plan Seleccionado</span>
+                                <strong id="summaryPlanPrice">$0</strong>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-primary" onclick="nextStep()">
-                            Continuar
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Step 2: Selección de Plan (Dinámico desde Django) -->
-                <div class="step-content" id="step2">
-                    <h2 class="step-title">Selecciona tu Plan</h2>
-                    <p class="step-subtitle">Elige el plan que mejor se adapte a tus necesidades</p>
-
-                    <div class="plans-grid" id="plansGrid">
-                        <!-- Los planes se cargarán dinámicamente aquí -->
-                        {% for plan in plans %}
-                        <div class="plan-card" onclick="selectPlan('{{ plan.plan_type }}', {{ plan.price }}, '{{ plan.name }}')">
-                            {% if plan.plan_type == 'completo' %}
-                            <div class="plan-badge">Popular</div>
-                            {% endif %}
-                            <div class="plan-name">{{ plan.name }}</div>
-                            <div class="plan-price">${{ plan.price|floatformat:0 }} <span>/mes</span></div>
-                            <div class="plan-duration">{{ plan.access_days }}</div>
-                            <ul class="plan-features">
-                                <li><i class="fas fa-check"></i> {{ plan.access_days }}</li>
-                                <li><i class="fas fa-check"></i> Todas las áreas</li>
-                                <li><i class="fas fa-check"></i> Acceso QR</li>
-                                {% if plan.includes_classes %}
-                                <li><i class="fas fa-check"></i> Clases grupales{% if plan.plan_type == 'completo' %} ilimitadas{% endif %}</li>
-                                {% endif %}
-                                {% if plan.includes_nutritionist %}
-                                <li><i class="fas fa-check"></i> Nutricionista</li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">
-                            <i class="fas fa-arrow-left"></i>
-                            Volver
-                        </button>
-                        <button type="button" class="btn btn-primary" id="btnPlan" onclick="nextStep()" disabled>
-                            Continuar
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Step 3: Método de Pago -->
-                <div class="step-content" id="step3">
-                    <h2 class="step-title">Método de Pago</h2>
-                    <p class="step-subtitle">Selecciona cómo deseas pagar tu membresía</p>
-
-                    <div class="payment-methods">
-                        <div class="payment-method" onclick="selectPayment('efectivo')">
-                            <i class="fas fa-money-bill-wave"></i>
-                            <div class="payment-method-name">Efectivo</div>
-                            <div class="payment-method-desc">Pago en recepción</div>
+                        <div class="payment-options-grid">
+                            <label class="payment-option">
+                                <input type="radio" name="paymentMethod" value="efectivo" onclick="enablePayment()">
+                                <div class="option-content">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span>Efectivo</span>
+                                    <small>Pagar en recepción</small>
+                                </div>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="paymentMethod" value="transferencia" onclick="enablePayment()">
+                                <div class="option-content">
+                                    <i class="fas fa-university"></i>
+                                    <span>Transferencia</span>
+                                    <small>Datos bancarios</small>
+                                </div>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="paymentMethod" value="tarjeta" onclick="enablePayment()">
+                                <div class="option-content">
+                                    <i class="fas fa-credit-card"></i>
+                                    <span>Tarjeta</span>
+                                    <small>Débito/Crédito</small>
+                                </div>
+                            </label>
                         </div>
 
-                        <div class="payment-method" onclick="selectPayment('transferencia')">
-                            <i class="fas fa-exchange-alt"></i>
-                            <div class="payment-method-name">Transferencia</div>
-                            <div class="payment-method-desc">Banco de Chile</div>
+                        <div class="options-stack">
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" id="sendQREmail" name="sendQREmail" checked>
+                                <label for="sendQREmail">
+                                    Enviar código QR de acceso al correo
+                                    <small style="display:block; color:#666; font-size:0.75em;">Necesario para entrar al gimnasio</small>
+                                </label>
+                            </div>
+
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" id="sendContract" name="sendContract" checked>
+                                <label for="sendContract">
+                                    Generar y enviar Contrato de Socio (PDF)
+                                    <small style="display:block; color:#666; font-size:0.75em;">Incluye términos, condiciones y datos del plan</small>
+                                </label>
+                            </div>
                         </div>
 
-                        <div class="payment-method" onclick="selectPayment('tarjeta')">
-                            <i class="fas fa-credit-card"></i>
-                            <div class="payment-method-name">Tarjeta</div>
-                            <div class="payment-method-desc">Débito o Crédito</div>
+                        <div class="panel-actions">
+                            <button type="button" class="btn btn-text" onclick="prevStep()">Volver</button>
+                            <button type="button" class="btn btn-primary" id="btnPayment" onclick="processPayment()" disabled>
+                                Confirmar y Registrarse
+                            </button>
                         </div>
                     </div>
 
-<div class="form-group" style="margin: 2rem 0;">
-    <label class="checkbox-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 1rem; background: rgba(255, 255, 255, 0.03); border-radius: 10px; border: 1px solid var(--border-color); transition: all 0.3s ease;">
-        <input type="checkbox" id="sendQREmail" name="sendQREmail" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--primary-color);">
-        <div style="flex: 1;">
-            <span style="font-weight: 600; display: block; margin-bottom: 4px;">
-                <i class="fas fa-envelope" style="color: var(--primary-color); margin-right: 8px;"></i>
-                Enviar código QR a mi correo
-            </span>
-            <span style="font-size: 0.85rem; color: var(--text-secondary);">
-                Recibirás una copia de tu código QR en {{ email }} para tenerlo siempre disponible
-            </span>
-        </div>
-    </label>
-</div>
-
-                    <div class="summary-card">
-                        <h3 class="summary-title">
-                            <i class="fas fa-receipt"></i>
-                            Resumen de tu Compra
-                        </h3>
-                        <div class="summary-item">
-                            <span>Plan seleccionado:</span>
-                            <strong id="summaryPlan">-</strong>
-                        </div>
-                        <div class="summary-item">
-                            <span>Duración:</span>
-                            <strong>30 días</strong>
-                        </div>
-                        <div class="summary-item">
-                            <span>Método de pago:</span>
-                            <strong id="summaryPayment">-</strong>
-                        </div>
-                        <div class="summary-item total">
-                            <span>Total a pagar:</span>
-                            <strong id="summaryTotal">$0</strong>
+                    <div class="step-panel" id="step4">
+                        <div class="success-wrapper">
+                            <div class="success-animation">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <h2>¡Bienvenido al Club!</h2>
+                            <p>Tu registro fue exitoso. Aquí tienes tu acceso:</p>
+                            
+                            <div class="qr-result" id="qrContainer">
+                                </div>
+                            
+                            <button type="button" class="btn btn-primary btn-block" onclick="goToLogin()">
+                                Ir a Iniciar Sesión
+                            </button>
                         </div>
                     </div>
 
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">
-                            <i class="fas fa-arrow-left"></i>
-                            Volver
-                        </button>
-                        <button type="button" class="btn btn-primary" id="btnPayment" onclick="processPayment()" disabled>
-                            Confirmar Registro
-                            <i class="fas fa-check"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Step 4: Confirmación -->
-                <div class="step-content" id="step4">
-                    <div class="success-content">
-                        <div class="success-icon">
-                            <i class="fas fa-check"></i>
-                        </div>
-                        <h2 class="step-title">¡Registro Exitoso!</h2>
-                        <p class="step-subtitle">Tu cuenta ha sido creada correctamente</p>
-
-                        <div class="qr-code" id="qrContainer">
-                            <!-- El QR se mostrará aquí -->
-                            <div class="qr-placeholder"></div>
-                        </div>
-
-                        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
-                            Este es tu código QR personal. Guárdalo en tu móvil para acceder al gimnasio.
-                        </p>
-
-                        <button type="button" class="btn btn-primary" onclick="goToLogin()" style="max-width: 300px; margin: 0 auto;">
-                            Ir a Iniciar Sesión
-                            <i class="fas fa-sign-in-alt"></i>
-                        </button>
-                    </div>
-                </div>
-
-            </form>
-
-            <div class="login-link">
-                ¿Ya tienes una cuenta? <a href="{% url 'inicio_sesion' %}">Inicia sesión aquí</a>
+                </form>
             </div>
         </div>
-
     </div>
 
-    <script>
-        // Obtener CSRF token
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+    <div id="customModal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <div class="modal-icon-box error" id="modalIcon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="modal-title" id="modalTitle">Error</h3>
+            <p class="modal-text" id="modalMessage">Mensaje de error aquí.</p>
+            <button class="btn btn-primary modal-btn" onclick="closeCustomModal()">Entendido</button>
+        </div>
+    </div>
+
+<script>
+    // --- Utils ---
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
             }
-            return cookieValue;
         }
-        const csrftoken = getCookie('csrftoken');
-
-        let currentStep = 1;
-        let selectedPlan = null;
-        let selectedPayment = null;
-
-        // Navegación entre pasos
-        function nextStep() {
-            if (validateStep(currentStep)) {
-                document.querySelector(`#step${currentStep}`).classList.remove('active');
-                currentStep++;
-                document.querySelector(`#step${currentStep}`).classList.add('active');
-                updateProgress();
-            }
-        }
-
-        function prevStep() {
-            document.querySelector(`#step${currentStep}`).classList.remove('active');
-            currentStep--;
-            document.querySelector(`#step${currentStep}`).classList.add('active');
-            updateProgress();
-        }
-
-        // Actualizar barra de progreso
-        function updateProgress() {
-            const steps = document.querySelectorAll('.progress-step');
-            const progressLine = document.getElementById('progressLine');
-            
-            steps.forEach((step, index) => {
-                if (index + 1 < currentStep) {
-                    step.classList.add('completed');
-                    step.classList.remove('active');
-                } else if (index + 1 === currentStep) {
-                    step.classList.add('active');
-                    step.classList.remove('completed');
-                } else {
-                    step.classList.remove('active', 'completed');
-                }
-            });
-
-            const progress = ((currentStep - 1) / (steps.length - 1)) * 100;
-            progressLine.style.width = `${progress}%`;
-        }
-
-        // Validación de pasos
-        function validateStep(step) {
-            if (step === 1) {
-                const requiredFields = ['rut', 'firstName', 'lastName', 'email', 'phone', 'password', 'confirmPassword', 'birthdate'];
-                for (let field of requiredFields) {
-                    const input = document.getElementById(field);
-                    if (!input.value.trim()) {
-                        alert('Por favor completa todos los campos obligatorios');
-                        input.focus();
-                        return false;
-                    }
-                }
-
-                const password = document.getElementById('password').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-                if (password !== confirmPassword) {
-                    alert('Las contraseñas no coinciden');
-                    return false;
-                }
-
-                if (password.length < 8) {
-                    alert('La contraseña debe tener al menos 8 caracteres');
-                    return false;
-                }
-            }
-
-            if (step === 2 && !selectedPlan) {
-                alert('Por favor selecciona un plan');
-                return false;
-            }
-
-            if (step === 3 && !selectedPayment) {
-                alert('Por favor selecciona un método de pago');
-                return false;
-            }
-
-            return true;
-        }
-
-        // Seleccionar plan
-        function selectPlan(planType, price, planName) {
-            document.querySelectorAll('.plan-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            event.currentTarget.classList.add('selected');
-            
-            selectedPlan = { type: planType, price: price, name: planName };
-            document.getElementById('btnPlan').disabled = false;
-            
-            document.getElementById('summaryPlan').textContent = planName;
-            document.getElementById('summaryTotal').textContent = `$${parseInt(price).toLocaleString('es-CL')}`;
-        }
-
-        // Seleccionar método de pago
-        function selectPayment(method) {
-            document.querySelectorAll('.payment-method').forEach(card => {
-                card.classList.remove('selected');
-            });
-            event.currentTarget.classList.add('selected');
-            
-            selectedPayment = method;
-            document.getElementById('btnPayment').disabled = false;
-            
-            const paymentNames = {
-                'efectivo': 'Efectivo en recepción',
-                'transferencia': 'Transferencia bancaria',
-                'tarjeta': 'Tarjeta débito/crédito'
-            };
-            
-            document.getElementById('summaryPayment').textContent = paymentNames[method];
-        }
-
-// Procesar pago y registrar usuario
-async function processPayment() {
-    const button = document.getElementById('btnPayment');
-    button.disabled = true;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-
-    const userData = {
-        rut: document.getElementById('rut').value,
-        firstName: document.getElementById('firstName').value,
-        lastName: document.getElementById('lastName').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value,
-        birthdate: document.getElementById('birthdate').value,
-        password: document.getElementById('password').value,
-        plan: selectedPlan.type,
-        paymentMethod: selectedPayment,
-        sendQREmail: document.getElementById('sendQREmail').checked  // NUEVO
-    };
-
-    try {
-        const response = await fetch('{% url "process_registration" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken
-            },
-            body: JSON.stringify(userData)
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            // NUEVO: Mostrar mensaje si se envió el email
-            if (data.email_sent) {
-                console.log('✅ QR enviado por correo exitosamente');
-            }
-            
-            if (data.qr_code_url) {
-                const qrContainer = document.getElementById('qrContainer');
-                qrContainer.innerHTML = `<img src="${data.qr_code_url}" alt="QR Code" style="max-width: 200px;">`;
-            }
-            
-            nextStep();
-        } else {
-            alert('Error: ' + data.error);
-            button.disabled = false;
-            button.innerHTML = '<i class="fas fa-check"></i> Confirmar Registro';
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Ocurrió un error al procesar el registro. Por favor intenta nuevamente.');
-        button.disabled = false;
-        button.innerHTML = '<i class="fas fa-check"></i> Confirmar Registro';
+        return cookieValue;
     }
-}
+    const csrftoken = getCookie('csrftoken');
 
-
-        // Ir al login
-        function goToLogin() {
-            window.location.href = '{% url "inicio_sesion" %}';
+    // --- Modal Logic ---
+    function showCustomModal(title, message, type = 'error') {
+        const modal = document.getElementById('customModal');
+        const iconBox = document.getElementById('modalIcon');
+        const icon = iconBox.querySelector('i');
+        
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalMessage').textContent = message;
+        
+        iconBox.className = 'modal-icon-box ' + type;
+        if (type === 'success') {
+            icon.className = 'fas fa-check';
+        } else {
+            icon.className = 'fas fa-exclamation-triangle';
         }
+        
+        modal.style.display = 'flex';
+    }
 
-        // Inicializar
-        updateProgress();
-    </script>
+    function closeCustomModal() {
+        document.getElementById('customModal').style.display = 'none';
+    }
 
+    // --- Step Logic ---
+    let currentStep = 1;
+    let selectedPlanData = null;
+
+    function nextStep() {
+        if (validateStep(currentStep)) {
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.remove('active');
+            document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.add('completed');
+            
+            currentStep++;
+            
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.add('active');
+        }
+    }
+
+    function prevStep() {
+        document.getElementById(`step${currentStep}`).classList.remove('active');
+        document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.remove('active');
+        
+        currentStep--;
+        
+        document.getElementById(`step${currentStep}`).classList.add('active');
+        document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.add('active');
+        document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.remove('completed');
+    }
+
+    function selectPlan(radio) {
+        selectedPlanData = {
+            type: radio.value,
+            price: radio.dataset.price,
+            name: radio.dataset.name
+        };
+        document.getElementById('summaryPlanName').textContent = selectedPlanData.name;
+        document.getElementById('summaryPlanPrice').textContent = '$' + parseInt(selectedPlanData.price).toLocaleString('es-CL');
+        document.getElementById('btnStep1').disabled = false;
+    }
+
+    function enablePayment() {
+        document.getElementById('btnPayment').disabled = false;
+    }
+
+    function validateStep(step) {
+        if (step === 1 && !selectedPlanData) {
+            showCustomModal('Atención', 'Por favor selecciona un plan para continuar.', 'error');
+            return false;
+        }
+        if (step === 2) {
+            const required = ['rut', 'firstName', 'lastName', 'email', 'phone', 'password', 'confirmPassword', 'birthdate'];
+            for (let id of required) {
+                if (!document.getElementById(id).value) {
+                    showCustomModal('Campos Incompletos', 'Por favor completa todos los campos del formulario.', 'error');
+                    return false;
+                }
+            }
+            if (document.getElementById('password').value !== document.getElementById('confirmPassword').value) {
+                showCustomModal('Contraseña', 'Las contraseñas no coinciden.', 'error');
+                return false;
+            }
+            if (document.getElementById('password').value.length < 8) {
+                showCustomModal('Seguridad', 'La contraseña debe tener al menos 8 caracteres.', 'error');
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // --- Registration Logic ---
+    async function processPayment() {
+        const btn = document.getElementById('btnPayment');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+
+        const formData = {
+            rut: document.getElementById('rut').value,
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            birthdate: document.getElementById('birthdate').value,
+            password: document.getElementById('password').value,
+            plan: selectedPlanData.type,
+            paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value,
+            sendQREmail: document.getElementById('sendQREmail').checked,
+            sendContract: document.getElementById('sendContract').checked
+        };
+
+        try {
+            const response = await fetch('{% url "process_registration" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Error del servidor desconocido' }));
+                throw new Error(errorData.error || 'Error en la solicitud');
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                if (data.qr_code_url) {
+                    document.getElementById('qrContainer').innerHTML = `<img src="${data.qr_code_url}" alt="QR Code">`;
+                }
+                nextStep(); // Ir al paso 4
+            } else {
+                showCustomModal('Error de Registro', data.error, 'error');
+                resetButton();
+            }
+
+        } catch (error) {
+            console.error("Registration Error:", error);
+            if(currentStep !== 4) {
+                showCustomModal('Error', error.message || 'Ocurrió un problema de conexión.', 'error');
+                resetButton();
+            }
+        }
+    }
+
+    function resetButton() {
+        const btn = document.getElementById('btnPayment');
+        btn.disabled = false;
+        btn.textContent = 'Confirmar y Registrarse';
+    }
+
+    function goToLogin() {
+        window.location.href = '{% url "inicio_sesion" %}';
+    }
+</script>
 </body>
 </html>

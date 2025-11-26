@@ -574,15 +574,15 @@ def process_registration(request):
             is_active_member=False
         )
         
-        # â­ IMPORTANTE: Refrescar el usuario desde la BD
+        # IMPORTANTE: Refrescar el usuario desde la BD
         # Esto asegura que el QR fue generado en el save()
         user.refresh_from_db()
         
-        # â­ Si el QR no se genero automaticamente, generarlo manualmente
+        # Si el QR no se genero automaticamente, generarlo manualmente
         if not user.qr_code:
             user.generate_qr_code()
             user.refresh_from_db()
-        
+
         # Crear la membresia
         start_date = timezone.now().date()
         membership = Membership.objects.create(
@@ -596,19 +596,26 @@ def process_registration(request):
             notes=f"Registro inicial - Pago mediante {data['paymentMethod']}"
         )
         
-        # â­ AHORA Si: Enviar QR por email si lo solicito
-        # El QR ya esta generado y guardado
+        # --- LÓGICA ACTUALIZADA DE EMAIL ---
         email_sent = False
-        if data.get('sendQREmail', False):
+        # Capturamos los checkbox del frontend
+        send_qr_req = data.get('sendQREmail', False)
+        send_contract_req = data.get('sendContract', False)
+
+        # Si se solicitó al menos uno de los dos
+        if send_qr_req or send_contract_req:
             try:
-                email_sent = send_qr_email(user, membership)
-                print(f"ðŸ“§ Email enviado: {email_sent}")  # Debug
+                # Pasamos ambos flags explícitamente
+                email_sent = send_qr_email(
+                    user, 
+                    membership, 
+                    send_qr=send_qr_req, 
+                    send_contract=send_contract_req
+                )
             except Exception as email_error:
-                print(f"âŒ Error al enviar email: {str(email_error)}")  # Debug
-                # No fallar el registro si el email falla
+                print(f"Error email: {str(email_error)}")
                 email_sent = False
         
-        # Especificar el backend al hacer login
         user.backend = 'Clientes.backends.RUTorEmailBackend'
         login(request, user)
         
@@ -617,12 +624,11 @@ def process_registration(request):
             'message': 'Registro exitoso',
             'user_id': user.id,
             'qr_code_url': user.qr_code.url if user.qr_code else None,
-            'membership_end': membership.end_date.isoformat(),
             'email_sent': email_sent
         })
         
     except Exception as e:
-        print(f"âŒ Error en registro: {str(e)}")  # Debug
+        print(f"Error en registro: {str(e)}")  # Debug
         return JsonResponse({
             'success': False,
             'error': f'Error al procesar el registro: {str(e)}'
