@@ -522,3 +522,184 @@ body {
     cursor: pointer;
     line-height: 1.4;
 }
+
+/* --- Paso 4: Éxito / Digital Pass Redesign --- */
+
+.success-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Centrado vertical total */
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    padding: 0 1rem;
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* 1. Header Animado */
+.success-header {
+    margin-bottom: 1.5rem;
+}
+
+.success-icon-anim {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary), #00ccff);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: #000;
+    margin: 0 auto 1rem auto;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.4);
+}
+
+.ripple {
+    position: absolute;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    animation: rippleEffect 2s infinite;
+    opacity: 0;
+}
+
+@keyframes rippleEffect {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+.success-header h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 0.3rem;
+    background: linear-gradient(to right, #fff, #bbb);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.success-header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* 2. Tarjeta de Pase Digital */
+.digital-pass {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.2rem;
+    width: 100%;
+    max-width: 280px; /* Ancho controlado */
+    position: relative;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+/* Decoración superior de la tarjeta */
+.pass-top {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+    padding-bottom: 0.5rem;
+}
+
+.pass-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+/* Wrapper del QR para los bordes decorativos */
+.qr-frame-wrapper {
+    position: relative;
+    padding: 10px;
+    background: #fff;
+    border-radius: 12px;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+/* Tamaño del QR Ajustado */
+.qr-content img {
+    width: 140px; /* Tamaño fijo ideal */
+    height: 140px;
+    display: block;
+}
+
+.scan-instruction {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.scan-instruction i {
+    color: var(--primary);
+    animation: pulseIcon 2s infinite;
+}
+
+@keyframes pulseIcon {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+/* 3. Footer y Botones */
+.success-footer {
+    width: 100%;
+    max-width: 300px;
+    /* Agregamos Flexbox para centrar el contenido */
+    display: flex;           
+    flex-direction: column;  
+    align-items: center;     
+    gap: 10px;               /* Espacio limpio entre la píldora y el botón */
+    margin-top: 1rem;
+}
+
+/* Aseguramos que el botón ocupe el ancho disponible y centre su texto */
+.success-footer .btn {
+    width: 100%;
+    justify-content: center;
+}
+
+.info-pill {
+    background: rgba(0, 255, 157, 0.08);
+    border: 1px solid rgba(0, 255, 157, 0.2);
+    border-radius: 50px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    color: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    /* margin-bottom: 1rem;  <-- Eliminamos esto, usamos 'gap' en el padre */
+}
+
+.glow-effect {
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.25);
+    transition: 0.3s ease;
+}
+
+.glow-effect:hover {
+    box-shadow: 0 0 25px rgba(0, 255, 157, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Ajustes Mobile Específicos */
+@media (max-height: 700px) {
+    .success-icon-anim { width: 50px; height: 50px; font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .success-header h2 { font-size: 1.5rem; }
+    .qr-content img { width: 120px; height: 120px; }
+    .digital-pass { padding: 1rem; margin-bottom: 1rem; }
+}

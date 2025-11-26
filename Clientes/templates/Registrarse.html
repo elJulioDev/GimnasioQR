@@ -251,18 +251,47 @@
 
                     <div class="step-panel" id="step4">
                         <div class="success-wrapper">
-                            <div class="success-animation">
-                                <i class="fas fa-check"></i>
-                            </div>
-                            <h2>¡Bienvenido al Club!</h2>
-                            <p>Tu registro fue exitoso. Aquí tienes tu acceso:</p>
                             
-                            <div class="qr-result" id="qrContainer">
+                            <div class="success-header">
+                                <div class="success-icon-anim">
+                                    <div class="ripple"></div>
+                                    <i class="fas fa-check"></i>
                                 </div>
-                            
-                            <button type="button" class="btn btn-primary btn-block" onclick="goToLogin()">
-                                Ir a Iniciar Sesión
-                            </button>
+                                <h2>¡Bienvenido al Team!</h2>
+                                <p>Tu cuenta está lista. Este es tu pase digital.</p>
+                            </div>
+
+                            <div class="digital-pass">
+                                <div class="pass-top">
+                                    <span class="pass-label">MEMBER ACCESS</span>
+                                    <div class="pass-holes"></div>
+                                </div>
+                                
+                                <div class="qr-frame-wrapper">
+                                    <div class="corner-border topleft"></div>
+                                    <div class="corner-border topright"></div>
+                                    <div class="corner-border bottomleft"></div>
+                                    <div class="corner-border bottomright"></div>
+                                    
+                                    <div id="qrContainer" class="qr-content"></div>
+                                </div>
+
+                                <p class="scan-instruction">
+                                    <i class="fas fa-wifi"></i> Escanea en recepción
+                                </p>
+                            </div>
+
+                            <div class="success-footer">
+                                <div class="info-pill">
+                                    <i class="fas fa-envelope-open-text"></i>
+                                    <span>Copia enviada a tu correo</span>
+                                </div>
+                                
+                                <button type="button" class="btn btn-primary btn-block glow-effect" onclick="goToLogin()">
+                                    Iniciar Sesión y Entrenar
+                                </button>
+                            </div>
+
                         </div>
                     </div>
 
