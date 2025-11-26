@@ -1,0 +1,6 @@
+# Ignorar códigos QR generados
+**/media/qr_codes/
+*.png
+
+# Opcional: Ignorar toda la carpeta media (recomendado en Django)
+**/media/
