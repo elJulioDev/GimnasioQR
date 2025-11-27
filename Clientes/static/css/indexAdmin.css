@@ -699,3 +699,242 @@ body {
     }
 }
 
+/* --- Mejoras Dashboard y Gráficos --- */
+
+.date-badge {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Stats Grid Mejorado */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border-color: var(--primary-color);
+}
+
+/* Efecto de brillo en hover */
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent);
+    transform: translateX(-100%);
+    transition: 0.5s;
+}
+.stat-card:hover::after { transform: translateX(100%); }
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon.primary { background: rgba(0, 255, 157, 0.15); color: var(--primary-color); }
+.stat-icon.success { background: rgba(0, 204, 102, 0.15); color: #00cc66; }
+.stat-icon.warning { background: rgba(255, 165, 2, 0.15); color: var(--warning-color); }
+.stat-icon.info { background: rgba(55, 66, 250, 0.15); color: var(--info-color); }
+
+.stat-trend {
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.stat-trend.up { color: var(--success-color); }
+.stat-trend.down { color: var(--danger-color); }
+
+.stat-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+    letter-spacing: -1px;
+}
+
+.stat-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Contenedor de Gráficos (Grid Layout) */
+.charts-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Columna izquierda ancha, derecha estrecha */
+    grid-template-rows: auto auto;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* El gráfico grande ocupa 2 filas en la primera columna */
+.chart-card.large {
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;
+}
+
+.chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-header {
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chart-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-body {
+    flex: 1;
+    position: relative;
+    min-height: 250px; /* Altura mínima para que se vean bien */
+}
+
+/* Responsive para gráficos */
+@media (max-width: 1024px) {
+    .charts-container {
+        grid-template-columns: 1fr; /* Una sola columna en pantallas medianas */
+        grid-template-rows: auto;
+    }
+    
+    .chart-card.large {
+        grid-column: 1 / -1;
+        grid-row: auto;
+    }
+}
+
+/* --- Estilos Dashboard Financiero Compacto --- */
+.stats-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card-compact {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.2rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+}
+
+.stat-card-compact:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.stat-compact-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.stat-compact-header i {
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
+.stat-compact-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+}
+
+.stat-compact-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-trend-indicator {
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+/* Layout Financiero */
+.finance-dashboard-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Gráfico grande izquierda, desglose derecha */
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .finance-dashboard-layout { grid-template-columns: 1fr; }
+}
+
+/* Barras de Progreso en Tabla */
+.profit-bar-container {
+    width: 100%;
+    max-width: 100px;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.profit-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--info-color));
+    border-radius: 3px;
+}

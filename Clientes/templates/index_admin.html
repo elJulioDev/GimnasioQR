@@ -8,6 +8,7 @@
     <title>Panel de Administrador - ClubHouse Digital</title>
     <link rel="stylesheet" href="{% static 'css/indexAdmin.css' %}">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Modal de Confirmación de Eliminación */
         .modal-overlay {
@@ -224,98 +225,145 @@
         <main class="main-content">
             <!-- ========== DASHBOARD SECTION ========== -->
             <section id="dashboard" class="content-section active">
-                <div class="content-header">
-                    <h2 class="page-title">
-                        <i class='bx bx-grid-alt'></i>
-                        Dashboard
-                    </h2>
+                <div class="content-header" style="margin-bottom: 1.5rem;">
+                    <div>
+                        <h2 class="page-title" style="font-size: 1.5rem;">
+                            <i class='bx bx-grid-alt'></i> Resumen Financiero
+                        </h2>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                            Vista general del rendimiento del negocio
+                        </p>
+                    </div>
+                    <div class="date-badge">
+                        <i class='bx bx-calendar'></i> {% now "d M, Y" %}
+                    </div>
                 </div>
 
-                <!-- Stats Grid -->
-                <div class="stats-grid">
-                    <!-- Card 1: Usuarios Activos -->
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon primary">
-                                <i class='bx bx-user-check'></i>
-                            </div>
-                            <div class="stat-trend {% if cambio_usuarios.es_positivo %}up{% else %}down{% endif %}">
-                                <i class='bx {% if cambio_usuarios.es_positivo %}bx-up-arrow-alt{% else %}bx-down-arrow-alt{% endif %}'></i>
-                                {{ cambio_usuarios.porcentaje }}%
-                            </div>
+                <div class="stats-grid-compact">
+                    <div class="stat-card-compact">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Socios Activos</span>
+                            <i class='bx bx-user text-primary' style="color: var(--primary-color);"></i>
                         </div>
-                        <div class="stat-content">
-                            <h3>Usuarios Activos</h3>
-                            <div class="stat-value">{{ usuarios_activos }}</div>
-                            <div class="stat-footer">
-                                <i class='bx bx-time-five'></i>
-                                <span>vs mes anterior</span>
-                            </div>
+                        <div class="stat-compact-value">{{ usuarios_activos }}</div>
+                        <div class="stat-trend-indicator" style="color: {% if cambio_usuarios.es_positivo %}var(--success-color){% else %}var(--danger-color){% endif %};">
+                            <i class='bx {% if cambio_usuarios.es_positivo %}bx-up-arrow-alt{% else %}bx-down-arrow-alt{% endif %}'></i>
+                            {{ cambio_usuarios.porcentaje }}% vs mes anterior
                         </div>
                     </div>
 
-                    <!-- Card 2: Ingresos Mensuales -->
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon info">
-                                <i class='bx bx-dollar-circle'></i>
-                            </div>
-                            <div class="stat-trend {% if cambio_ingresos.es_positivo %}up{% else %}down{% endif %}">
-                                <i class='bx {% if cambio_ingresos.es_positivo %}bx-up-arrow-alt{% else %}bx-down-arrow-alt{% endif %}'></i>
-                                {{ cambio_ingresos.porcentaje }}%
-                            </div>
+                    <div class="stat-card-compact" style="border-left: 3px solid var(--success-color);">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Ingresos (Mes)</span>
+                            <i class='bx bx-money' style="color: var(--success-color);"></i>
                         </div>
-                        <div class="stat-content">
-                            <h3>Ingresos Mensuales</h3>
-                            <div class="stat-value">${{ ingresos_mensuales|floatformat:0 }}</div>
-                            <div class="stat-footer">
-                                <i class='bx bx-time-five'></i>
-                                <span>vs mes anterior</span>
-                            </div>
+                        <div class="stat-compact-value currency-format" data-value="{{ ingresos_mensuales }}"></div>
+                        <div class="stat-trend-indicator" style="color: {% if cambio_ingresos.es_positivo %}var(--success-color){% else %}var(--danger-color){% endif %};">
+                            <i class='bx {% if cambio_ingresos.es_positivo %}bx-trending-up{% else %}bx-trending-down{% endif %}'></i>
+                            {{ cambio_ingresos.porcentaje }}%
                         </div>
                     </div>
 
-                    <!-- Card 3: Planes por Vencer -->
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon warning">
-                                <i class='bx bx-calendar-exclamation'></i>
-                            </div>
-                            <div class="stat-trend {% if cambio_planes.es_positivo %}up{% else %}down{% endif %}">
-                                <i class='bx {% if cambio_planes.es_positivo %}bx-up-arrow-alt{% else %}bx-down-arrow-alt{% endif %}'></i>
-                                {{ cambio_planes.porcentaje }}%
-                            </div>
+                    <div class="stat-card-compact">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Acumulado Año</span>
+                            <i class='bx bx-line-chart' style="color: var(--info-color);"></i>
                         </div>
-                        <div class="stat-content">
-                            <h3>Planes por Vencer</h3>
-                            <div class="stat-value">{{ planes_por_vencer }}</div>
-                            <div class="stat-footer">
-                                <i class='bx bx-time-five'></i>
-                                <span>próximos 7 días</span>
-                            </div>
+                        <div class="stat-compact-value currency-format" data-value="{{ ingresos_anuales }}"></div>
+                        <div class="stat-compact-label" style="font-size: 0.65rem; opacity: 0.7;">Año fiscal actual</div>
+                    </div>
+
+                    <div class="stat-card-compact">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Ticket Promedio</span>
+                            <i class='bx bx-purchase-tag' style="color: var(--warning-color);"></i>
+                        </div>
+                        <div class="stat-compact-value currency-format" data-value="{{ ticket_promedio }}"></div>
+                        <div class="stat-compact-label" style="font-size: 0.65rem; opacity: 0.7;">Por transacción</div>
+                    </div>
+                    
+                    <div class="stat-card-compact">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Accesos Hoy</span>
+                            <i class='bx bx-run'></i>
+                        </div>
+                        <div class="stat-compact-value">{{ accesos_hoy }}</div>
+                        <div class="stat-trend-indicator" style="color: var(--text-secondary);">
+                            <i class='bx bx-history'></i> Últimas 24h
+                        </div>
+                    </div>
+                </div>
+
+                <div class="finance-dashboard-layout">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3><i class='bx bx-bar-chart-square'></i> Flujo de Ingresos (6 meses)</h3>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="revenueChart"></canvas>
                         </div>
                     </div>
 
-                    <!-- Card 4: Accesos Hoy -->
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon danger">
-                                <i class='bx bx-log-in-circle'></i>
-                            </div>
-                            <div class="stat-trend {% if cambio_accesos.es_positivo %}up{% else %}down{% endif %}">
-                                <i class='bx {% if cambio_accesos.es_positivo %}bx-up-arrow-alt{% else %}bx-down-arrow-alt{% endif %}'></i>
-                                {{ cambio_accesos.porcentaje }}%
-                            </div>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3><i class='bx bx-wallet'></i> Origen de Ingresos</h3>
                         </div>
-                        <div class="stat-content">
-                            <h3>Accesos Hoy</h3>
-                            <div class="stat-value">{{ accesos_hoy }}</div>
-                            <div class="stat-footer">
-                                <i class='bx bx-time-five'></i>
-                                <span>vs ayer</span>
-                            </div>
+                        <div class="chart-body" style="position: relative; height: 220px;">
+                            <canvas id="paymentMethodsChart"></canvas>
+                        </div>
+                        <div style="text-align: center; margin-top: 10px;">
+                            <span class="stat-compact-label">Distribución por método de pago</span>
                         </div>
                     </div>
+                </div>
+
+                <div class="management-section">
+                    <div class="chart-header">
+                        <h3><i class='bx bx-trophy'></i> Rentabilidad por Plan</h3>
+                    </div>
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Plan</th>
+                                <th>Precio</th>
+                                <th>Inscritos Activos</th>
+                                <th>Impacto en Ganancias</th> <th>Ingresos Históricos</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in lista_planes %}
+                            <tr>
+                                <td>
+                                    <strong style="color: var(--text-primary);">{{ item.plan.name }}</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ item.plan.get_plan_type_display }}</div>
+                                </td>
+                                <td>${{ item.plan.price|floatformat:0 }}</td>
+                                <td>
+                                    <span class="status-badge active">
+                                        <i class='bx bx-user'></i> {{ item.usuarios_inscritos }}
+                                    </span>
+                                </td>
+                                <td style="width: 25%;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="profit-bar-container">
+                                            <div class="profit-bar-fill" style="width: {{ item.share }}%;"></div>
+                                        </div>
+                                        <span style="font-size: 0.8rem; font-weight: bold;">{{ item.share }}%</span>
+                                    </div>
+                                </td>
+                                <td style="color: var(--success-color); font-weight: 700;">
+                                    ${{ item.ingresos_total|floatformat:0 }}
+                                </td>
+                                <td>
+                                    <a href="{% url 'admin_plan_details' item.plan.id %}" class="btn-icon view" title="Ver detalles"><i class='bx bx-show'></i></a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" style="text-align: center;">No hay datos de planes aún.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
@@ -513,7 +561,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for plan_data in planes %}
+                            {% for plan_data in lista_planes %}
                             <tr>
                                 <td><strong>{{ plan_data.plan.name }}</strong></td>
                                 <td style="color: var(--primary-color); font-weight: 600;">${{ plan_data.plan.price|floatformat:0 }}</td>
@@ -822,6 +870,142 @@
 
         // 2. Configurar búsqueda de Moderadores
         setupSearch('searchModeradorInput', 'searchable-moderador-row', 'search-moderador-no-results', 'no-moderadores-row');
+
+        // 1. Formateador de Moneda (CLP)
+        const currencyElements = document.querySelectorAll('.currency-format');
+        const clpFormatter = new Intl.NumberFormat('es-CL', {
+            style: 'currency',
+            currency: 'CLP',
+            minimumFractionDigits: 0
+        });
+
+        currencyElements.forEach(el => {
+            const rawValue = el.getAttribute('data-value');
+            if(rawValue) {
+                el.textContent = clpFormatter.format(parseFloat(rawValue));
+            }
+        });
+
+        // 2. Configuración Global de Chart.js
+        Chart.defaults.color = '#b4b4b4';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
+        // --- DATOS DESDE DJANGO ---
+        // Asegúrate de que estas variables existen en tu views.py
+        const ingresosLabels = JSON.parse('{{ chart_ingresos_labels|escapejs }}');
+        const ingresosData = JSON.parse('{{ chart_ingresos_data|escapejs }}');
+        
+        // Nuevos datos para métodos de pago
+        const pagosLabels = JSON.parse('{{ chart_pagos_labels|escapejs }}');
+        const pagosData = JSON.parse('{{ chart_pagos_data|escapejs }}');
+
+        // GRÁFICO 1: INGRESOS (Línea con gradiente)
+        const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+        // Crear gradiente verde
+        const gradientGreen = ctxRevenue.createLinearGradient(0, 0, 0, 400);
+        gradientGreen.addColorStop(0, 'rgba(0, 255, 157, 0.2)');
+        gradientGreen.addColorStop(1, 'rgba(0, 255, 157, 0)');
+
+        new Chart(ctxRevenue, {
+            type: 'line',
+            data: {
+                labels: ingresosLabels,
+                datasets: [{
+                    label: 'Ingresos ($)',
+                    data: ingresosData,
+                    borderColor: '#00ff9d',
+                    backgroundColor: gradientGreen,
+                    borderWidth: 2,
+                    tension: 0.4, // Curva suave
+                    fill: true,
+                    pointBackgroundColor: '#0a0a0a',
+                    pointBorderColor: '#00ff9d',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#151515',
+                        titleColor: '#fff',
+                        bodyColor: '#00ff9d',
+                        padding: 10,
+                        callbacks: {
+                            label: function(context) {
+                                return clpFormatter.format(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { borderDash: [5, 5], color: 'rgba(255,255,255,0.03)' },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value / 1000 + 'k'; // Formato corto
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // GRÁFICO 2: MÉTODOS DE PAGO (Dona) - NUEVO
+        const ctxPayment = document.getElementById('paymentMethodsChart');
+        if (ctxPayment) {
+            new Chart(ctxPayment, {
+                type: 'doughnut',
+                data: {
+                    labels: pagosLabels,
+                    datasets: [{
+                        data: pagosData,
+                        backgroundColor: [
+                            '#00ff9d', // Efectivo (Verde)
+                            '#3742fa', // Transferencia (Azul)
+                            '#ffa502', // Tarjeta (Naranja)
+                            '#ff4757'  // Webpay (Rojo)
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%', // Dona más delgada
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                usePointStyle: true,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let value = context.raw;
+                                    let total = context.chart._metasets[context.datasetIndex].total;
+                                    let percentage = Math.round((value / total) * 100) + '%';
+                                    return context.label + ': ' + clpFormatter.format(value) + ' (' + percentage + ')';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
     </script>
 

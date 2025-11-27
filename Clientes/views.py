@@ -6,11 +6,12 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import timedelta, date
-from django.db.models import Count, Sum, Q
+from django.db.models import Count, Sum, Q, Avg
 import json
 from .models import CustomUser, Plan, Membership, AccessLog
 from .forms import CustomUserCreationForm
 from .utils import send_qr_email
+from django.db.models.functions import TruncMonth, TruncDay
 
 # --- VISTAS DE AUTENTICACIONN ---
 
@@ -182,13 +183,13 @@ def index_admin(request):
     from datetime import date, timedelta
     
     # 1. Usuarios Activos (socios con membresia activa)
-    usuarios_activos = CustomUser.objects.filter(
-        role='socio',
-        is_active_member=True
-    ).count()
+    usuarios_activos = CustomUser.objects.filter(role='socio', is_active_member=True).count()
     
     # Cambio porcentual (comparado con el mes anterior)
     today = timezone.now().date()
+    primer_dia_mes = today.replace(day=1)
+    anio_actual = today.year
+    primer_dia_anio = date(anio_actual, 1, 1)
     mes_pasado = today - timedelta(days=30)
     usuarios_activos_mes_pasado = CustomUser.objects.filter(
         role='socio',
@@ -204,6 +205,31 @@ def index_admin(request):
         payment_date__gte=primer_dia_mes,
         status__in=['active', 'pending']
     ).aggregate(total=Sum('amount_paid'))['total'] or 0
+
+    # --- NUEVO: Ingresos Anuales (Year-to-Date) ---
+    ingresos_anuales = Membership.objects.filter(
+        payment_date__gte=primer_dia_anio,
+        status__in=['active', 'pending']
+    ).aggregate(total=Sum('amount_paid'))['total'] or 0
+
+    # --- NUEVO: Ticket Promedio (ARPU - Average Revenue Per Unit de ventas) ---
+    ticket_promedio = Membership.objects.filter(
+        payment_date__year=anio_actual,
+        status__in=['active', 'pending']
+    ).aggregate(promedio=Avg('amount_paid'))['promedio'] or 0
+
+    # Nuevo: Distribución por Método de Pago ---
+    metodos_pago_data = Membership.objects.filter(
+        payment_date__year=anio_actual,
+        status__in=['active', 'pending']
+    ).values('payment_method').annotate(
+        total=Count('id'),
+        dinero=Sum('amount_paid')
+    ).order_by('-dinero')
+
+    # Preparar datos para gráfico de Métodos de Pago
+    labels_pago = [item['payment_method'].capitalize() for item in metodos_pago_data]
+    data_pago = [float(item['dinero']) for item in metodos_pago_data]
     
     # Ingresos del mes anterior para comparacion
     mes_anterior_inicio = (primer_dia_mes - timedelta(days=1)).replace(day=1)
@@ -292,27 +318,85 @@ def index_admin(request):
         )
     ).order_by('price')
 
+    planes = Plan.objects.filter(is_active=True).annotate(
+        usuarios_inscritos=Count('memberships', filter=Q(memberships__is_active=True))
+    ).order_by('price')
+
     # En la seccion de planes, reemplaza:
     planes_data = []
+    total_ingresos_historico_planes = 0
+
+    # Primero calculamos totales para porcentajes
+    total_revenue_all = Membership.objects.filter(status__in=['active', 'pending']).aggregate(t=Sum('amount_paid'))['t'] or 1
+
     for plan in planes:
-        # Calcular ingresos generados por este plan
         ingresos_plan = Membership.objects.filter(
             plan=plan,
             payment_date__gte=primer_dia_mes,
             status__in=['active', 'pending']
         ).aggregate(total=Sum('amount_paid'))['total'] or 0
         
-        # Procesar beneficios: convertir string a lista
-        beneficios_lista = []
-        if plan.benefits:
-            beneficios_lista = [b.strip() for b in plan.benefits.split(',')]
-        
+        ingresos_historicos_plan = Membership.objects.filter(
+            plan=plan,
+            status__in=['active', 'pending']
+        ).aggregate(total=Sum('amount_paid'))['total'] or 0
+
+        # Porcentaje de contribución a las ganancias totales
+        share_ganancias = (ingresos_historicos_plan / total_revenue_all) * 100 if total_revenue_all > 0 else 0
+
         planes_data.append({
             'plan': plan,
             'usuarios_inscritos': plan.usuarios_inscritos,
             'ingresos_mes': ingresos_plan,
-            'beneficios_lista': beneficios_lista  # Nueva linea
+            'ingresos_total': ingresos_historicos_plan, # Nuevo
+            'share': round(share_ganancias, 1) # Nuevo
         })
+
+
+    # ==================== DATOS PARA GRAFICOS ====================
+    
+    # 1. Gráfico de Ingresos (Últimos 6 meses)
+    ingresos_chart_labels = []
+    ingresos_chart_data = []
+    
+    for i in range(5, -1, -1):
+        fecha_mes = today.replace(day=1) - timedelta(days=i*30) # Aprox
+        mes_inicio = fecha_mes.replace(day=1)
+        # Truco para obtener el fin de mes
+        siguiente_mes = mes_inicio + timedelta(days=32)
+        mes_fin = siguiente_mes.replace(day=1) - timedelta(days=1)
+        
+        total_mes = Membership.objects.filter(
+            payment_date__gte=mes_inicio,
+            payment_date__lte=mes_fin,
+            status__in=['active', 'pending']
+        ).aggregate(total=Sum('amount_paid'))['total'] or 0
+        
+        # Nombres de meses en español
+        meses_es = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+        nombre_mes = meses_es[mes_inicio.month - 1]
+        
+        ingresos_chart_labels.append(nombre_mes)
+        ingresos_chart_data.append(float(total_mes))
+
+    # 2. Gráfico de Distribución de Planes
+    planes_dist = Membership.objects.filter(is_active=True).values('plan__name').annotate(total=Count('id'))
+    planes_labels = [p['plan__name'] for p in planes_dist]
+    chart_planes_data_values = [p['total'] for p in planes_dist]
+
+    # 3. Gráfico de Asistencias (Últimos 7 días)
+    asistencias_labels = []
+    asistencias_data = []
+    
+    for i in range(6, -1, -1):
+        fecha = today - timedelta(days=i)
+        cnt = AccessLog.objects.filter(
+            timestamp__date=fecha,
+            status='allowed'
+        ).count()
+        asistencias_labels.append(fecha.strftime("%d/%m"))
+        asistencias_data.append(cnt)
+
 
     # ==================== CONTEXTO PARA EL TEMPLATE ====================
     
@@ -326,6 +410,11 @@ def index_admin(request):
         'cambio_planes': cambio_planes,
         'accesos_hoy': accesos_hoy,
         'cambio_accesos': cambio_accesos,
+
+        'ingresos_anuales': ingresos_anuales,
+        'ticket_promedio': ticket_promedio,
+        'chart_pagos_labels': json.dumps(labels_pago),
+        'chart_pagos_data': json.dumps(data_pago),
         
         # Gestion de Usuarios
         'socios': socios_data,
@@ -336,8 +425,17 @@ def index_admin(request):
         'socios_inactivos': socios_inactivos,
         
         # Gestion de Planes
-        'planes': planes_data,
+        'lista_planes': planes_data,
         'total_planes': planes.count(),
+
+        # NUEVAS VARIABLES PARA GRÁFICOS (Serializadas para JS)
+        'chart_ingresos_labels': json.dumps(ingresos_chart_labels),
+        'chart_ingresos_data': json.dumps(ingresos_chart_data),
+        'chart_planes_labels': json.dumps(planes_labels),
+        'chart_planes_data': json.dumps(chart_planes_data_values),
+        'chart_asistencias_labels': json.dumps(asistencias_labels),
+        'chart_asistencias_data': json.dumps(asistencias_data),
+
     }
     
     return render(request, 'index_admin.html', context)
