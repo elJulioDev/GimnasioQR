@@ -106,15 +106,13 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'¡Éxito! Se han creado {total} usuarios con fechas históricas.'))
 
     def crear_planes_base(self):
-        self.stdout.write('Sincronizando planes según archivo planes.txt...')
+        self.stdout.write('Sincronizando planes base...')
         
-        # Usamos update_or_create para no duplicar si ya existen y actualizar si cambiaron
-        
-        # 1. Plan Estudiante (Mapeado al tipo 'basico' en tu modelo)
+        # 1. Plan Estudiante
         Plan.objects.update_or_create(
-            plan_type='basico',
+            name="Plan Estudiante",  # USAR NAME COMO IDENTIFICADOR
             defaults={
-                'name': "Plan Estudiante",
+                'plan_type': 'basico', # El tipo pasa a ser un valor a actualizar/crear
                 'price': 18000,
                 'duration_days': 30,
                 'access_days': "Todos los días",
@@ -126,11 +124,11 @@ class Command(BaseCommand):
             }
         )
 
-        # 2. Plan Intermedio 4 Días (Mapeado al tipo 'estandar' en tu modelo)
+        # 2. Plan Intermedio 4 Días
         Plan.objects.update_or_create(
-            plan_type='estandar',
+            name="Plan Intermedio 4 Días", # USAR NAME COMO IDENTIFICADOR
             defaults={
-                'name': "Plan Intermedio 4 Días",
+                'plan_type': 'estandar',
                 'price': 22000,
                 'duration_days': 30,
                 'access_days': "Lunes, Miércoles, Viernes, Sábado",
@@ -142,11 +140,11 @@ class Command(BaseCommand):
             }
         )
 
-        # 3. Plan Completo (Mapeado al tipo 'premium')
+        # 3. Plan Completo
         Plan.objects.update_or_create(
-            plan_type='premium',
+            name="Plan Completo", # USAR NAME COMO IDENTIFICADOR
             defaults={
-                'name': "Plan Completo",
+                'plan_type': 'premium',
                 'price': 25000,
                 'duration_days': 30,
                 'access_days': "Todos los días",
