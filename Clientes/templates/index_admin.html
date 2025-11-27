@@ -394,6 +394,10 @@
                             <i class='bx bx-shield'></i>
                             Moderadores ({{ total_moderadores }})
                         </button>
+                        <button class="tab-btn" data-tab="admins">
+                            <i class='bx bx-crown'></i>
+                            Admins ({{ total_admins }})
+                        </button>
                     </div>
 
                     <!-- Stats Summary -->
@@ -530,6 +534,67 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Tabla de Administradores -->
+                    <div class="tab-content" id="admins-content">
+                        <div class="table-controls">
+                            <div class="search-box">
+                                <i class='bx bx-search'></i>
+                                <input type="text" id="searchAdminInput" placeholder="Buscar administrador...">
+                            </div>
+                        </div>
+
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Fecha de Registro</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for admin_user in administradores %}
+                                <tr class="searchable-admin-row" data-search="{{ admin_user.get_full_name }} {{ admin_user.rut }} {{ admin_user.email }}">
+                                    <td>
+                                        <strong>{{ admin_user.get_full_name }}</strong>
+                                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ admin_user.rut }}</div>
+                                    </td>
+                                    <td>{{ admin_user.email }}</td>
+                                    <td>{{ admin_user.created_at|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="{% url 'admin_user_details' admin_user.id %}" class="btn-icon view" title="Ver detalles">
+                                                <i class='bx bx-show'></i>
+                                            </a>
+                                            <a href="{% url 'admin_user_edit' admin_user.id %}" class="btn-icon edit" title="Editar">
+                                                <i class='bx bx-edit'></i>
+                                            </a>
+                                            {% if request.user.id != admin_user.id %}
+                                            <button class="btn-icon delete" title="Eliminar"
+                                                    onclick="showDeleteModal({{ admin_user.id }}, '{{ admin_user.get_full_name }}', '{{ admin_user.rut }}')">
+                                                <i class='bx bx-trash'></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr id="no-admins-row">
+                                    <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                        No hay otros administradores registrados
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr id="search-admin-no-results" style="display: none;">
+                                    <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                        No se encontraron administradores.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
                 </div>
             </section>
 

@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 from django.db.models import Count, Sum, Q, Avg
 import json
 from .models import CustomUser, Plan, Membership, AccessLog
@@ -303,6 +303,17 @@ def index_admin(request):
         role='moderador',
         is_superuser=False
     ).order_by('-created_at')
+
+    # --- AGREGAR ESTO: Obtener ADMINISTRADORES ---
+    administradores = CustomUser.objects.filter(
+        role='admin',
+        is_superuser=False # Excluímos al superuser de Django si lo deseas, o quítalo para ver todos
+    ).order_by('-created_at')
+
+    # Estadisticas adicionales de usuarios
+    total_socios = socios.count()
+    total_moderadores = moderadores.count()
+    total_admins = administradores.count() # <--- AGREGAR ESTO
     
     # Estadisticas adicionales de usuarios
     total_socios = socios.count()
@@ -453,10 +464,12 @@ def index_admin(request):
         # Gestion de Usuarios
         'socios': socios_data,
         'moderadores': moderadores,
+        'administradores': administradores,
         'total_socios': total_socios,
         'total_moderadores': total_moderadores,
         'socios_activos': socios_activos,
         'socios_inactivos': socios_inactivos,
+        'total_admins': total_admins,
         
         # Gestion de Planes
         'lista_planes': planes_data,
@@ -575,7 +588,7 @@ def index_moderador(request):
     # --- 5. Lista de Usuarios para Gestión (Con último acceso) ---
     socios = CustomUser.objects.filter(role='socio').order_by('-created_at')
     lista_usuarios = []
-    
+    planes_renovacion = Plan.objects.filter(is_active=True).order_by('price')
     for socio in socios:
         # Intentamos obtener la membresía activa
         membership = socio.get_active_membership()
@@ -600,6 +613,7 @@ def index_moderador(request):
         'planes_vencer': planes_vencer,
         'cambio_planes': cambio_planes,
         'ultimos_accesos': ultimos_accesos,
+        'planes_renovacion': planes_renovacion,
         'lista_usuarios': lista_usuarios,
     }
     
@@ -943,54 +957,103 @@ def admin_user_details(request, user_id):
 
 @login_required(login_url='inicio_sesion')
 def admin_user_edit(request, user_id):
-    """Editar usuario - Solo admin"""
+    """Editar usuario - Solo admin (Versión Corregida)"""
     if not request.user.role or request.user.role != 'admin':
         messages.error(request, 'No tienes permisos para acceder a esta área.')
         return redirect('index_admin')
     
     try:
         user = CustomUser.objects.get(id=user_id, is_superuser=False)
-        
+        current_membership = user.get_active_membership()
+        if not current_membership:
+            current_membership = user.memberships.order_by('-created_at').first()
+
         if request.method == 'GET':
-            # Mostrar formulario de edición
+            planes = Plan.objects.filter(is_active=True).order_by('price')
             context = {
                 'user_edit': user,
+                'planes': planes,
+                'current_membership': current_membership
             }
             return render(request, 'admin_user_edit.html', context)
         
         elif request.method == 'POST':
-            # Procesar actualización
+            # 1. Actualizar Datos Básicos
             user.first_name = request.POST.get('first_name', user.first_name)
             user.last_name = request.POST.get('last_name', user.last_name)
             user.email = request.POST.get('email', user.email)
             user.phone = request.POST.get('phone', user.phone)
             
-            # Validar que el email no esté en uso por otro usuario
             if CustomUser.objects.exclude(id=user_id).filter(email=user.email).exists():
                 messages.error(request, 'El email ya está en uso por otro usuario')
-                return render(request, 'admin_user_edit.html', {'user_edit': user})
+                return redirect('admin_user_edit', user_id=user.id)
             
-            # Fecha de nacimiento (opcional)
             birthdate = request.POST.get('birthdate')
             if birthdate:
                 user.birthdate = birthdate
             
-            # ✅ AGREGAR: Actualizar rol
             new_role = request.POST.get('role')
-            if new_role and new_role in ['socio', 'moderador', 'admin']:
+            if new_role in ['socio', 'moderador', 'admin']:
                 user.role = new_role
             
-            # ✅ AGREGAR: Actualizar is_active
             user.is_active = request.POST.get('is_active') == 'on'
             
-            # ✅ AGREGAR: Actualizar is_active_member (solo para socios)
+            # 2. Gestión de Membresía
             if user.role == 'socio':
                 user.is_active_member = request.POST.get('is_active_member') == 'on'
+                
+                plan_id = request.POST.get('plan_id')
+                start_date_str = request.POST.get('membership_start')
+                end_date_str = request.POST.get('membership_end')
+                
+                if plan_id:
+                    try:
+                        plan = Plan.objects.get(id=plan_id)
+                        
+                        # --- CORRECCIÓN 1: Convertir texto a objetos Fecha ---
+                        start_date_obj = None
+                        if start_date_str:
+                            start_date_obj = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                            
+                        end_date_obj = None
+                        if end_date_str:
+                            end_date_obj = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+                        # Lógica de actualización o creación
+                        if current_membership:
+                            current_membership.plan = plan
+                            if start_date_obj: current_membership.start_date = start_date_obj
+                            if end_date_obj: current_membership.end_date = end_date_obj
+                            
+                            # Forzar estado activo si las fechas son válidas
+                            if end_date_obj:
+                                if end_date_obj >= timezone.now().date():
+                                    current_membership.status = 'active'
+                                    current_membership.is_active = True
+                                else:
+                                    current_membership.status = 'expired'
+                                    current_membership.is_active = False
+                            
+                            current_membership.save()
+                        else:
+                            if start_date_obj and end_date_obj:
+                                Membership.objects.create(
+                                    user=user,
+                                    plan=plan,
+                                    start_date=start_date_obj,
+                                    end_date=end_date_obj,
+                                    payment_method='efectivo',
+                                    amount_paid=plan.price,
+                                    status='active',
+                                    is_active=True,
+                                    notes=f"Membresía creada manualmente por Admin"
+                                )
+                    except Plan.DoesNotExist:
+                        pass
             else:
-                # Si no es socio, desactivar membresía
                 user.is_active_member = False
             
-            # Cambiar contraseña (opcional)
+            # --- CORRECCIÓN 2: Esto ahora está FUERA del else, se ejecuta siempre ---
             new_password = request.POST.get('password')
             if new_password:
                 user.set_password(new_password)
@@ -1254,55 +1317,77 @@ def process_admin_plan_creation(request):
 
 @login_required(login_url='inicio_sesion')
 def admin_plan_details(request, plan_id):
-    """Ver detalles completos de un plan - Solo admin"""
     if not request.user.role or request.user.role != 'admin':
-        messages.error(request, 'No tienes permisos para acceder a esta area.')
+        messages.error(request, 'No autorizado')
         return redirect('index_admin')
     
     try:
         plan = Plan.objects.get(id=plan_id)
         
-        # Obtener membresias activas de este plan
+        # 1. Usuarios Activos (Lista para la tabla)
         active_memberships = Membership.objects.filter(
-            plan=plan,
-            is_active=True
-        ).select_related('user').order_by('-created_at')
+            plan=plan, is_active=True
+        ).select_related('user').order_by('end_date')
+
+        # 2. Métricas Generales (KPIs)
+        kpi_active_users = active_memberships.count()
+        kpi_total_sold = Membership.objects.filter(plan=plan).count()
         
-        # Obtener estadisticas del plan
-        total_memberships = Membership.objects.filter(plan=plan).count()
-        active_count = active_memberships.count()
-        
-        # Ingresos totales generados
-        total_revenue = Membership.objects.filter(
-            plan=plan,
+        # Ingresos Totales Históricos
+        kpi_total_revenue = Membership.objects.filter(
+            plan=plan, status__in=['active', 'pending']
+        ).aggregate(total=Sum('amount_paid'))['total'] or 0
+
+        # Ingresos Este Mes
+        first_day_month = timezone.now().date().replace(day=1)
+        kpi_monthly_revenue = Membership.objects.filter(
+            plan=plan, 
+            payment_date__gte=first_day_month,
             status__in=['active', 'pending']
         ).aggregate(total=Sum('amount_paid'))['total'] or 0
-        
-        # Ingresos del mes actual
-        primer_dia_mes = timezone.now().date().replace(day=1)
-        monthly_revenue = Membership.objects.filter(
+
+        # 3. Datos para el Gráfico (Últimos 6 meses)
+        # Esto agrupa las ventas de este plan por mes
+        six_months_ago = timezone.now().date() - timedelta(days=180)
+        chart_data_query = Membership.objects.filter(
             plan=plan,
-            payment_date__gte=primer_dia_mes,
+            payment_date__gte=six_months_ago,
             status__in=['active', 'pending']
-        ).aggregate(total=Sum('amount_paid'))['total'] or 0
-        
-        # Procesar beneficios
-        beneficios_lista = []
-        if plan.benefits:
-            beneficios_lista = [b.strip() for b in plan.benefits.split(',')]
-        
+        ).annotate(month=TruncMonth('payment_date')).values('month').annotate(
+            total=Sum('amount_paid'),
+            count=Count('id')
+        ).order_by('month')
+
+        # Formatear para Chart.js
+        chart_labels = []
+        chart_values = []
+        for entry in chart_data_query:
+            if entry['month']:
+                chart_labels.append(entry['month'].strftime("%b %Y")) # Ej: "Nov 2025"
+                chart_values.append(int(entry['total'])) # Ej: 50000
+
+        # 4. Beneficios como lista
+        beneficios_lista = [b.strip() for b in plan.benefits.split(',')] if plan.benefits else []
+
         context = {
             'plan': plan,
             'active_memberships': active_memberships,
-            'total_memberships': total_memberships,
-            'active_count': active_count,
-            'total_revenue': total_revenue,
-            'monthly_revenue': monthly_revenue,
-            'beneficios_lista': beneficios_lista,
+            
+            # KPIs
+            'kpi_active': kpi_active_users,
+            'kpi_total_sold': kpi_total_sold,
+            'kpi_total_rev': kpi_total_revenue,
+            'kpi_monthly_rev': kpi_monthly_revenue,
+            
+            # Chart Data
+            'chart_labels': json.dumps(chart_labels),
+            'chart_values': json.dumps(chart_values),
+            
+            'beneficios_lista': beneficios_lista
         }
         
         return render(request, 'admin_plan_details.html', context)
-        
+
     except Plan.DoesNotExist:
         messages.error(request, 'Plan no encontrado')
         return redirect('index_admin')
@@ -1683,3 +1768,293 @@ def change_password_socio(request):
     except Exception as e:
         print(f"Error cambiando password: {e}") # Esto saldrá en tu consola de comandos para debug
         return JsonResponse({'success': False, 'error': f'Error interno: {str(e)}'}, status=500)
+    
+@login_required(login_url='inicio_sesion')
+def api_buscar_socio(request):
+    """API para buscar socio y devolver TODOS los datos necesarios para el panel de pagos"""
+    query = request.GET.get('q', '').strip()
+    
+    if not query:
+        return JsonResponse({'success': False, 'error': 'Término de búsqueda vacío'})
+
+    # Buscar usuario (RUT, Nombre o Email)
+    user = CustomUser.objects.filter(
+        Q(rut__icontains=query) | 
+        Q(first_name__icontains=query) | 
+        Q(last_name__icontains=query) |
+        Q(email__icontains=query),
+        role='socio'
+    ).first()
+
+    if user:
+        # Obtener membresía activa
+        membership = user.get_active_membership()
+        
+        # Calcular datos
+        plan_actual = "Sin Plan Activo"
+        fecha_inicio = "-"
+        fecha_vencimiento = "-"
+        dias_restantes = 0
+        estado_badge = "Inactivo"
+
+        if membership:
+            plan_actual = membership.plan.name
+            fecha_inicio = membership.start_date.strftime('%d/%m/%Y')
+            fecha_vencimiento = membership.end_date.strftime('%d/%m/%Y')
+            
+            # Calcular días restantes reales
+            delta = membership.end_date - timezone.now().date()
+            dias_restantes = max(0, delta.days)
+            estado_badge = "Activo"
+
+        data = {
+            'success': True,
+            'user': {
+                'rut': user.rut,
+                'full_name': user.get_full_name(), # El JS espera 'full_name'
+                'email': user.email,
+                'initials': f"{user.first_name[:1]}{user.last_name[:1]}".upper(),
+                'plan_actual': plan_actual,
+                'fecha_inicio': fecha_inicio,
+                'fecha_vencimiento': fecha_vencimiento,
+                'dias_restantes': dias_restantes,
+                'estado': estado_badge
+            }
+        }
+        return JsonResponse(data)
+    else:
+        return JsonResponse({'success': False, 'error': 'Usuario no encontrado'})
+    
+    
+@login_required(login_url='inicio_sesion')
+def moderador_nuevo_usuario(request):
+    """Renderiza el HTML separado para crear usuario"""
+    # Verificar que sea moderador o admin
+    if not request.user.role in ['moderador', 'admin']:
+        messages.error(request, 'No tienes permisos.')
+        return redirect('inicio_sesion')
+    
+    # Obtener planes para llenar el select del formulario
+    planes = Plan.objects.filter(is_active=True).order_by('price')
+    
+    return render(request, 'moderador_nuevo_usuario.html', {'planes': planes})
+
+@require_http_methods(["POST"])
+@login_required(login_url='inicio_sesion')
+def api_renovar_plan(request):
+    """API para procesar la renovación, calculando fechas y guardando notas"""
+    try:
+        data = json.loads(request.body)
+        rut = data.get('rut')
+        plan_id = data.get('plan_id')
+        payment_method = data.get('payment_method')
+        notes = data.get('notes', '') # Capturamos las notas del formulario
+
+        # 1. Obtener Usuario y Plan
+        user = CustomUser.objects.get(rut=rut)
+        plan = Plan.objects.get(id=plan_id)
+
+        # 2. Calcular fechas inteligentes
+        today = timezone.now().date()
+        
+        # Verificar si tiene una membresía que vence en el futuro para extenderla
+        current_membership = Membership.objects.filter(
+            user=user, 
+            is_active=True, 
+            end_date__gte=today
+        ).order_by('-end_date').first()
+        
+        if current_membership:
+            # Si tiene plan activo, el nuevo empieza el día después de que termine el actual
+            start_date = current_membership.end_date + timedelta(days=1)
+            # Opcional: Desactivamos la anterior para que solo haya una "primary"
+            # current_membership.is_active = False 
+            # current_membership.save()
+        else:
+            # Si no tiene plan o está vencido, empieza hoy
+            start_date = today
+
+        # Calcular fecha de fin basada en la duración del plan
+        end_date = start_date + timedelta(days=plan.duration_days)
+
+        # 3. Crear Nueva Membresía
+        Membership.objects.create(
+            user=user,
+            plan=plan,
+            start_date=start_date,
+            end_date=end_date, # Guardamos la fecha calculada
+            payment_method=payment_method,
+            amount_paid=plan.price,
+            status='active',
+            is_active=True,
+            notes=f"Renovación: {notes} - Atendido por {request.user.get_full_name()}"
+        )
+
+        # 4. Actualizar estado del usuario
+        user.is_active_member = True
+        user.save()
+
+        return JsonResponse({'success': True, 'message': 'Plan renovado correctamente'})
+
+    except CustomUser.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Usuario no encontrado'}, status=404)
+    except Plan.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Plan no encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+@require_http_methods(["POST"])
+@login_required(login_url='inicio_sesion')
+def api_crear_socio_moderador(request):
+    """API que procesa el formulario del moderador"""
+    try:
+        data = json.loads(request.body)
+        
+        # 1. Validaciones básicas
+        if CustomUser.objects.filter(rut=data['rut']).exists():
+            return JsonResponse({'success': False, 'error': 'El RUT ya existe'})
+        if CustomUser.objects.filter(email=data['email']).exists():
+            return JsonResponse({'success': False, 'error': 'El Email ya existe'})
+
+        # 2. Crear Usuario
+        user = CustomUser.objects.create_user(
+            username=data['rut'],
+            rut=data['rut'],
+            email=data['email'],
+            password=data['rut'], # Contraseña inicial es el RUT
+            first_name=data['firstName'],
+            last_name=data['lastName'],
+            phone=data.get('phone', ''),
+            birthdate=data.get('birthdate') or None,
+            role='socio',
+            is_active=True,
+            is_active_member=False # Se activará al crear la membresía abajo
+        )
+
+        # 3. Generar QR
+        user.generate_qr_code()
+        user.save()
+
+        # 4. Crear Membresía
+        plan = Plan.objects.get(plan_type=data['plan'])
+        start_date = timezone.now().date()
+        
+        membership = Membership.objects.create(
+            user=user,
+            plan=plan,
+            start_date=start_date,
+            payment_method=data.get('paymentMethod', 'efectivo'),
+            amount_paid=plan.price,
+            status='active',
+            is_active=True,
+            notes=f"Creado por moderador: {request.user.get_full_name()}"
+        )
+        
+        user.is_active_member = True
+        user.save()
+
+        # 5. Enviar Email (Opcional)
+        if data.get('sendQREmail'):
+            try:
+                send_qr_email(user, membership)
+            except:
+                pass # No detener el proceso si falla el email
+
+        return JsonResponse({'success': True})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+@login_required(login_url='inicio_sesion')
+def moderador_ver_usuario(request, user_id):
+    """Vista para que el moderador vea detalles de un socio"""
+    # 1. Verificar permisos
+    if request.user.role not in ['moderador', 'admin']:
+        messages.error(request, 'No tienes permisos.')
+        return redirect('index_moderador')
+
+    try:
+        # 2. Buscar usuario
+        user = CustomUser.objects.get(id=user_id)
+        
+        # 3. Obtener datos relacionados
+        memberships = user.memberships.all().order_by('-created_at')
+        access_logs = user.access_logs.all().order_by('-timestamp')[:20]
+        
+        context = {
+            'user_detail': user,
+            'memberships': memberships,
+            'access_logs': access_logs,
+            'total_accesos': user.access_logs.count(),
+            'accesos_permitidos': user.access_logs.filter(status='allowed').count(),
+            'accesos_denegados': user.access_logs.filter(status='denied').count(),
+        }
+        # Renderizar el HTML específico de moderador
+        return render(request, 'moderador_user_details.html', context) 
+
+    except CustomUser.DoesNotExist:
+        messages.error(request, 'Usuario no encontrado')
+        return redirect('index_moderador')
+
+
+@login_required(login_url='inicio_sesion')
+def moderador_editar_usuario(request, user_id):
+    """Vista para que el moderador edite un socio"""
+    if request.user.role not in ['moderador', 'admin']:
+        messages.error(request, 'No tienes permisos.')
+        return redirect('index_moderador')
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+
+        if request.method == 'POST':
+            # Actualizar datos básicos
+            user.first_name = request.POST.get('first_name')
+            user.last_name = request.POST.get('last_name')
+            user.email = request.POST.get('email')
+            user.phone = request.POST.get('phone')
+            
+            # Moderador solo edita estado de membresía si es socio
+            if user.role == 'socio':
+                 user.is_active_member = request.POST.get('is_active_member') == 'on'
+
+            # Contraseña opcional
+            new_pass = request.POST.get('password')
+            if new_pass:
+                user.set_password(new_pass)
+
+            user.save()
+            messages.success(request, 'Usuario actualizado correctamente')
+            return redirect('moderador_ver_usuario', user_id=user.id)
+
+        # Renderizar el HTML específico de edición para moderador
+        return render(request, 'moderador_user_edit.html', {'user_edit': user})
+
+    except CustomUser.DoesNotExist:
+        messages.error(request, 'Usuario no encontrado')
+        return redirect('index_moderador')
+
+
+@require_http_methods(["POST"])
+@login_required(login_url='inicio_sesion')
+def moderador_eliminar_usuario(request, user_id):
+    """Vista para eliminar usuario desde panel moderador"""
+    if request.user.role not in ['moderador', 'admin']:
+        messages.error(request, 'No tienes permisos.')
+        return redirect('index_moderador')
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+        nombre = user.get_full_name()
+        
+        # Seguridad: No borrar admins ni a uno mismo
+        if user.role == 'admin' or user.id == request.user.id:
+            messages.error(request, 'No puedes eliminar a este usuario.')
+            return redirect('index_moderador')
+
+        user.delete()
+        messages.success(request, f'Usuario {nombre} eliminado correctamente.')
+        return redirect('index_moderador')
+
+    except CustomUser.DoesNotExist:
+        messages.error(request, 'Usuario no encontrado')
+        return redirect('index_moderador')

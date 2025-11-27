@@ -4,369 +4,398 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Plan - ClubHouse Digital</title>
-    <link rel="stylesheet" href="{% static 'css/indexAdmin.css' %}">
+    <title>Editar Plan - ClubHouse</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    
     <style>
-        /* MISMOS ESTILOS QUE admin_user_create.html */
-        .creation-container {
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 2rem;
+        /* Mismos estilos que admin_plan_create para consistencia total */
+        :root {
+            --bg-body: #0a0a0a;
+            --bg-panel: #121212;
+            --bg-input: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.08);
+            --primary: #00ff9d;
+            --primary-glow: rgba(0, 255, 157, 0.4);
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --danger: #ff4757;
         }
 
-        .creation-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
-        .creation-header h1 {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 1.8rem;
-            color: var(--text-primary);
-        }
-
-        .back-btn {
-            padding: 0.75rem 1.5rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--text-primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary-color);
-        }
-
-        .form-card {
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-section-title {
-            font-size: 1.2rem;
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid rgba(0, 255, 157, 0.2);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .form-group {
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        .form-group label {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .form-group label .required {
-            color: var(--danger-color);
-        }
-
-        .form-input {
-            padding: 0.875rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: var(--text-primary);
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .checkbox-group {
+        /* --- HEADER --- */
+        .top-bar {
+            height: 55px;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-panel);
+            flex-shrink: 0;
         }
 
-        .checkbox-group input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
+        .page-title { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .page-title i { color: var(--primary); }
+        
+        .btn-close {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+            color: var(--text-main); text-decoration: none; font-size: 0.85rem;
+            padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; gap: 6px;
+            transition: 0.2s;
+        }
+        .btn-close:hover { background: rgba(255, 255, 255, 0.1); border-color: #fff; }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            height: calc(100vh - 55px);
         }
 
-        .radio-group {
+        /* --- PANEL IZQUIERDO (DATOS) --- */
+        .left-panel {
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
             display: flex;
+            flex-direction: column;
+            overflow-y: auto;
             gap: 1rem;
         }
 
-        .radio-option {
-            flex: 1;
+        .left-panel::-webkit-scrollbar { width: 4px; }
+        .left-panel::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+        
+        /* Selector de Tipo */
+        .type-selector { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 0.5rem; }
+        .type-option input { display: none; }
+        .type-card {
+            background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: 8px; padding: 10px 5px; text-align: center;
+            cursor: pointer; transition: 0.2s; opacity: 0.7;
+        }
+        .type-card i { font-size: 1.2rem; display: block; margin-bottom: 4px; }
+        .type-card span { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+        
+        .type-option input:checked + .type-card {
+            opacity: 1; border-color: var(--primary); background: rgba(0, 255, 157, 0.1); color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.15);
+        }
+
+        /* Formulario Compacto */
+        .form-group { margin-bottom: 0.8rem; }
+        .form-group label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
+        
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .form-control {
+            width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 0 12px; border-radius: 8px; font-size: 0.9rem;
+            outline: none; transition: 0.2s; height: 40px;
+            display: flex; align-items: center;
+        }
+        .form-control:focus { border-color: var(--primary); background: rgba(255,255,255,0.06); }
+        
+        textarea.form-control { height: auto; min-height: 80px; padding: 10px; line-height: 1.4; resize: none; }
+
+        /* --- PANEL DERECHO (CONFIG & PREVIEW) --- */
+        .right-panel {
             position: relative;
+            background: #0e0e0e;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        .radio-option input[type="radio"] {
-            position: absolute;
-            opacity: 0;
+        .right-content-wrapper {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 1.5rem;
+            overflow-y: auto;
         }
 
-        .radio-label {
-            display: block;
-            padding: 0.875rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+        /* Tarjeta Preview */
+        .preview-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+            border: 1px dashed var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
             text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            position: relative;
+            transition: 0.3s;
+        }
+        
+        .preview-card.active { border-color: var(--primary); box-shadow: 0 0 30px rgba(0,0,0,0.2); }
+
+        .preview-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 5px; }
+        .preview-price { font-size: 3rem; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 5px; letter-spacing: -1px; }
+        .preview-price span { font-size: 1rem; color: #666; font-weight: 400; }
+        .preview-name { font-size: 1.1rem; font-weight: 600; color: #fff; }
+        .preview-desc { font-size: 0.85rem; color: #888; margin-top: 8px; max-width: 80%; margin-left: auto; margin-right: auto; }
+
+        /* Configuración Servicios (Switches) */
+        .config-section-title { font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px; }
+        
+        .switches-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
         }
 
-        .radio-option input[type="radio"]:checked + .radio-label {
-            background: rgba(0, 255, 157, 0.1);
-            border-color: var(--primary-color);
-            color: var(--primary-color);
+        .switch-box {
+            background: var(--bg-panel); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; transition: 0.2s;
         }
+        .switch-box:hover { background: rgba(255,255,255,0.05); }
+        
+        /* Input Checkbox Oculto y Custom Switch */
+        .switch-box input { display: none; }
+        
+        .switch-label { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #ccc; }
+        .switch-label i { font-size: 1.2rem; color: var(--primary); }
 
-        .form-actions {
+        .toggle-switch {
+            width: 36px; height: 20px; background: #333; border-radius: 20px; position: relative; transition: 0.3s;
+        }
+        .toggle-switch::after {
+            content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+            background: #fff; border-radius: 50%; transition: 0.3s;
+        }
+        
+        .switch-box input:checked ~ .toggle-switch { background: var(--primary); }
+        .switch-box input:checked ~ .toggle-switch::after { transform: translateX(16px); }
+        .switch-box input:checked ~ .switch-label { color: #fff; font-weight: 600; }
+
+        /* Extras Box */
+        .extras-box {
+            flex: 1;
+            display: flex; flex-direction: column;
+        }
+        .extras-input { flex: 1; min-height: 100px !important; background: var(--bg-panel) !important; }
+
+        /* Footer */
+        .action-footer {
+            padding: 1rem 1.5rem;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border);
             display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 2rem;
-        }
-
-        .btn {
-            padding: 0.875rem 2rem;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 0.5rem;
+            flex-shrink: 0;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: #000;
-        }
+        .active-check { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+        .active-check input { accent-color: var(--primary); width: 18px; height: 18px; cursor: pointer; }
+        .active-check span { font-size: 0.9rem; color: #ccc; }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 255, 157, 0.3);
+        .btn-submit {
+            background: #333; color: #666; border: none;
+            padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
+            cursor: not-allowed; transition: 0.3s; display: flex; align-items: center; gap: 8px;
         }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
+        
+        .btn-submit.ready {
+            background: var(--primary); color: #000; cursor: pointer;
+            box-shadow: 0 0 20px var(--primary-glow);
         }
+        .btn-submit.ready:hover { transform: translateY(-2px); box-shadow: 0 0 30px var(--primary-glow); }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="creation-container">
-        <!-- Header -->
-        <div class="creation-header">
-            <h1>
-                <i class='bx bx-edit'></i>
-                Editar Plan
-            </h1>
-            <a href="{% url 'index_admin' %}" class="back-btn">
-                <i class='bx bx-arrow-back'></i>
-                Volver al Panel
-            </a>
+
+    <header class="top-bar">
+        <div class="page-title">
+            <i class='bx bx-edit'></i> Editar Plan
         </div>
+        <a href="{% url 'index_admin' %}" class="btn-close">
+            <i class='bx bx-x'></i> Cancelar
+        </a>
+    </header>
 
-        <form id="editPlanForm">
-            {% csrf_token %}
+    <form id="editPlanForm" class="main-grid">
+        {% csrf_token %}
 
-            <!-- Información Básica -->
-            <div class="form-card">
-                <h3 class="form-section-title">
-                    <i class='bx bx-info-circle'></i>
-                    Información Básica
-                </h3>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Nombre del Plan <span class="required">*</span></label>
-                        <input type="text" name="name" class="form-input" value="{{ plan.name }}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Descripción <span class="required">*</span></label>
-                        <input type="text" name="description" class="form-input" value="{{ plan.description }}" required>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tipo de Plan -->
-            <div class="form-card">
-                <h3 class="form-section-title">
-                    <i class='bx bx-category'></i>
-                    Tipo de Plan
-                </h3>
-                <div class="radio-group">
-                    <div class="radio-option">
-                        <input type="radio" name="plan_type" value="basico" id="typeBasic" {% if plan.plan_type == 'basico' %}checked{% endif %} required>
-                        <label for="typeBasic" class="radio-label">
-                            <i class='bx bx-star' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
-                            Básico
-                        </label>
-                    </div>
-
-                    <div class="radio-option">
-                        <input type="radio" name="plan_type" value="estandar" id="typeStandard" {% if plan.plan_type == 'estandar' %}checked{% endif %}>
-                        <label for="typeStandard" class="radio-label">
-                            <i class='bx bx-medal' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
-                            Estándar
-                        </label>
-                    </div>
-
-                    <div class="radio-option">
-                        <input type="radio" name="plan_type" value="premium" id="typePremium" {% if plan.plan_type == 'premium' %}checked{% endif %}>
-                        <label for="typePremium" class="radio-label">
-                            <i class='bx bx-trophy' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
-                            Premium
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Precios y Duración -->
-            <div class="form-card">
-                <h3 class="form-section-title">
-                    <i class='bx bx-dollar-circle'></i>
-                    Precios y Duración
-                </h3>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Precio (CLP) <span class="required">*</span></label>
-                        <input type="number" name="price" class="form-input" value="{{ plan.price }}" min="0" step="1000" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Duración (días) <span class="required">*</span></label>
-                        <input type="number" name="duration_days" class="form-input" value="{{ plan.duration_days }}" min="1" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Días de Acceso <span class="required">*</span></label>
-                        <input type="text" name="access_days" class="form-input" value="{{ plan.access_days }}" min="1" required>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Beneficios -->
-            <div class="form-card">
-                <h3 class="form-section-title">
-                    <i class='bx bx-star'></i>
-                    Beneficios y Extras
-                </h3>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" name="includes_classes" id="includesClasses" value="true" {% if plan.includes_classes %}checked{% endif %}>
-                    <label for="includesClasses" style="color: var(--text-primary); cursor: pointer;">
-                        Incluye Clases Grupales
+        <aside class="left-panel">
+            
+            <div class="form-group">
+                <label>Categoría del Plan</label>
+                <div class="type-selector">
+                    <label class="type-option">
+                        <input type="radio" name="plan_type" value="basico" {% if plan.plan_type == 'basico' %}checked{% endif %} onchange="updatePreview()">
+                        <div class="type-card">
+                            <i class='bx bx-star'></i>
+                            <span>Básico</span>
+                        </div>
                     </label>
-                </div>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" name="includes_nutritionist" id="includesNutritionist" value="true" {% if plan.includes_nutritionist %}checked{% endif %}>
-                    <label for="includesNutritionist" style="color: var(--text-primary); cursor: pointer;">
-                        Incluye Nutricionista
+                    <label class="type-option">
+                        <input type="radio" name="plan_type" value="estandar" {% if plan.plan_type == 'estandar' %}checked{% endif %} onchange="updatePreview()">
+                        <div class="type-card">
+                            <i class='bx bx-medal'></i>
+                            <span>Estándar</span>
+                        </div>
                     </label>
-                </div>
-
-                <div class="form-group" style="margin-top: 1rem;">
-                    <label>Beneficios Adicionales (Separar con comas)</label>
-                    <textarea name="benefits" class="form-input" rows="3">{{ plan.benefits }}</textarea>
-                </div>
-            </div>
-
-            <!-- Estado del Plan -->
-            <div class="form-card">
-                <h3 class="form-section-title">
-                    <i class='bx bx-toggle-left'></i>
-                    Estado del Plan
-                </h3>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" name="is_active" id="isActive" value="true" {% if plan.is_active %}checked{% endif %}>
-                    <label for="isActive" style="color: var(--text-primary); cursor: pointer;">
-                        Plan Activo (Los usuarios podrán contratar este plan)
+                    <label class="type-option">
+                        <input type="radio" name="plan_type" value="premium" {% if plan.plan_type == 'premium' %}checked{% endif %} onchange="updatePreview()">
+                        <div class="type-card">
+                            <i class='bx bx-trophy'></i>
+                            <span>Premium</span>
+                        </div>
                     </label>
                 </div>
             </div>
 
-            <!-- Botones de Acción -->
-            <div class="form-actions">
-                <button type="button" class="btn btn-secondary" onclick="window.location.href='{% url 'index_admin' %}'">
-                    <i class='bx bx-x'></i>
-                    Cancelar
-                </button>
-                <button type="submit" class="btn btn-primary" id="submitBtn">
-                    <i class='bx bx-save'></i>
-                    Guardar Cambios
+            <div class="form-group">
+                <label>Nombre Público <span style="color:var(--danger)">*</span></label>
+                <input type="text" name="name" class="form-control req-field" value="{{ plan.name }}" required autocomplete="off" oninput="updatePreview()">
+            </div>
+
+            <div class="input-row">
+                <div class="form-group">
+                    <label>Precio (CLP) <span style="color:var(--danger)">*</span></label>
+                    <input type="number" name="price" class="form-control req-field" value="{{ plan.price|floatformat:0 }}" min="0" required oninput="updatePreview()">
+                </div>
+                <div class="form-group">
+                    <label>Duración (Días) <span style="color:var(--danger)">*</span></label>
+                    <input type="number" name="duration_days" class="form-control req-field" value="{{ plan.duration_days }}" min="1" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Acceso (Texto descriptivo) <span style="color:var(--danger)">*</span></label>
+                <input type="text" name="access_days" class="form-control req-field" value="{{ plan.access_days }}" placeholder="Ej: Lunes a Viernes" required>
+            </div>
+
+            <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+                <label>Descripción Corta <span style="color:var(--danger)">*</span></label>
+                <textarea name="description" class="form-control req-field" style="flex: 1;" required oninput="updatePreview()">{{ plan.description }}</textarea>
+            </div>
+            
+        </aside>
+
+        <main class="right-panel">
+            
+            <div class="right-content-wrapper">
+                
+                <div class="preview-card active">
+                    <div class="preview-label">Vista Previa</div>
+                    <div class="preview-price" id="previewPrice">${{ plan.price|floatformat:0 }}<span>/mes</span></div>
+                    <div class="preview-name" id="previewName">{{ plan.name }}</div>
+                    <div class="preview-desc" id="previewDesc">{{ plan.description }}</div>
+                </div>
+
+                <div>
+                    <div class="config-section-title"><i class='bx bx-check-shield'></i> Servicios Incluidos</div>
+                    <div class="switches-grid">
+                        <label class="switch-box">
+                            <input type="checkbox" name="includes_classes" value="true" {% if plan.includes_classes %}checked{% endif %}>
+                            <div class="switch-label"><i class='bx bx-dumbbell'></i> Clases</div>
+                            <div class="toggle-switch"></div>
+                        </label>
+                        <label class="switch-box">
+                            <input type="checkbox" name="includes_nutritionist" value="true" {% if plan.includes_nutritionist %}checked{% endif %}>
+                            <div class="switch-label"><i class='bx bx-apple'></i> Nutrición</div>
+                            <div class="toggle-switch"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="extras-box">
+                    <div class="config-section-title"><i class='bx bx-gift'></i> Beneficios Extra</div>
+                    <textarea name="benefits" class="form-control extras-input" placeholder="Lista separada por comas...">{{ plan.benefits }}</textarea>
+                </div>
+
+            </div>
+
+            <div class="action-footer">
+                <label class="active-check">
+                    <input type="checkbox" name="is_active" value="true" {% if plan.is_active %}checked{% endif %}>
+                    <span>Plan Activo (Visible)</span>
+                </label>
+
+                <button type="submit" class="btn-submit ready" id="submitBtn">
+                    <i class='bx bx-save'></i> Guardar Cambios
                 </button>
             </div>
-        </form>
-    </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('editPlanForm');
+        </main>
+    </form>
+
+    <script>
+        const reqFields = document.querySelectorAll('.req-field');
         const submitBtn = document.getElementById('submitBtn');
 
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
+        function updatePreview() {
+            const price = document.querySelector('input[name="price"]').value;
+            const name = document.querySelector('input[name="name"]').value;
+            const desc = document.querySelector('textarea[name="description"]').value;
+            
+            const formattedPrice = price ? new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(price) : '$0';
+            
+            document.getElementById('previewPrice').innerHTML = `${formattedPrice} <span>/mes</span>`;
+            document.getElementById('previewName').textContent = name || 'Nombre del Plan';
+            document.getElementById('previewDesc').textContent = desc || 'Descripción...';
+            
+            validateForm();
+        }
 
-            const formData = new FormData(form);
+        function validateForm() {
+            let isValid = true;
+            reqFields.forEach(field => {
+                if (!field.value.trim()) isValid = false;
+            });
+
+            if (isValid) {
+                submitBtn.classList.add('ready');
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.classList.remove('ready');
+                submitBtn.disabled = true;
+            }
+        }
+
+        document.getElementById('editPlanForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Guardando...";
+
+            const formData = new FormData(this);
+            
             const data = {
                 name: formData.get('name'),
                 description: formData.get('description'),
                 plan_type: formData.get('plan_type'),
                 price: parseFloat(formData.get('price')),
                 duration_days: parseInt(formData.get('duration_days')),
-                access_days: parseInt(formData.get('access_days')),
+                
+                // CORRECCIÓN CRÍTICA: No usar parseInt aquí para que guarde el texto
+                access_days: formData.get('access_days'),
+                
                 includes_classes: formData.get('includes_classes') === 'true',
                 includes_nutritionist: formData.get('includes_nutritionist') === 'true',
                 benefits: formData.get('benefits') || '',
                 is_active: formData.get('is_active') === 'true'
             };
 
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="bx bx-loader bx-spin"></i> Guardando...';
-
             try {
-                // ✅ USAR LA URL ACTUAL EN LUGAR DE CONSTRUIR UNA NUEVA
+                // Usamos window.location.href porque la URL ya tiene el ID correcto
                 const response = await fetch(window.location.href, {
                     method: 'POST',
                     headers: {
@@ -379,20 +408,29 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('✅ ' + result.message);
-                    window.location.href = '{% url "index_admin" %}';
+                    submitBtn.style.background = "#fff";
+                    submitBtn.style.color = "#000";
+                    submitBtn.innerHTML = "<i class='bx bx-check'></i> ¡Actualizado!";
+                    
+                    setTimeout(() => {
+                        window.location.href = "{% url 'admin_plan_details' plan.id %}";
+                    }, 800);
                 } else {
                     alert('❌ Error: ' + result.error);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
                 }
+
             } catch (error) {
-                alert('❌ Error al actualizar plan: ' + error.message);
-            } finally {
+                console.error(error);
+                alert('❌ Error de conexión.');
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="bx bx-save"></i> Guardar Cambios';
+                submitBtn.innerHTML = originalText;
             }
         });
-    });
-</script>
 
+        // Validar al inicio para activar el botón si los datos ya están bien
+        validateForm();
+    </script>
 </body>
 </html>
