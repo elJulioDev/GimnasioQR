@@ -177,16 +177,16 @@ class Plan(models.Model):
     """Modelo para los planes de membresía del gimnasio."""
     
     PLAN_TYPE_CHOICES = (
-        ('finde', 'Plan Finde'),
-        ('diario', 'Plan Diario'),
-        ('completo', 'Plan Completo'),
+        ('basico', 'Básico'),
+        ('estandar', 'Estándar'),
+        ('premium', 'Premium'),
     )
     
     name = models.CharField(max_length=50, verbose_name="Nombre del Plan")
     plan_type = models.CharField(
         max_length=10,
         choices=PLAN_TYPE_CHOICES,
-        unique=True,
+        unique=False,
         verbose_name="Tipo de Plan"
     )
     description = models.TextField(verbose_name="Descripción")

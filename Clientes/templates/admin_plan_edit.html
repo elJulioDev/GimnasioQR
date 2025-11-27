@@ -235,7 +235,7 @@
                 </h3>
                 <div class="radio-group">
                     <div class="radio-option">
-                        <input type="radio" name="plan_type" value="basic" id="typeBasic" {% if plan.plan_type == 'basic' %}checked{% endif %} required>
+                        <input type="radio" name="plan_type" value="basico" id="typeBasic" {% if plan.plan_type == 'basico' %}checked{% endif %} required>
                         <label for="typeBasic" class="radio-label">
                             <i class='bx bx-star' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
                             Básico
@@ -243,7 +243,7 @@
                     </div>
 
                     <div class="radio-option">
-                        <input type="radio" name="plan_type" value="standard" id="typeStandard" {% if plan.plan_type == 'standard' %}checked{% endif %}>
+                        <input type="radio" name="plan_type" value="estandar" id="typeStandard" {% if plan.plan_type == 'estandar' %}checked{% endif %}>
                         <label for="typeStandard" class="radio-label">
                             <i class='bx bx-medal' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
                             Estándar
@@ -255,14 +255,6 @@
                         <label for="typePremium" class="radio-label">
                             <i class='bx bx-trophy' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
                             Premium
-                        </label>
-                    </div>
-
-                    <div class="radio-option">
-                        <input type="radio" name="plan_type" value="vip" id="typeVIP" {% if plan.plan_type == 'vip' %}checked{% endif %}>
-                        <label for="typeVIP" class="radio-label">
-                            <i class='bx bx-crown' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
-                            VIP
                         </label>
                     </div>
                 </div>
@@ -287,7 +279,7 @@
 
                     <div class="form-group">
                         <label>Días de Acceso <span class="required">*</span></label>
-                        <input type="number" name="access_days" class="form-input" value="{{ plan.access_days }}" min="1" required>
+                        <input type="text" name="access_days" class="form-input" value="{{ plan.access_days }}" min="1" required>
                     </div>
                 </div>
             </div>

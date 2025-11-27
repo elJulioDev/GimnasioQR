@@ -110,9 +110,9 @@ class Command(BaseCommand):
         
         # Usamos update_or_create para no duplicar si ya existen y actualizar si cambiaron
         
-        # 1. Plan Estudiante (Mapeado al tipo 'diario' en tu modelo)
+        # 1. Plan Estudiante (Mapeado al tipo 'basico' en tu modelo)
         Plan.objects.update_or_create(
-            plan_type='diario',
+            plan_type='basico',
             defaults={
                 'name': "Plan Estudiante",
                 'price': 18000,
@@ -126,9 +126,9 @@ class Command(BaseCommand):
             }
         )
 
-        # 2. Plan Intermedio 4 Días (Mapeado al tipo 'finde' en tu modelo)
+        # 2. Plan Intermedio 4 Días (Mapeado al tipo 'estandar' en tu modelo)
         Plan.objects.update_or_create(
-            plan_type='finde',
+            plan_type='estandar',
             defaults={
                 'name': "Plan Intermedio 4 Días",
                 'price': 22000,
@@ -142,9 +142,9 @@ class Command(BaseCommand):
             }
         )
 
-        # 3. Plan Completo (Mapeado al tipo 'completo')
+        # 3. Plan Completo (Mapeado al tipo 'premium')
         Plan.objects.update_or_create(
-            plan_type='completo',
+            plan_type='premium',
             defaults={
                 'name': "Plan Completo",
                 'price': 25000,

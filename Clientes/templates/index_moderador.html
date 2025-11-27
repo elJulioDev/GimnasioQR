@@ -638,7 +638,7 @@
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
         resultDiv.style.display = 'none';
 
-        fetch("{% url 'process_manual_access' %}", {  // Asegúrate de crear esta URL en urls.py
+        fetch("", {  // Asegúrate de crear esta URL en urls.py
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

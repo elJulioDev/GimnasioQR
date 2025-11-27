@@ -1222,12 +1222,8 @@ def process_admin_plan_creation(request):
                 'error': f'Campos requeridos faltantes: {", ".join(missing_fields)}'
             }, status=400)
         
-        # Validar que el plan_type no exista
-        if Plan.objects.filter(plan_type=data['plan_type']).exists():
-            return JsonResponse({
-                'success': False,
-                'error': 'Ya existe un plan con este tipo'
-            }, status=400)
+        # CAMBIO: ELIMINADA la validación que impedía duplicar plan_type
+        # (Permitimos múltiples planes del mismo tipo, ej: Premium Mensual y Premium Anual)
         
         # Crear el plan
         plan = Plan.objects.create(
