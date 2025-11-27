@@ -631,10 +631,146 @@
                     </div>
                 </div>
 
-                <div class="management-section" style="text-align: center; padding: 4rem 2rem;">
-                    <i class='bx bx-qr' style="font-size: 4rem; color: var(--text-secondary); opacity: 0.3;"></i>
-                    <h3 style="margin-top: 1rem; color: var(--text-secondary);">Sistema de validación QR</h3>
-                    <p style="color: var(--text-secondary); opacity: 0.7;">Vista de logs de acceso en desarrollo</p>
+                <div class="stats-summary" style="display: flex; gap: 2rem; margin-bottom: 1.5rem; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px;">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Asistencia Hoy</span>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: var(--text-primary);">
+                            {{ accesos_hoy }} <span style="font-size: 1rem; color: var(--success-color);">({{ porcentaje_asistencia }}%)</span>
+                        </div>
+                    </div>
+                    <div style="width: 1px; background: var(--border-color);"></div>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Ausentes (Con Plan)</span>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: var(--warning-color);">
+                            {{ total_ausentes }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="management-section">
+                    <div class="tabs-container" style="margin-bottom: 1.5rem;">
+                        <button class="tab-btn active" onclick="switchAssistTab('logs')">
+                            <i class='bx bx-list-ul'></i> Bitácora de Hoy
+                        </button>
+                        <button class="tab-btn" onclick="switchAssistTab('absent')">
+                            <i class='bx bx-user-x'></i> Ausentes Hoy
+                        </button>
+                    </div>
+
+                    <div id="tab-logs" class="assist-tab-content active">
+                        <div class="table-controls">
+                            <div class="search-box">
+                                <i class='bx bx-search'></i>
+                                <input type="text" id="searchLogsInput" placeholder="Buscar en registros de hoy..." onkeyup="filterTable('searchLogsInput', 'logs-row')">
+                            </div>
+                        </div>
+
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Hora</th>
+                                    <th>Usuario</th>
+                                    <th>Plan</th>
+                                    <th>Estado</th>
+                                    <th>Detalle</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs_hoy %}
+                                <tr class="logs-row">
+                                    <td style="font-weight: 600; color: var(--text-primary);">
+                                        {{ log.timestamp|date:"H:i:s" }}
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            {{ log.user.first_name }} {{ log.user.last_name }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if log.membership %}
+                                            {{ log.membership.plan.name }}
+                                        {% else %}
+                                            <span style="color: var(--text-secondary);">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if log.status == 'allowed' %}
+                                            <span class="status-badge active"><i class='bx bx-check'></i> Permitido</span>
+                                        {% else %}
+                                            <span class="status-badge expired"><i class='bx bx-x'></i> Denegado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="font-size: 0.85rem; color: var(--text-secondary);">
+                                        {% if log.status == 'denied' %}
+                                            {{ log.denial_reason }}
+                                        {% else %}
+                                            Acceso Correcto
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 2rem;">No hay registros de acceso hoy.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="tab-absent" class="assist-tab-content" style="display: none;">
+                        <div class="table-controls">
+                            <div class="search-box">
+                                <i class='bx bx-search'></i>
+                                <input type="text" id="searchAbsentInput" placeholder="Buscar ausente..." onkeyup="filterTable('searchAbsentInput', 'absent-row')">
+                            </div>
+                        </div>
+
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Plan Activo</th>
+                                    <th>Días Restantes</th>
+                                    <th>Contacto</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in lista_ausentes %}
+                                <tr class="absent-row">
+                                    <td>
+                                        <strong>{{ item.user.get_full_name }}</strong>
+                                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ item.user.rut }}</div>
+                                    </td>
+                                    <td>{{ item.plan }}</td>
+                                    <td>
+                                        <span style="color: {% if item.dias_restantes < 7 %}var(--warning-color){% else %}var(--success-color){% endif %}; font-weight: 600;">
+                                            {{ item.dias_restantes }} días
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if item.user.phone %}
+                                            <a href="tel:{{ item.user.phone }}" style="color: var(--text-secondary); text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                                                <i class='bx bx-phone'></i> {{ item.user.phone }}
+                                            </a>
+                                        {% else %}
+                                            <span style="color: var(--text-secondary);">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'admin_user_details' item.user.id %}" class="btn-icon view" title="Ver Perfil">
+                                            <i class='bx bx-user'></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 2rem;">¡Increíble! Todos los socios activos vinieron hoy.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </main>
@@ -1005,6 +1141,38 @@
                     }
                 }
             });
+        }
+
+        function switchAssistTab(tabName) {
+            // Ocultar todos
+            document.getElementById('tab-logs').style.display = 'none';
+            document.getElementById('tab-absent').style.display = 'none';
+            
+            // Quitar clase active botones
+            const btns = document.querySelectorAll('#asistencias .tab-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            
+            // Mostrar seleccionado
+            document.getElementById('tab-' + tabName).style.display = 'block';
+            
+            // Activar botón (buscando por onclick es una forma rápida)
+            const activeBtn = Array.from(btns).find(b => b.getAttribute('onclick').includes(tabName));
+            if(activeBtn) activeBtn.classList.add('active');
+        }
+
+        function filterTable(inputId, rowClass) {
+            const input = document.getElementById(inputId);
+            const filter = input.value.toLowerCase();
+            const rows = document.getElementsByClassName(rowClass);
+
+            for (let i = 0; i < rows.length; i++) {
+                const textContent = rows[i].textContent || rows[i].innerText;
+                if (textContent.toLowerCase().indexOf(filter) > -1) {
+                    rows[i].style.display = "";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
         }
 
     </script>

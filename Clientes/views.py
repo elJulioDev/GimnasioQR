@@ -12,6 +12,7 @@ from .models import CustomUser, Plan, Membership, AccessLog
 from .forms import CustomUserCreationForm
 from .utils import send_qr_email
 from django.db.models.functions import TruncMonth, TruncDay
+from calendar import monthrange
 
 # --- VISTAS DE AUTENTICACIONN ---
 
@@ -397,6 +398,39 @@ def index_admin(request):
         asistencias_labels.append(fecha.strftime("%d/%m"))
         asistencias_data.append(cnt)
 
+    # ==================== NUEVO: GESTIÓN DE ASISTENCIAS ====================
+    
+    # 1. Obtener todos los logs de HOY
+    logs_hoy = AccessLog.objects.filter(
+        timestamp__date=today
+    ).select_related('user', 'membership', 'membership__plan').order_by('-timestamp')
+
+    # 2. Calcular Ausentes (Usuarios con membresía activa que NO están en los logs de hoy)
+    # Obtenemos IDs únicos de quienes asistieron hoy (solo accesos permitidos)
+    ids_asistentes_hoy = AccessLog.objects.filter(
+        timestamp__date=today,
+        status='allowed'
+    ).values_list('user_id', flat=True)
+
+    # Filtramos socios activos excluyendo a los que vinieron
+    socios_ausentes = CustomUser.objects.filter(
+        role='socio',
+        is_active_member=True
+    ).exclude(
+        id__in=ids_asistentes_hoy
+    ).select_related().order_by('last_name')
+
+    # Enriquecer datos de ausentes con su plan
+    ausentes_data = []
+    for socio in socios_ausentes:
+        membresia = socio.get_active_membership()
+        if membresia:
+            ausentes_data.append({
+                'user': socio,
+                'plan': membresia.plan.name,
+                'dias_restantes': membresia.days_remaining()
+            })
+
 
     # ==================== CONTEXTO PARA EL TEMPLATE ====================
     
@@ -435,6 +469,12 @@ def index_admin(request):
         'chart_planes_data': json.dumps(chart_planes_data_values),
         'chart_asistencias_labels': json.dumps(asistencias_labels),
         'chart_asistencias_data': json.dumps(asistencias_data),
+
+        # --- NUEVAS VARIABLES DE ASISTENCIA ---
+        'logs_hoy': logs_hoy,
+        'lista_ausentes': ausentes_data,
+        'total_ausentes': len(ausentes_data),
+        'porcentaje_asistencia': round((accesos_hoy / socios_activos * 100), 1) if socios_activos > 0 else 0
 
     }
     
