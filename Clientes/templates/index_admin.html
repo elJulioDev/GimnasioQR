@@ -196,14 +196,6 @@
                 <span>Asistencias</span>
             </a>
         </li>
-        
-        <li class="nav-section-title">Sistema</li>
-        <li>
-            <a href="#configuracion" class="nav-link" data-section="configuracion">
-                <i class='bx bx-cog'></i>
-                <span>Configuración</span>
-            </a>
-        </li>
     </ul>
 
     <!-- Footer del Sidebar (FIJO) -->
@@ -373,16 +365,14 @@
                         <div class="table-controls">
                             <div class="search-box">
                                 <i class='bx bx-search'></i>
-                                <input type="text" placeholder="Buscar por nombre, RUT o email...">
+                                <input type="text" id="searchInput" placeholder="Buscar por nombre, RUT o email...">
                             </div>
                         </div>
 
                         <table class="modern-table">
                             <thead>
                                 <tr>
-                                    <th>RUT</th>
                                     <th>Nombre</th>
-                                    <th>Correo Electrónico</th>
                                     <th>Plan Actual</th>
                                     <th>Estado</th>
                                     <th>Días Restantes</th>
@@ -391,10 +381,8 @@
                             </thead>
                             <tbody>
                                 {% for socio_data in socios %}
-                                <tr>
-                                    <td>{{ socio_data.user.rut }}</td>
+                                <tr class="searchable-row" data-search="{{ socio_data.user.get_full_name }} {{ socio_data.user.rut }} {{ socio_data.user.email }}">
                                     <td><strong>{{ socio_data.user.get_full_name }}</strong></td>
-                                    <td>{{ socio_data.user.email }}</td>
                                     <td>{{ socio_data.plan_name }}</td>
                                     <td>
                                         <span class="status-badge {% if socio_data.estado == 'Activo' %}active{% else %}expired{% endif %}">
@@ -425,12 +413,17 @@
                                     </td>
                                 </tr>
                                 {% empty %}
-                                <tr>
-                                    <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                <tr id="no-results-row">
+                                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
                                         No hay socios registrados
                                     </td>
                                 </tr>
                                 {% endfor %}
+                                <tr id="search-no-results" style="display: none;">
+                                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                        No se encontraron resultados para tu búsqueda.
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -440,16 +433,14 @@
                         <div class="table-controls">
                             <div class="search-box">
                                 <i class='bx bx-search'></i>
-                                <input type="text" placeholder="Buscar moderador...">
+                                <input type="text" id="searchModeradorInput" placeholder="Buscar moderador...">
                             </div>
                         </div>
 
                         <table class="modern-table">
                             <thead>
                                 <tr>
-                                    <th>RUT</th>
                                     <th>Nombre</th>
-                                    <th>Correo Electrónico</th>
                                     <th>Teléfono</th>
                                     <th>Fecha de Registro</th>
                                     <th>Acciones</th>
@@ -457,10 +448,8 @@
                             </thead>
                             <tbody>
                                 {% for moderador in moderadores %}
-                                <tr>
-                                    <td>{{ moderador.rut }}</td>
+                                <tr class="searchable-moderador-row" data-search="{{ moderador.get_full_name }} {{ moderador.rut }} {{ moderador.email }} {{ moderador.phone }}">
                                     <td><strong>{{ moderador.get_full_name }}</strong></td>
-                                    <td>{{ moderador.email }}</td>
                                     <td>{{ moderador.phone|default:"-" }}</td>
                                     <td>{{ moderador.created_at|date:"d/m/Y" }}</td>
                                     <td>
@@ -479,12 +468,17 @@
                                     </td>
                                 </tr>
                                 {% empty %}
-                                <tr>
-                                    <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                <tr id="no-moderadores-row">
+                                    <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
                                         No hay moderadores registrados
                                     </td>
                                 </tr>
                                 {% endfor %}
+                                <tr id="search-moderador-no-results" style="display: none;">
+                                    <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                        No se encontraron moderadores.
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -507,19 +501,11 @@
                 </div>
 
                 <div class="management-section">
-                    <div class="table-controls">
-                        <div class="search-box">
-                            <i class='bx bx-search'></i>
-                            <input type="text" placeholder="Buscar plan...">
-                        </div>
-                    </div>
-
                     <table class="modern-table">
                         <thead>
                             <tr>
                                 <th>Nombre del Plan</th>
                                 <th>Precio</th>
-                                <th>Duración</th>
                                 <th>Días de Acceso</th>
                                 <th>Usuarios Inscritos</th>
                                 <th>Ingresos Mes</th>
@@ -531,7 +517,6 @@
                             <tr>
                                 <td><strong>{{ plan_data.plan.name }}</strong></td>
                                 <td style="color: var(--primary-color); font-weight: 600;">${{ plan_data.plan.price|floatformat:0 }}</td>
-                                <td>{{ plan_data.plan.duration_days }} días</td>
                                 <td>{{ plan_data.plan.access_days }}</td>
                                 <td>
                                     <span class="status-badge active">
@@ -602,22 +587,6 @@
                     <i class='bx bx-qr' style="font-size: 4rem; color: var(--text-secondary); opacity: 0.3;"></i>
                     <h3 style="margin-top: 1rem; color: var(--text-secondary);">Sistema de validación QR</h3>
                     <p style="color: var(--text-secondary); opacity: 0.7;">Vista de logs de acceso en desarrollo</p>
-                </div>
-            </section>
-
-            <!-- ========== CONFIGURACIÓN SECTION ========== -->
-            <section id="configuracion" class="content-section">
-                <div class="content-header">
-                    <h2 class="page-title">
-                        <i class='bx bx-cog'></i>
-                        Configuración del Sistema
-                    </h2>
-                </div>
-
-                <div class="management-section" style="text-align: center; padding: 4rem 2rem;">
-                    <i class='bx bx-cog' style="font-size: 4rem; color: var(--text-secondary); opacity: 0.3;"></i>
-                    <h3 style="margin-top: 1rem; color: var(--text-secondary);">Configuraciones generales</h3>
-                    <p style="color: var(--text-secondary); opacity: 0.7;">Panel de configuración en desarrollo</p>
                 </div>
             </section>
         </main>
@@ -813,6 +782,46 @@
             }
         });
 
+        // Función genérica de búsqueda
+        function setupSearch(inputId, rowClass, noResultsId, originalEmptyId) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+
+            input.addEventListener('keyup', function(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                const rows = document.querySelectorAll('.' + rowClass);
+                const noResultsMsg = document.getElementById(noResultsId);
+                const originalEmptyMsg = document.getElementById(originalEmptyId);
+                
+                let hasVisibleRows = false;
+
+                rows.forEach(row => {
+                    const searchData = row.getAttribute('data-search').toLowerCase();
+                    if (searchData.includes(searchTerm)) {
+                        row.style.display = '';
+                        hasVisibleRows = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Mostrar mensaje si no hay resultados
+                if (noResultsMsg) {
+                    if (!hasVisibleRows && rows.length > 0) {
+                        noResultsMsg.style.display = '';
+                        if(originalEmptyMsg) originalEmptyMsg.style.display = 'none';
+                    } else {
+                        noResultsMsg.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // 1. Configurar búsqueda de Socios
+        setupSearch('searchInput', 'searchable-row', 'search-no-results', 'no-results-row');
+
+        // 2. Configurar búsqueda de Moderadores
+        setupSearch('searchModeradorInput', 'searchable-moderador-row', 'search-moderador-no-results', 'no-moderadores-row');
 
     </script>
 
