@@ -51,6 +51,16 @@ urlpatterns = [
 
     # Nueva ruta para procesar QR
     path('api/process-qr-scan/', views.process_qr_scan, name='process_qr_scan'),
+    #probando cosas
+    path('api/buscar-socio/', views.api_buscar_socio, name='api_buscar_socio'),
+    path('api/renovar-plan/', views.api_renovar_plan, name='api_renovar_plan'),
+    #moderador funcionalidades
+    path('moderador/nuevo-usuario/', views.moderador_nuevo_usuario, name='moderador_nuevo_usuario'),
+    path('api/crear-socio-moderador/', views.api_crear_socio_moderador, name='api_crear_socio_moderador'),
+    path('moderador/usuario/<int:user_id>/', views.moderador_ver_usuario, name='moderador_ver_usuario'),
+    path('moderador/usuario/<int:user_id>/editar/', views.moderador_editar_usuario, name='moderador_editar_usuario'),
+    path('moderador/usuario/<int:user_id>/eliminar/', views.moderador_eliminar_usuario, name='moderador_eliminar_usuario'),
+    
 ]
 
 if settings.DEBUG:

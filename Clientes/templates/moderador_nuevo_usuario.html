@@ -1,0 +1,416 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Nuevo Usuario</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-body: #121212;
+            --bg-card: #1E1E1E;
+            --bg-input: #2C2C2C;
+            --primary: #00E676; /* Verde Neón */
+            --primary-hover: #00c853;
+            --text-main: #FFFFFF;
+            --text-muted: #B0B0B0;
+            --border-color: #333333;
+            --error-color: #FF5252;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container { width: 100%; max-width: 900px; }
+
+        /* HEADER */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        
+        .btn-back {
+            background: #2C2C2C; color: var(--text-main); text-decoration: none; padding: 10px 20px;
+            border-radius: 8px; font-size: 0.9rem; border: 1px solid var(--border-color);
+            transition: 0.2s; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-back:hover { background: #383838; }
+
+        /* CARDS GENERAL */
+        .card {
+            background-color: var(--bg-card); border-radius: 12px; padding: 2rem; margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            color: var(--primary); font-size: 1.1rem; font-weight: 600; margin-bottom: 1.5rem;
+            display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        /* INPUTS */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 0.9rem; color: var(--text-muted); }
+        .required { color: var(--error-color); margin-left: 2px; }
+
+        .form-control {
+            background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px;
+            padding: 12px 15px; color: var(--text-main); font-size: 1rem; outline: none; transition: 0.2s;
+        }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0, 230, 118, 0.1); }
+
+        /* --- ESTILOS DE PLANES (Anterior) --- */
+        .plans-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 1rem; margin-bottom: 1.5rem;
+        }
+        .plan-card {
+            background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px;
+            padding: 1.5rem; text-align: center; cursor: pointer; transition: 0.2s;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .plan-card:hover { background-color: #383838; transform: translateY(-2px); }
+        .plan-card.active {
+            border-color: var(--primary); background-color: rgba(0, 230, 118, 0.08);
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.1);
+        }
+        .plan-name { font-weight: 600; color: var(--text-main); }
+        .plan-price { color: var(--primary); font-weight: 500; }
+        .plan-card i { font-size: 1.8rem; color: var(--text-muted); margin-bottom: 5px; }
+        .plan-card.active i { color: var(--primary); }
+
+        /* --- NUEVOS ESTILOS: MÉTODOS DE PAGO (Referencia Imagen) --- */
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 Columnas fijas como la imagen */
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .payment-card {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            height: 100%;
+        }
+
+        .payment-card:hover { background-color: #383838; transform: translateY(-2px); }
+
+        .payment-card i { font-size: 2rem; color: var(--text-main); margin-bottom: 5px; }
+        
+        .payment-title { font-weight: 700; font-size: 1.1rem; color: var(--text-main); }
+        
+        .payment-subtitle {
+            font-size: 0.8rem; color: var(--text-muted); font-weight: 400;
+        }
+
+        /* Estado Activo Pago */
+        .payment-card.active {
+            border-color: var(--primary);
+            background-color: rgba(0, 230, 118, 0.05);
+            box-shadow: inset 0 0 0 1px var(--primary); /* Borde interior sutil */
+        }
+        .payment-card.active i { color: var(--primary); }
+
+        /* --- CONTENEDOR DE OPCIONES (Checkboxes estilo imagen) --- */
+        .options-container {
+            background-color: #161616; /* Un poco más oscuro que la tarjeta */
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: flex-start; /* Alinear al inicio por si el texto es largo */
+            gap: 12px;
+            cursor: pointer;
+        }
+        
+        /* Custom Checkbox visual */
+        .checkbox-row input {
+            appearance: none;
+            width: 22px; height: 22px;
+            background-color: var(--primary); /* Checkbox verde estilo imagen */
+            border-radius: 4px;
+            display: grid;
+            place-content: center;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+        
+        .checkbox-row input::before {
+            content: "\f00c"; /* FontAwesome check */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 14px;
+            color: #000;
+            transform: scale(0);
+            transition: 0.1s;
+        }
+        
+        .checkbox-row input:checked::before { transform: scale(1); }
+        .checkbox-row input:not(:checked) { background-color: #444; } /* Gris cuando no está marcado */
+
+        .checkbox-text h4 { font-size: 0.95rem; font-weight: 500; color: #fff; margin-bottom: 2px;}
+        .checkbox-text p { font-size: 0.8rem; color: #888; margin: 0; }
+
+        @media (max-width: 768px) {
+            .payment-grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+
+        /* BUTTONS */
+        .actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+        .btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; }
+        .btn-cancel { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-save { background-color: var(--primary); color: #000; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-user-plus"></i> Crear Nuevo Usuario</h1>
+            <a href="{% url 'index_moderador' %}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Volver al Panel
+            </a>
+        </div>
+
+        <form id="createUserForm">
+            <div class="card">
+                <h3 class="section-title"><i class="far fa-id-card"></i> Información Básica</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>RUT <span class="required">*</span></label>
+                        <input type="text" id="rut" class="form-control" placeholder="12.345.678-9" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo Electrónico <span class="required">*</span></label>
+                        <input type="email" id="email" class="form-control" placeholder="usuario@ejemplo.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre <span class="required">*</span></label>
+                        <input type="text" id="firstName" class="form-control" placeholder="Nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Apellido <span class="required">*</span></label>
+                        <input type="text" id="lastName" class="form-control" placeholder="Apellido" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="text" id="phone" class="form-control" placeholder="+56 9 1234 5678">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Nacimiento</label>
+                        <input type="date" id="birthdate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña <span class="required">*</span></label>
+                        <input type="password" id="password" class="form-control" placeholder="Mínimo 8 caracteres">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar Contraseña <span class="required">*</span></label>
+                        <input type="password" id="confirmPassword" class="form-control" placeholder="Repetir contraseña">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="section-title"><i class="fas fa-ticket-alt"></i> Membresía y Pago</h3>
+                
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label style="margin-bottom: 10px; display:block;">Seleccionar Plan <span class="required">*</span></label>
+                    <div class="plans-grid">
+                        {% for plan in planes %}
+                            <div class="plan-card" onclick="selectPlan('{{ plan.plan_type }}', this)">
+                                <i class="fas fa-dumbbell"></i>
+                                <span class="plan-name">{{ plan.name }}</span>
+                                <span class="plan-price">${{ plan.price }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" id="planInput">
+                </div>
+
+                <label style="margin-bottom: 10px; display:block;">Método de Pago Preferido <span class="required">*</span></label>
+                <div class="payment-grid">
+                    <div class="payment-card" onclick="selectPayment('efectivo', this)">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span class="payment-title">Efectivo</span>
+                        <span class="payment-subtitle">Pagar en recepción</span>
+                    </div>
+
+                    <div class="payment-card" onclick="selectPayment('transferencia', this)">
+                        <i class="fas fa-university"></i>
+                        <span class="payment-title">Transferencia</span>
+                        <span class="payment-subtitle">Datos bancarios</span>
+                    </div>
+
+                    <div class="payment-card" onclick="selectPayment('tarjeta', this)">
+                        <i class="fas fa-credit-card"></i>
+                        <span class="payment-title">Tarjeta</span>
+                        <span class="payment-subtitle">Débito/Crédito</span>
+                    </div>
+                </div>
+                <input type="hidden" id="paymentInput">
+
+                <div class="options-container">
+                    <label class="checkbox-row">
+                        <input type="checkbox" id="sendQREmail" checked>
+                        <div class="checkbox-text">
+                            <h4>Enviar código QR de acceso al correo</h4>
+                            <p>Necesario para entrar al gimnasio</p>
+                        </div>
+                    </label>
+
+                    <label class="checkbox-row">
+                        <input type="checkbox" id="generateContract" checked>
+                        <div class="checkbox-text">
+                            <h4>Generar y enviar Contrato de Socio (PDF)</h4>
+                            <p>Incluye términos, condiciones y datos del plan</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a href="{% url 'index_moderador' %}" class="btn btn-cancel">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-save">
+                    <i class="fas fa-check"></i> Crear Usuario
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // --- LÓGICA DE SELECCIÓN ---
+
+        // 1. Selección de Plan
+        function selectPlan(value, element) {
+            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById('planInput').value = value;
+        }
+
+        // 2. Selección de Pago (Nueva función)
+        function selectPayment(value, element) {
+            // Quitar active de todos los payment-cards
+            document.querySelectorAll('.payment-card').forEach(c => c.classList.remove('active'));
+            // Agregar al clickeado
+            element.classList.add('active');
+            // Guardar en input hidden
+            document.getElementById('paymentInput').value = value;
+        }
+
+        // --- SUBMIT FORMULARIO ---
+        document.getElementById('createUserForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            
+            // Validaciones
+            const p1 = document.getElementById('password').value;
+            const p2 = document.getElementById('confirmPassword').value;
+            const planValue = document.getElementById('planInput').value;
+            const paymentValue = document.getElementById('paymentInput').value; // Nuevo input hidden
+
+            // Validar Plan
+            if (!planValue) {
+                alert("Por favor, selecciona un plan.");
+                document.querySelector('.plans-grid').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            // Validar Pago
+            if (!paymentValue) {
+                alert("Por favor, selecciona un método de pago.");
+                document.querySelector('.payment-grid').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            if (p1 && p1 !== p2) {
+                alert("Las contraseñas no coinciden");
+                return;
+            }
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            btn.disabled = true;
+
+            const formData = {
+                rut: document.getElementById('rut').value,
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                birthdate: document.getElementById('birthdate').value,
+                password: p1 || document.getElementById('rut').value,
+                
+                // Nuevos valores de los inputs hidden
+                plan: planValue,
+                paymentMethod: paymentValue,
+                
+                sendQREmail: document.getElementById('sendQREmail').checked,
+                // Si tu backend soporta contrato, lo mandamos, si no, puedes quitar esta linea
+                generateContract: document.getElementById('generateContract').checked, 
+                
+                role: 'socio'
+            };
+
+            fetch('{% url "api_crear_socio_moderador" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert("¡Usuario creado exitosamente!");
+                    window.location.href = "{% url 'index_moderador' %}";
+                } else {
+                    alert("Error: " + data.error);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error de conexión");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        });
+    </script>
+
+</body>
+</html>

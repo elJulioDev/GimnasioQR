@@ -1,0 +1,125 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Socio - Moderador</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        body { background-color: #121212; color: #fff; font-family: 'Inter', sans-serif; padding: 2rem; display: flex; justify-content: center; }
+        .edit-container { max-width: 800px; width: 100%; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 1.8rem; display: flex; align-items: center; gap: 10px; }
+        
+        .card { background: #1e1e1e; padding: 2rem; border-radius: 16px; border: 1px solid #333; margin-bottom: 1.5rem; }
+        .section-title { color: #00E676; font-size: 1.2rem; margin-bottom: 1.5rem; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group.full { grid-column: 1 / -1; }
+        
+        label { color: #aaa; font-size: 0.9rem; font-weight: 500; }
+        input, select { background: #2c2c2c; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; font-size: 1rem; }
+        input:focus { outline: none; border-color: #00E676; }
+        input:disabled { opacity: 0.6; cursor: not-allowed; background: #252525; }
+        
+        .checkbox-wrapper { display: flex; align-items: center; gap: 10px; padding: 10px; background: #252525; border-radius: 8px; cursor: pointer; }
+        .checkbox-wrapper input { width: 20px; height: 20px; accent-color: #00E676; }
+        
+        .actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+        .btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 1rem; }
+        .btn-cancel { background: transparent; border: 1px solid #555; color: #fff; }
+        .btn-cancel:hover { background: #333; }
+        .btn-save { background: #00E676; color: #000; }
+        .btn-save:hover { background: #00c853; }
+    </style>
+</head>
+<body>
+
+    <div class="edit-container">
+        <div class="header">
+            <h1><i class="fas fa-user-edit"></i> Editar Socio</h1>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="card">
+                <h3 class="section-title">Información Personal</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>RUT (No editable)</label>
+                        <input type="text" value="{{ user_edit.rut }}" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Rol (No editable)</label>
+                        <input type="text" value="{{ user_edit.get_role_display }}" disabled>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" name="first_name" value="{{ user_edit.first_name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Apellido</label>
+                        <input type="text" name="last_name" value="{{ user_edit.last_name }}" required>
+                    </div>
+                    
+                    <div class="form-group full">
+                        <label>Correo Electrónico</label>
+                        <input type="email" name="email" value="{{ user_edit.email }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="text" name="phone" value="{{ user_edit.phone }}" placeholder="+56 9 ...">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Nacimiento</label>
+                        <input type="date" name="birthdate" value="{{ user_edit.birthdate|date:'Y-m-d' }}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="section-title">Seguridad y Acceso</h3>
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Cambiar Contraseña (Opcional)</label>
+                        <input type="password" name="password" placeholder="Dejar en blanco para mantener la actual">
+                        <small style="color: #666; margin-top: 5px;">Útil si el socio olvidó su clave.</small>
+                    </div>
+
+                    {% if user_edit.role == 'socio' %}
+                    <div class="form-group full">
+                        <label>Estado de Acceso al Gimnasio</label>
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" name="is_active_member" {% if user_edit.is_active_member %}checked{% endif %}>
+                            <span>Membresía Activa (Permite entrada con QR)</span>
+                        </label>
+                        <small style="color: #666; margin-top: 5px;">
+                            Nota: Si desactivas esto, el QR será rechazado en la entrada.
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="actions">
+                <a href="{% url 'moderador_ver_usuario' user_edit.id %}" class="btn btn-cancel">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-save">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
