@@ -4,579 +4,549 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Usuario - ClubHouse Digital</title>
-    <link rel="stylesheet" href="{% static 'css/indexAdmin.css' %}">
+    <title>Crear Usuario - ClubHouse</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    
     <style>
-        .creation-container {
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 2rem;
+        :root {
+            --bg-body: #0a0a0a;
+            --bg-panel: #121212;
+            --bg-input: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.08);
+            --primary: #00ff9d;
+            --primary-glow: rgba(0, 255, 157, 0.4);
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --danger: #ff4757;
         }
 
-        .creation-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
-        .creation-header h1 {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 1.8rem;
-            color: var(--text-primary);
-        }
-
-        .back-btn {
-            padding: 0.75rem 1.5rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--text-primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary-color);
-        }
-
-        .form-card {
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-section-title {
-            font-size: 1.2rem;
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid rgba(0, 255, 157, 0.2);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .form-group {
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        .form-group label {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .form-group label .required {
-            color: var(--danger-color);
-        }
-
-        .form-input {
-            padding: 0.875rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: var(--text-primary);
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .form-input.error {
-            border-color: var(--danger-color);
-        }
-
-        .error-message {
-            color: var(--danger-color);
-            font-size: 0.85rem;
-            margin-top: 0.25rem;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .radio-group {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .radio-option {
-            flex: 1;
-            position: relative;
-        }
-
-        .radio-option input[type="radio"] {
-            position: absolute;
-            opacity: 0;
-        }
-
-        .radio-label {
-            display: block;
-            padding: 0.875rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .radio-option input[type="radio"]:checked + .radio-label {
-            background: rgba(0, 255, 157, 0.1);
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .checkbox-group {
+        /* --- HEADER --- */
+        .top-bar {
+            height: 60px;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
+            justify-content: space-between;
+            padding: 0 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-panel);
+            flex-shrink: 0;
         }
 
-        .checkbox-group input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
+        .page-title { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .page-title i { color: var(--primary); }
+        
+        .btn-close {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+            color: var(--text-main); text-decoration: none; font-size: 0.85rem;
+            padding: 8px 16px; border-radius: 8px; display: flex; align-items: center; gap: 8px;
+            transition: 0.2s;
         }
+        .btn-close:hover { background: rgba(255, 255, 255, 0.1); border-color: #fff; }
 
-        .plan-cards {
+        /* --- LAYOUT PRINCIPAL --- */
+        .main-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
+            /* CAMBIO: Panel izquierdo más ancho (450px) para evitar scroll vertical */
+            grid-template-columns: 450px 1fr; 
+            height: calc(100vh - 60px);
         }
 
-        .plan-card-option {
+        /* --- PANEL IZQUIERDO (DATOS) --- */
+        .left-panel {
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            padding: 2rem; /* Más padding interno */
+            display: flex;
+            flex-direction: column;
+            /* Scroll solo si es estrictamente necesario en pantallas muy bajas */
+            overflow-y: auto; 
+            gap: 1.2rem;
+        }
+
+        .left-panel::-webkit-scrollbar { width: 4px; }
+        .left-panel::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+        /* Selector de Rol */
+        .role-selector { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 0.5rem; }
+        .role-option input { display: none; }
+        .role-card {
+            background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: 8px; padding: 12px 5px; text-align: center;
+            cursor: pointer; transition: 0.2s; opacity: 0.6;
+        }
+        .role-card i { font-size: 1.3rem; display: block; margin-bottom: 4px; }
+        .role-card span { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        
+        .role-option input:checked + .role-card {
+            opacity: 1; border-color: var(--primary); background: rgba(0, 255, 157, 0.1); color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.1);
+        }
+
+        /* Formulario */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
+        
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        .form-control {
+            width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 12px 14px; border-radius: 8px; font-size: 0.95rem;
+            outline: none; transition: 0.2s; height: 42px;
+        }
+        .form-control:focus { border-color: var(--primary); background: rgba(255,255,255,0.06); }
+        
+        /* Validación visual */
+        .form-control.filled { border-color: rgba(255,255,255,0.3); }
+
+        /* --- PANEL DERECHO --- */
+        .right-panel {
             position: relative;
+            background: #0e0e0e;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        .plan-card-option input[type="radio"] {
-            position: absolute;
-            opacity: 0;
+        .view-container {
+            height: 100%; display: none; flex-direction: column;
+        }
+        .view-container.active { display: flex; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* VISTA SOCIO */
+        .planes-header { padding: 2rem 2rem 1rem 2rem; flex-shrink: 0; }
+        .section-h2 { font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+        .section-p { color: var(--text-muted); font-size: 0.9rem; }
+
+        .planes-scroll-area {
+            flex: 1; padding: 0.5rem 2rem 2rem 2rem; overflow-y: auto;
+        }
+        
+        /* Grid de Planes más ancho */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Tarjetas más anchas */
+            gap: 1.2rem;
         }
 
-        .plan-card-label {
-            display: block;
-            padding: 1.5rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        /* Tarjeta de Plan */
+        .plan-option { cursor: pointer; position: relative; }
+        .plan-option input { display: none; }
+        
+        .plan-card {
+            background: var(--bg-panel); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem; height: 100%;
+            display: flex; flex-direction: column; transition: 0.2s;
+            position: relative; min-height: 160px;
+        }
+        
+        .plan-option input:checked + .plan-card {
+            border-color: var(--primary); background: rgba(0, 255, 157, 0.04);
+            box-shadow: 0 0 0 1px var(--primary), 0 8px 30px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
         }
 
-        .plan-card-option input[type="radio"]:checked + .plan-card-label {
-            background: rgba(0, 255, 157, 0.1);
-            border-color: var(--primary-color);
-        }
-
-        .plan-name {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .plan-price {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 0.75rem;
-        }
-
-        .plan-features {
-            list-style: none;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
+        .plan-name { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .plan-price { font-size: 1.5rem; color: var(--primary); font-weight: 800; margin-bottom: 10px; }
+        .plan-price span { font-size: 0.9rem; color: var(--text-muted); font-weight: 400; }
 
         .plan-features li {
-            margin-bottom: 0.25rem;
+            font-size: 0.85rem; color: #bbb; margin-bottom: 8px; display: flex; gap: 10px; align-items: center;
         }
+        .plan-features li i { color: var(--primary); font-size: 1rem; }
 
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 2rem;
+        .check-mark { 
+            position: absolute; top: 15px; right: 15px; color: var(--primary); 
+            opacity: 0; transition: 0.2s; font-size: 1.4rem; 
         }
+        .plan-option input:checked + .plan-card .check-mark { opacity: 1; }
 
-        .btn {
-            padding: 0.875rem 2rem;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        /* Footer */
+        .action-footer {
+            padding: 1.5rem 2rem;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border);
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 0.5rem;
+            flex-shrink: 0;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: #000;
+        /* Pagos y Toggles */
+        .payment-group { display: flex; gap: 1rem; align-items: center; }
+        
+        .payment-options { 
+            display: flex; background: var(--bg-input); padding: 4px; border-radius: 8px; border: 1px solid var(--border); 
+        }
+        .pay-opt {
+            padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; color: #aaa; 
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px;
+        }
+        .pay-opt:hover { color: #fff; }
+        .pay-input:checked + .pay-opt { background: #333; color: #fff; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .pay-input { display: none; }
+
+        .toggles { display: flex; gap: 1.5rem; margin-left: 1.5rem; border-left: 1px solid var(--border); padding-left: 1.5rem; }
+        .toggle-label { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #ccc; cursor: pointer; user-select: none; }
+        .toggle-label input { accent-color: var(--primary); width: 16px; height: 16px; }
+
+        /* BOTÓN CONFIRMAR (ESTADOS) */
+        .btn-submit {
+            background: #222; color: #555; border: 1px solid #333;
+            padding: 12px 32px; border-radius: 8px; font-weight: 600; font-size: 1rem;
+            cursor: not-allowed; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; gap: 10px;
+        }
+        
+        /* ESTADO READY (VERDE NEÓN) */
+        .btn-submit.ready {
+            background: var(--primary); color: #000; border-color: var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow); cursor: pointer;
+        }
+        .btn-submit.ready:hover {
+            transform: translateY(-2px); box-shadow: 0 0 30px var(--primary-glow);
+            background: #00e68a;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 255, 157, 0.3);
+        /* VISTA STAFF */
+        .staff-view-content {
+            height: 100%; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
         }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
+        .staff-card-placeholder {
+            width: 100%; max-width: 450px; padding: 3rem;
+            border-radius: 20px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+            border: 1px dashed var(--border);
+            display: flex; flex-direction: column; align-items: center;
+            transition: 0.3s;
         }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .staff-card-placeholder.ready {
+            border-style: solid; border-color: var(--primary);
+            background: radial-gradient(circle at center, rgba(0, 255, 157, 0.05) 0%, transparent 80%);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
         }
-
-        #planSection, #paymentSection {
-            display: none;
+        .staff-icon { 
+            font-size: 5rem; margin-bottom: 1.5rem; color: #333; transition: 0.3s; 
+            background: #000; border-radius: 50%; padding: 20px; border: 1px solid var(--border);
         }
+        .staff-card-placeholder.ready .staff-icon { 
+            color: var(--primary); border-color: var(--primary); box-shadow: 0 0 25px var(--primary-glow); 
+        }
+        .staff-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; }
+        .staff-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 2.5rem; }
 
-        .loading {
-            pointer-events: none;
-            opacity: 0.6;
+        @media (max-width: 1024px) {
+            .main-grid { grid-template-columns: 380px 1fr; }
+            .input-row { grid-template-columns: 1fr; gap: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="creation-container">
-        <div class="creation-header">
-            <h1>
-                <i class='bx bx-user-plus'></i>
-                Crear Nuevo Usuario
-            </h1>
-            <a href="{% url 'index_admin' %}" class="back-btn">
-                <i class='bx bx-arrow-back'></i>
-                Volver al Panel
-            </a>
+
+    <header class="top-bar">
+        <div class="page-title">
+            <i class='bx bx-user-plus'></i> Nuevo Usuario
         </div>
+        <a href="{% url 'index_admin' %}" class="btn-close">
+            <i class='bx bx-arrow-back'></i> Volver al Panel
+        </a>
+    </header>
 
-        <form id="createUserForm">
-            {% csrf_token %}
+    <form id="createUserForm" class="main-grid">
+        {% csrf_token %}
+
+        <aside class="left-panel">
             
-            <!-- Información Básica -->
-            <div class="form-card">
-                <h3 class="form-section-title">
-                    <i class='bx bx-user'></i> Información Básica
-                </h3>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>RUT <span class="required">*</span></label>
-                        <input type="text" name="rut" class="form-input" placeholder="12.345.678-9" required>
-                        <span class="error-message" id="rutError"></span>
-                    </div>
-                    <div class="form-group">
-                        <label>Correo Electrónico <span class="required">*</span></label>
-                        <input type="email" name="email" class="form-input" placeholder="usuario@ejemplo.com" required>
-                        <span class="error-message" id="emailError"></span>
-                    </div>
-                    <div class="form-group">
-                        <label>Nombre <span class="required">*</span></label>
-                        <input type="text" name="firstName" class="form-input" placeholder="Nombre" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Apellido <span class="required">*</span></label>
-                        <input type="text" name="lastName" class="form-input" placeholder="Apellido" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Teléfono</label>
-                        <input type="tel" name="phone" class="form-input" placeholder="+56 9 1234 5678">
-                    </div>
-                    <div class="form-group">
-                        <label>Fecha de Nacimiento</label>
-                        <input type="date" name="birthdate" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label>Contraseña <span class="required">*</span></label>
-                        <input type="password" name="password" class="form-input" placeholder="Mínimo 8 caracteres" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Confirmar Contraseña <span class="required">*</span></label>
-                        <input type="password" name="confirmPassword" class="form-input" placeholder="Repetir contraseña" required>
-                        <span class="error-message" id="passwordError"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Rol -->
-            <div class="form-card">
-                <h3 class="form-section-title">
-                    <i class='bx bx-shield'></i> Rol del Usuario
-                </h3>
-                <div class="radio-group">
-                    <div class="radio-option">
-                        <input type="radio" name="role" value="socio" id="roleSocio" required>
-                        <label for="roleSocio" class="radio-label">
-                            <i class='bx bx-user' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
-                            Socio
-                        </label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" name="role" value="moderador" id="roleModerador">
-                        <label for="roleModerador" class="radio-label">
-                            <i class='bx bx-shield-alt-2' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
-                            Moderador
-                        </label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" name="role" value="admin" id="roleAdmin">
-                        <label for="roleAdmin" class="radio-label">
-                            <i class='bx bx-crown' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
-                            Administrador
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Plan (solo para socios) -->
-            <div class="form-card" id="planSection">
-                <h3 class="form-section-title">
-                    <i class='bx bx-card'></i> Plan de Membresía
-                </h3>
-                <div class="plan-cards" id="planCards">
-                    {% for plan in plans %}
-                    <div class="plan-card-option">
-                        <input type="radio" name="plan" value="{{ plan.plan_type }}" id="plan_{{ plan.plan_type }}">
-                        <label for="plan_{{ plan.plan_type }}" class="plan-card-label">
-                            <div class="plan-name">{{ plan.name }}</div>
-                            <div class="plan-price">${{ plan.price|floatformat:0 }}</div>
-                            <ul class="plan-features">
-                                <li>📅 {{ plan.duration_days }} días</li>
-                                <li>🕒 {{ plan.access_days }}</li>
-                                {% if plan.includes_classes %}
-                                <li>🏋️ Clases grupales</li>
-                                {% endif %}
-                                {% if plan.includes_nutritionist %}
-                                <li>🥗 Nutricionista</li>
-                                {% endif %}
-                            </ul>
-                        </label>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Método de Pago (solo para socios) -->
-            <div class="form-card" id="paymentSection">
-                <h3 class="form-section-title">
-                    <i class='bx bx-money'></i> Método de Pago
-                </h3>
-                <div class="radio-group">
-                    <div class="radio-option">
-                        <input type="radio" name="paymentMethod" value="efectivo" id="paymentEfectivo">
-                        <label for="paymentEfectivo" class="radio-label">
-                            <i class='bx bx-money' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
-                            Efectivo
-                        </label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" name="paymentMethod" value="transferencia" id="paymentTransferencia">
-                        <label for="paymentTransferencia" class="radio-label">
-                            <i class='bx bx-transfer' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
-                            Transferencia
-                        </label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" name="paymentMethod" value="tarjeta" id="paymentTarjeta">
-                        <label for="paymentTarjeta" class="radio-label">
-                            <i class='bx bx-credit-card' style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
-                            Tarjeta
-                        </label>
-                    </div>
-                </div>
-
-                <div class="checkbox-group" style="margin-top: 1rem;">
-                    <input type="checkbox" name="sendQREmail" id="sendQREmail">
-                    <label for="sendQREmail" style="color: var(--text-primary); cursor: pointer;">
-                        Enviar código QR por correo electrónico
+            <div class="form-group">
+                <label>Tipo de Cuenta</label>
+                <div class="role-selector">
+                    <label class="role-option">
+                        <input type="radio" name="role" value="socio" checked onchange="handleRoleChange()">
+                        <div class="role-card">
+                            <i class='bx bx-user'></i>
+                            <span>Socio</span>
+                        </div>
+                    </label>
+                    <label class="role-option">
+                        <input type="radio" name="role" value="moderador" onchange="handleRoleChange()">
+                        <div class="role-card">
+                            <i class='bx bx-shield-alt-2'></i>
+                            <span>Staff</span>
+                        </div>
+                    </label>
+                    <label class="role-option">
+                        <input type="radio" name="role" value="admin" onchange="handleRoleChange()">
+                        <div class="role-card">
+                            <i class='bx bx-crown'></i>
+                            <span>Admin</span>
+                        </div>
                     </label>
                 </div>
             </div>
 
-            <!-- Botones de acción -->
-            <div class="form-actions">
-                <button type="button" class="btn btn-secondary" onclick="window.location.href='{% url 'index_admin' %}'">
-                    <i class='bx bx-x'></i>
-                    Cancelar
-                </button>
-                <button type="submit" class="btn btn-primary" id="submitBtn">
-                    <i class='bx bx-check'></i>
-                    Crear Usuario
-                </button>
+            <div class="form-group">
+                <label>RUT <span style="color:var(--danger)">*</span></label>
+                <input type="text" name="rut" class="form-control req-field" placeholder="12.345.678-9" required autocomplete="off">
             </div>
-        </form>
-    </div>
+
+            <div class="input-row">
+                <div class="form-group">
+                    <label>Nombre <span style="color:var(--danger)">*</span></label>
+                    <input type="text" name="firstName" class="form-control req-field" required>
+                </div>
+                <div class="form-group">
+                    <label>Apellido <span style="color:var(--danger)">*</span></label>
+                    <input type="text" name="lastName" class="form-control req-field" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Correo Electrónico <span style="color:var(--danger)">*</span></label>
+                <input type="email" name="email" class="form-control req-field" placeholder="cliente@email.com" required>
+            </div>
+
+            <div class="input-row">
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" name="phone" class="form-control" placeholder="+56 9...">
+                </div>
+                <div class="form-group">
+                    <label>Fecha Nacimiento</label>
+                    <input type="date" name="birthdate" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Contraseña <span style="color:var(--danger)">*</span></label>
+                <input type="password" name="password" class="form-control req-field" placeholder="Mín. 8 caracteres" required>
+            </div>
+            
+        </aside>
+
+        <main class="right-panel">
+            
+            <div id="view-socio" class="view-container active">
+                <div class="planes-header">
+                    <div class="section-h2">Seleccionar Membresía</div>
+                    <div class="section-p">Elige un plan para activar la cuenta del socio inmediatamente.</div>
+                </div>
+
+                <div class="planes-scroll-area">
+                    <div class="plans-grid">
+                        {% for plan in plans %}
+                        <label class="plan-option">
+                            <input type="radio" name="plan" value="{{ plan.plan_type }}" class="plan-check" onchange="validateForm()">
+                            <div class="plan-card">
+                                <i class='bx bxs-check-circle check-mark'></i>
+                                <div class="plan-name">{{ plan.name }}</div>
+                                <div class="plan-price">${{ plan.price|floatformat:0 }} <span>/mes</span></div>
+                                
+                                <ul class="plan-features">
+                                    <li><i class='bx bx-calendar'></i> {{ plan.duration_days }} días de vigencia</li>
+                                    <li><i class='bx bx-time'></i> {{ plan.access_days }}</li>
+                                    {% if plan.includes_classes %}
+                                        <li><i class='bx bx-dumbbell'></i> Clases grupales incluidas</li>
+                                    {% endif %}
+                                    {% if plan.includes_nutritionist %}
+                                        <li><i class='bx bx-heart'></i> Evaluación nutricional</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="action-footer">
+                    <div class="payment-group">
+                        <div class="payment-options">
+                            <label>
+                                <input type="radio" name="paymentMethod" value="efectivo" class="pay-input" checked>
+                                <div class="pay-opt"><i class='bx bx-money'></i> Efectivo</div>
+                            </label>
+                            <label>
+                                <input type="radio" name="paymentMethod" value="tarjeta" class="pay-input">
+                                <div class="pay-opt"><i class='bx bx-credit-card'></i> Tarjeta</div>
+                            </label>
+                            <label>
+                                <input type="radio" name="paymentMethod" value="transferencia" class="pay-input">
+                                <div class="pay-opt"><i class='bx bx-transfer'></i> Transf.</div>
+                            </label>
+                        </div>
+
+                        <div class="toggles">
+                            <label class="toggle-label">
+                                <input type="checkbox" name="sendQREmail" checked> Enviar QR
+                            </label>
+                            <label class="toggle-label">
+                                <input type="checkbox" name="sendContract" checked> Contrato
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="btnSocio" disabled>
+                        Crear Socio <i class='bx bx-right-arrow-alt'></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="view-staff" class="view-container">
+                <div class="staff-view-content">
+                    <div class="staff-card-placeholder" id="staffCard">
+                        <i class='bx bx-shield-quarter staff-icon'></i>
+                        
+                        <h2 class="staff-title">Cuenta Administrativa</h2>
+                        <p class="staff-desc">
+                            Estás creando un usuario con privilegios de acceso al sistema.<br>
+                            Este tipo de cuenta no requiere selección de plan ni pagos.
+                        </p>
+                        
+                        <button type="submit" class="btn-submit" id="btnStaff" style="width: 100%; justify-content: center; padding: 16px;" disabled>
+                            Confirmar y Crear Staff
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </form>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('createUserForm');
-            const roleInputs = document.querySelectorAll('input[name="role"]');
-            const planSection = document.getElementById('planSection');
-            const paymentSection = document.getElementById('paymentSection');
-            const submitBtn = document.getElementById('submitBtn');
+        // Variables
+        const form = document.getElementById('createUserForm');
+        const reqFields = document.querySelectorAll('.req-field');
+        const planInputs = document.querySelectorAll('.plan-check');
+        const viewSocio = document.getElementById('view-socio');
+        const viewStaff = document.getElementById('view-staff');
+        const btnSocio = document.getElementById('btnSocio');
+        const btnStaff = document.getElementById('btnStaff');
+        const staffCard = document.getElementById('staffCard');
 
-            // Mostrar/ocultar secciones según el rol
-            roleInputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    if (this.value === 'socio') {
-                        planSection.style.display = 'block';
-                        paymentSection.style.display = 'block';
-                    } else {
-                        planSection.style.display = 'none';
-                        paymentSection.style.display = 'none';
-                    }
-                });
-            });
-
-            // Validación en tiempo real del RUT
-            const rutInput = document.querySelector('input[name="rut"]');
-            rutInput.addEventListener('blur', async function() {
-                const rut = this.value.trim();
-                if (!rut) return;
-
-                try {
-                    const response = await fetch(`/api/validate-rut/?rut=${encodeURIComponent(rut)}`);
-                    const data = await response.json();
-                    
-                    if (!data.valid) {
-                        this.classList.add('error');
-                        document.getElementById('rutError').textContent = data.error;
-                        document.getElementById('rutError').classList.add('show');
-                    } else {
-                        this.classList.remove('error');
-                        document.getElementById('rutError').classList.remove('show');
-                    }
-                } catch (error) {
-                    console.error('Error validating RUT:', error);
-                }
-            });
-
-            // Validación en tiempo real del email
-            const emailInput = document.querySelector('input[name="email"]');
-            emailInput.addEventListener('blur', async function() {
-                const email = this.value.trim();
-                if (!email) return;
-
-                try {
-                    const response = await fetch(`/api/validate-email/?email=${encodeURIComponent(email)}`);
-                    const data = await response.json();
-                    
-                    if (!data.valid) {
-                        this.classList.add('error');
-                        document.getElementById('emailError').textContent = data.error;
-                        document.getElementById('emailError').classList.add('show');
-                    } else {
-                        this.classList.remove('error');
-                        document.getElementById('emailError').classList.remove('show');
-                    }
-                } catch (error) {
-                    console.error('Error validating email:', error);
-                }
-            });
-
-            // Validar coincidencia de contraseñas
-            const passwordInput = document.querySelector('input[name="password"]');
-            const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
+        // Cambio de Rol
+        function handleRoleChange() {
+            const role = document.querySelector('input[name="role"]:checked').value;
             
-            confirmPasswordInput.addEventListener('input', function() {
-                if (passwordInput.value !== this.value) {
-                    this.classList.add('error');
-                    document.getElementById('passwordError').textContent = 'Las contraseñas no coinciden';
-                    document.getElementById('passwordError').classList.add('show');
+            if (role === 'socio') {
+                viewSocio.classList.add('active');
+                viewStaff.classList.remove('active');
+                planInputs.forEach(p => p.disabled = false);
+            } else {
+                viewSocio.classList.remove('active');
+                viewStaff.classList.add('active');
+                planInputs.forEach(p => {
+                    p.checked = false;
+                    p.disabled = true;
+                });
+            }
+            validateForm();
+        }
+
+        // Validación en tiempo real
+        function validateForm() {
+            let isValid = true;
+            const role = document.querySelector('input[name="role"]:checked').value;
+
+            // Verificar inputs de texto
+            reqFields.forEach(input => {
+                if (!input.value.trim()) {
+                    isValid = false;
+                    input.classList.remove('filled');
                 } else {
-                    this.classList.remove('error');
-                    document.getElementById('passwordError').classList.remove('show');
+                    input.classList.add('filled');
                 }
             });
 
-            // Envío del formulario
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
+            // Verificar Plan si es Socio
+            if (role === 'socio') {
+                const planSelected = document.querySelector('input[name="plan"]:checked');
+                if (!planSelected) isValid = false;
+                
+                toggleButton(btnSocio, isValid);
+            } else {
+                // Staff
+                toggleButton(btnStaff, isValid);
+                if (isValid) staffCard.classList.add('ready');
+                else staffCard.classList.remove('ready');
+            }
+        }
 
-                // Validar contraseñas
-                if (passwordInput.value !== confirmPasswordInput.value) {
-                    alert('Las contraseñas no coinciden');
-                    return;
+        function toggleButton(btn, valid) {
+            if (valid) {
+                btn.classList.add('ready');
+                btn.disabled = false;
+            } else {
+                btn.classList.remove('ready');
+                btn.disabled = true;
+            }
+        }
+
+        // Listeners
+        reqFields.forEach(input => {
+            input.addEventListener('input', validateForm);
+        });
+
+        // Submit
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const role = document.querySelector('input[name="role"]:checked').value;
+            const activeBtn = role === 'socio' ? btnSocio : btnStaff;
+            const originalText = activeBtn.innerHTML;
+            
+            activeBtn.disabled = true;
+            activeBtn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Procesando...";
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Checkboxes manuales
+            if(role === 'socio') {
+                data.sendQREmail = form.querySelector('[name="sendQREmail"]').checked;
+                data.sendContract = form.querySelector('[name="sendContract"]').checked;
+            }
+
+            try {
+                const response = await fetch('{% url "admin_user_create" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    activeBtn.innerHTML = "<i class='bx bx-check'></i> ¡Éxito!";
+                    setTimeout(() => {
+                        window.location.href = "{% url 'index_admin' %}";
+                    }, 500);
+                } else {
+                    alert('❌ Error: ' + result.error);
+                    activeBtn.disabled = false;
+                    activeBtn.innerHTML = originalText;
                 }
 
-                // Preparar datos
-                const formData = new FormData(form);
-                const data = {
-                    rut: formData.get('rut'),
-                    email: formData.get('email'),
-                    firstName: formData.get('firstName'),
-                    lastName: formData.get('lastName'),
-                    phone: formData.get('phone') || '',
-                    birthdate: formData.get('birthdate') || null,
-                    password: formData.get('password'),
-                    role: formData.get('role'),
-                    plan: formData.get('plan') || null,
-                    paymentMethod: formData.get('paymentMethod') || null,
-                    sendQREmail: formData.get('sendQREmail') === 'on'
-                };
-
-                // Deshabilitar botón
-                submitBtn.classList.add('loading');
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="bx bx-loader bx-spin"></i> Creando...';
-
-                try {
-                    const response = await fetch('{% url "admin_user_create" %}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                        },
-                        body: JSON.stringify(data)
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        alert(result.message);
-                        window.location.href = '{% url "index_admin" %}';
-                    } else {
-                        alert('Error: ' + result.error);
-                    }
-                } catch (error) {
-                    alert('Error al crear usuario: ' + error.message);
-                } finally {
-                    submitBtn.classList.remove('loading');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="bx bx-check"></i> Crear Usuario';
-                }
-            });
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error de conexión.');
+                activeBtn.disabled = false;
+                activeBtn.innerHTML = originalText;
+            }
         });
     </script>
 </body>

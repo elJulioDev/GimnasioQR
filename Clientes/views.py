@@ -1088,19 +1088,12 @@ def process_admin_user_creation(request):
                 'error': f'Campos requeridos faltantes: {", ".join(missing_fields)}'
             }, status=400)
         
-        # Validar que el RUT no exista
+        # Validar duplicados
         if CustomUser.objects.filter(rut=data['rut']).exists():
-            return JsonResponse({
-                'success': False,
-                'error': 'El RUT ingresado ya esta registrado'
-            }, status=400)
+            return JsonResponse({'success': False, 'error': 'El RUT ingresado ya esta registrado'}, status=400)
         
-        # Validar que el email no exista
         if CustomUser.objects.filter(email=data['email']).exists():
-            return JsonResponse({
-                'success': False,
-                'error': 'El correo electronico ya esta registrado'
-            }, status=400)
+            return JsonResponse({'success': False, 'error': 'El correo electronico ya esta registrado'}, status=400)
         
         # Crear el usuario
         user = CustomUser.objects.create_user(
@@ -1117,19 +1110,18 @@ def process_admin_user_creation(request):
             is_active_member=False
         )
         
-        # Si es socio y se selecciono plan, crear membresia
+        # Lógica para Socios
         if data['role'] == 'socio' and data.get('plan'):
             try:
-                # Buscar plan por plan_type
                 plan = Plan.objects.get(plan_type=data['plan'])
                 
-                # Generar QR si no se genero automaticamente
+                # Generar QR
                 user.refresh_from_db()
                 if not user.qr_code:
                     user.generate_qr_code()
                     user.refresh_from_db()
                 
-                # Crear membresia
+                # Crear membresía
                 start_date = timezone.now().date()
                 membership = Membership.objects.create(
                     user=user,
@@ -1142,32 +1134,41 @@ def process_admin_user_creation(request):
                     notes=f"Registro administrativo por {request.user.get_full_name()}"
                 )
                 
-                # Enviar QR por email si se solicito
+                # --- EMAIL Y CONTRATO ---
+                # Capturamos los flags del frontend
+                send_qr_req = data.get('sendQREmail', False)
+                send_contract_req = data.get('sendContract', False) # <--- NUEVO
+
                 email_sent = False
-                if data.get('sendQREmail'):
+                if send_qr_req or send_contract_req:
                     try:
-                        email_sent = send_qr_email(user, membership)
+                        email_sent = send_qr_email(
+                            user, 
+                            membership, 
+                            send_qr=send_qr_req, 
+                            send_contract=send_contract_req
+                        )
                     except Exception as email_error:
                         print(f"Error al enviar email: {str(email_error)}")
                 
+                msg_extra = []
+                if send_qr_req: msg_extra.append("QR")
+                if send_contract_req: msg_extra.append("Contrato")
+                msg_final = f" (+ {' y '.join(msg_extra)} enviado)" if msg_extra else ""
+
                 return JsonResponse({
                     'success': True,
-                    'message': f'Usuario {user.get_full_name()} creado correctamente' + 
-                              (' y QR enviado por email' if email_sent else ''),
+                    'message': f'Socio creado correctamente{msg_final}',
                     'user_id': user.id
                 })
                     
             except Plan.DoesNotExist:
-                # Si el plan no existe, eliminar el usuario creado
                 user.delete()
-                return JsonResponse({
-                    'success': False,
-                    'error': f'Plan "{data.get("plan")}" no encontrado'
-                }, status=400)
+                return JsonResponse({'success': False, 'error': f'Plan "{data.get("plan")}" no encontrado'}, status=400)
         else:
             return JsonResponse({
                 'success': True,
-                'message': f'Usuario {user.get_full_name()} ({user.role}) creado correctamente',
+                'message': f'Usuario {user.role.capitalize()} creado correctamente',
                 'user_id': user.id
             })
         
