@@ -98,40 +98,67 @@
                 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon primary">
-                                <i class="fas fa-qrcode"></i>
+                            <div class="stat-header">
+                                <div class="stat-icon primary">
+                                    <i class='fas fa-qrcode'></i>
+                                </div>
+                                <div class="stat-trend {% if cambio_accesos.es_positivo %}up{% else %}down{% endif %}">
+                                    <i class='bx {% if cambio_accesos.es_positivo %}bx-up-arrow-alt{% else %}bx-down-arrow-alt{% endif %}'></i>
+                                    {{ cambio_accesos.porcentaje }}%
+                                </div>
                             </div>
-                        </div>
-                        <div class="stat-content">
-                            <h3>Accesos Hoy</h3>
-                            <div class="stat-value" id="accesos-hoy">0</div>
-                        </div>
+                            <div class="stat-content">
+                                <h3>Accesos Hoy</h3>
+                                <div class="stat-value">{{ accesos_hoy }}</div>
+                                <div class="stat-footer">
+                                    <i class='bx bx-time-five'></i>
+                                    <span>vs ayer</span>
+                                </div>
+                            </div>
                     </div>
+                     <!-- Card : Usuarios Activos -->
                     
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-icon info">
-                                <i class="fas fa-user-check"></i>
+                                <div class="stat-icon info">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="stat-trend {% if cambio_usuarios.es_positivo %}up{% else %}down{% endif %}">
+                                    <i class='bx {% if cambio_usuarios.es_positivo %}bx-up-arrow-alt{% else %}bx-down-arrow-alt{% endif %}'></i>
+                                    {{ cambio_usuarios.porcentaje }}%
+                                </div>
                             </div>
-                        </div>
-                        <div class="stat-content">
-                            <h3>Usuarios Activos</h3>
-                            <div class="stat-value" id="usuarios-activos">0</div>
+                            
+                            <div class="stat-content">
+                                <h3>Usuarios Activos</h3>
+                                <div class="stat-value">{{ usuarios_activos }}</div>
+                                <div class="stat-footer">
+                                    <i class='bx bx-time-five'></i>
+                                    <span>vs mes anterior</span>
+                                </div>
                         </div>
                     </div>
-
+                      <!-- Card : Planes por Vencer -->
+                       
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-icon warning">
-                                <i class="fas fa-user-clock"></i>
+                                <div class="stat-icon warning">
+                                    <i class="fas fa-user-clock"></i>
+                                </div>
+                                <div class="stat-trend {% if cambio_planes.es_positivo %}up{% else %}down{% endif %}">
+                                    <i class='bx {% if cambio_planes.es_positivo %}bx-up-arrow-alt{% else %}bx-down-arrow-alt{% endif %}'></i>
+                                    {{ cambio_planes.porcentaje }}%
+                                </div>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Planes por Vencer</h3>
+                                <div class="stat-value">{{ planes_vencer }}</div>
+                                <div class="stat-footer">
+                                    <i class='bx bx-time-five'></i>
+                                    <span>próximos 7 días</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="stat-content">
-                            <h3>Planes por Vencer</h3>
-                            <div class="stat-value" id="planes-vencer">0</div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Últimos Accesos -->
@@ -148,10 +175,78 @@
                                 <th>Hora de Acceso</th>
                                 <th>Plan</th>
                                 <th>Estado</th>
+                                <th></th>
+                                <th></th>
                             </tr>
                         </thead>
-                        <tbody id="ultimos-accesos-tbody">
-                            <!-- Los datos se cargarán dinámicamente desde la base de datos -->
+                        <tbody id="usuarios-tbody">
+                            {% for item in lista_usuarios %}
+                            <tr class="user-row">
+                                <td style="font-family: 'Inter', monospace; font-weight: 500;">
+                                    {{ item.user.rut }}
+                                </td>
+
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 32px; height: 32px; background: #3c40c6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;">
+                                            {{ item.user.first_name|slice:":1" }}{{ item.user.last_name|slice:":1" }}
+                                        </div>
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span class="user-name" style="font-weight: 600; color: var(--text-primary);">
+                                                {{ item.user.get_full_name }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                
+                                <td style="color: var(--text-secondary);">
+                                    {{ item.user.email }}
+                                </td>
+
+                                <td>
+                                    {% if item.plan_name != 'Sin Plan Activo' %}
+                                        <span style="color: var(--primary-color); font-weight: 500;">
+                                            <i class="fas fa-crown" style="font-size: 0.8rem; margin-right: 4px;"></i>
+                                            {{ item.plan_name }}
+                                        </span>
+                                        <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">
+                                            Quedan {{ item.dias_restantes }} días
+                                        </div>
+                                    {% else %}
+                                        <span style="color: #666; font-style: italic;">Sin Plan</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if item.status_class == 'active' %}
+                                        <span style="background: rgba(46, 213, 115, 0.15); color: #2ed573; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: 600;">
+                                            Activo
+                                        </span>
+                                    {% else %}
+                                        <span style="background: rgba(255, 71, 87, 0.15); color: #ff4757; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: 600;">
+                                            Inactivo
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn-icon" title="Ver Detalles" style="background: rgba(255,255,255,0.1); border: none; width: 30px; height: 30px; border-radius: 8px; color: white; cursor: pointer; transition: 0.2s;">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon" title="Editar" style="background: rgba(60, 64, 198, 0.2); border: none; width: 30px; height: 30px; border-radius: 8px; color: #3c40c6; cursor: pointer; transition: 0.2s;">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem; color: #888;">
+                                    No hay usuarios registrados.
+                                </td>
+                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -180,15 +275,81 @@
                         <thead>
                             <tr>
                                 <th>RUT</th>
-                                <th>Nombre</th>
-                                <th>Correo Electrónico</th>
-                                <th>Plan Actual</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
+                                <th>SOCIO</th>
+                                <th>CORREO</th>
+                                <th>PLAN</th>
+                                <th>ÚLTIMO ACCESO</th> <th>ESTADO</th>
+                                <th>ACCIONES</th>
                             </tr>
                         </thead>
                         <tbody id="usuarios-tbody">
-                            <!-- Los datos se cargarán dinámicamente desde la base de datos -->
+                            {% for item in lista_usuarios %}
+                            <tr class="user-row">
+                                <td style="font-family: monospace; color: #e0e0e0;">{{ item.user.rut }}</td>
+
+                                <td>
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="user-avatar-xs">
+                                            {{ item.user.first_name|slice:":1" }}{{ item.user.last_name|slice:":1" }}
+                                        </div>
+                                        <span style="font-weight: 600; color: #fff;" class="user-name">
+                                            {{ item.user.get_full_name }}
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td style="color: #A0A0A0;" class="user-email">{{ item.user.email }}</td>
+
+                                <td>
+                                    {% if item.plan_name != 'Sin Plan Activo' %}
+                                        <span style="font-weight: 500; display: flex; align-items: center; gap: 5px; color: #fff;">
+                                            <i class="fas fa-crown" style="color: var(--color-green); font-size: 0.8rem;"></i>
+                                            {{ item.plan_name }}
+                                        </span>
+                                        <div style="font-size: 0.75rem; color: #666; margin-top: 4px;">
+                                            Quedan {{ item.dias_restantes }} días
+                                        </div>
+                                    {% else %}
+                                        <span style="color: #666; font-style: italic;">Sin Plan</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if item.last_access %}
+                                        <div style="color: #fff; font-weight: 500; font-size: 0.9rem;">
+                                            {{ item.last_access|date:"H:i" }} hrs
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: #666;">
+                                            {{ item.last_access|date:"d/m/Y" }}
+                                        </div>
+                                    {% else %}
+                                        <span style="color: #666; font-style: italic; font-size: 0.85rem;">Nunca</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if item.status_class == 'active' %}
+                                        <span class="status-badge active">Activo</span>
+                                    {% else %}
+                                        <span class="status-badge inactive">Inactivo</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <div class="btn-action-group">
+                                        <button class="btn-icon-square btn-view" title="Ver Detalles"><i class="fas fa-eye"></i></button>
+                                        <button class="btn-icon-square btn-edit" title="Editar"><i class="fas fa-edit"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 3rem; color: #666;">
+                                    <i class="fas fa-user-slash" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                    No hay usuarios registrados.
+                                </td>
+                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -462,6 +623,81 @@
                 document.getElementById('payment-summary').style.display = 'none';
             }
         });
+        document.getElementById('manualAccessForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const rutInput = document.getElementById('manual-rut');
+        const rut = rutInput.value.trim();
+        const resultDiv = document.getElementById('access-result');
+        const submitBtn = this.querySelector('button[type="submit"]');
+
+        if(!rut) return;
+
+        // UI Loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        resultDiv.style.display = 'none';
+
+        fetch("{% url 'process_manual_access' %}", {  // Asegúrate de crear esta URL en urls.py
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ rut: rut })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Mostrar resultado
+            resultDiv.style.display = 'block';
+            const icon = document.getElementById('result-icon');
+            const title = document.getElementById('result-title');
+            const msg = document.getElementById('result-message');
+            const details = document.getElementById('result-details');
+
+            if (data.status === 'allowed') {
+                // Acceso Permitido
+                resultDiv.style.background = 'rgba(46, 213, 115, 0.15)';
+                resultDiv.style.border = '1px solid #2ed573';
+                icon.innerHTML = '<i class="fas fa-check-circle" style="color: #2ed573;"></i>';
+                title.textContent = '¡Acceso Permitido!';
+                title.style.color = '#2ed573';
+                
+                // Limpiar input si fue exitoso
+                rutInput.value = '';
+            } else {
+                // Acceso Denegado (o ya ingresó)
+                const color = data.status === 'denied' ? '#ff4757' : '#ffa502'; // Rojo o Naranja
+                resultDiv.style.background = `rgba(${data.status === 'denied' ? '255, 71, 87' : '255, 165, 2'}, 0.15)`;
+                resultDiv.style.border = `1px solid ${color}`;
+                icon.innerHTML = `<i class="fas ${data.status === 'denied' ? 'fa-times-circle' : 'fa-exclamation-circle'}" style="color: ${color};"></i>`;
+                title.textContent = data.status === 'denied' ? 'Acceso Denegado' : 'Aviso de Acceso';
+                title.style.color = color;
+            }
+
+            msg.textContent = data.message || data.error;
+
+            // Mostrar detalles si vienen en la respuesta
+            if (data.user) {
+                details.style.display = 'block';
+                document.getElementById('res-name').textContent = data.user.name;
+                document.getElementById('res-plan').textContent = data.user.membership_plan || 'Sin plan';
+                document.getElementById('res-status').textContent = data.user.days_remaining ? `${data.user.days_remaining} días restantes` : 'Vencido';
+            } else {
+                details.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al procesar la solicitud');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Registrar Acceso';
+            // Volver a enfocar el input para el siguiente registro rápido
+            rutInput.focus();
+        });
+    });
     </script>
 
 </body>

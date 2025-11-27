@@ -461,14 +461,110 @@ def calcular_porcentaje_cambio(valor_anterior, valor_actual):
 
 
 
-@login_required(login_url='inicio_sesion')  # AÑADIDO
+@login_required(login_url='inicio_sesion')
 def index_moderador(request):
-    """Panel de moderador - solo para moderadores"""
+    """Panel de moderador con estadísticas y tendencias"""
     if not request.user.role or request.user.role != 'moderador':
-        messages.error(request, 'No tienes permisos para acceder a esta area.')
+        messages.error(request, 'No tienes permisos para acceder a esta área.')
         return redirect_by_role(request.user)
     
-    return render(request, 'index_moderador.html')
+    from django.db.models import Count, Sum, Q
+    from datetime import date, timedelta 
+    
+    today = timezone.now().date()
+
+    # --- 1. Usuarios Activos y Tendencia ---
+    usuarios_activos = CustomUser.objects.filter(
+        role='socio',
+        is_active_member=True
+    ).count()
+    
+    # Calcular usuarios del mes pasado para la tendencia
+    mes_pasado = today - timedelta(days=30)
+    usuarios_mes_pasado = CustomUser.objects.filter(
+        role='socio', 
+        is_active_member=True,
+        created_at__lte=mes_pasado
+    ).count()
+        
+    # Calcular porcentaje (Lógica simplificada aquí mismo)
+    cambio_usuarios = {'porcentaje': 0, 'es_positivo': True}
+    if usuarios_mes_pasado > 0:
+        diferencia = usuarios_activos - usuarios_mes_pasado
+        porcentaje = (diferencia / usuarios_mes_pasado) * 100
+        cambio_usuarios = {
+            'porcentaje': abs(round(porcentaje, 1)),
+            'es_positivo': porcentaje >= 0
+        }
+    elif usuarios_activos > 0:
+        cambio_usuarios = {'porcentaje': 100, 'es_positivo': True}
+
+    # --- 2. Accesos Hoy y Tendencia ---
+    accesos_hoy = AccessLog.objects.filter(timestamp__date=today, status='allowed').count()
+    
+    ayer = today - timedelta(days=1)
+    accesos_ayer = AccessLog.objects.filter(timestamp__date=ayer, status='allowed').count()
+    
+    # Necesitas tener la función 'calcular_porcentaje_cambio' definida o importada
+    cambio_accesos = calcular_porcentaje_cambio(accesos_ayer, accesos_hoy)
+
+    # --- 3. Planes por Vencer ---
+    fecha_limite = today + timedelta(days=7)
+    planes_vencer = Membership.objects.filter(
+        is_active=True,
+        end_date__gte=today,
+        end_date__lte=fecha_limite
+    ).count()
+    
+    # Comparación con la semana anterior
+    semana_pasada_inicio = today - timedelta(days=7)
+    semana_pasada_fin = today
+    planes_venciendo_semana_pasada = Membership.objects.filter(
+        is_active=True,
+        end_date__gte=semana_pasada_inicio,
+        end_date__lte=semana_pasada_fin
+    ).count()
+    
+    cambio_planes = calcular_porcentaje_cambio(planes_venciendo_semana_pasada, planes_vencer)
+    
+    # --- 4. Tabla de Últimos Accesos (Dashboard) ---
+    ultimos_accesos = AccessLog.objects.filter(
+        timestamp__date=today
+    ).select_related('user', 'membership', 'membership__plan').order_by('-timestamp')
+    
+    # --- 5. Lista de Usuarios para Gestión (Con último acceso) ---
+    socios = CustomUser.objects.filter(role='socio').order_by('-created_at')
+    lista_usuarios = []
+    
+    for socio in socios:
+        # Intentamos obtener la membresía activa
+        membership = socio.get_active_membership()
+        
+        # Obtener el último acceso permitido del usuario
+        ultimo_acceso = AccessLog.objects.filter(user=socio, status='allowed').order_by('-timestamp').first()
+        
+        lista_usuarios.append({
+            'user': socio,
+            'plan_name': membership.plan.name if membership else 'Sin Plan Activo',
+            'status_class': 'active' if socio.is_active_member else 'inactive',
+            'status_text': 'Activo' if socio.is_active_member else 'Inactivo',
+            'dias_restantes': membership.days_remaining() if membership else 0,
+            'last_access': ultimo_acceso.timestamp if ultimo_acceso else None # Agregamos la fecha al contexto
+        }) 
+        
+    context = {
+        'usuarios_activos': usuarios_activos,
+        'cambio_usuarios': cambio_usuarios, 
+        'accesos_hoy': accesos_hoy,
+        'cambio_accesos': cambio_accesos, # Enviamos cambio de accesos
+        'planes_vencer': planes_vencer,
+        'cambio_planes': cambio_planes,
+        'ultimos_accesos': ultimos_accesos,
+        'lista_usuarios': lista_usuarios,
+    }
+    
+    return render(request, 'index_moderador.html', context)
+
 
 
 @login_required(login_url='inicio_sesion')
