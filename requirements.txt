@@ -1,0 +1,6 @@
+Django>=5.2.8
+PyMySQL
+Pillow
+qrcode[pil]
+xhtml2pdf
+Faker
