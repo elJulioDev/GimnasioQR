@@ -1,6 +1,17 @@
-# Ignorar códigos QR generados
-**/media/qr_codes/
-*.png
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-# Opcional: Ignorar toda la carpeta media (recomendado en Django)
-**/media/
+# Django
+db.sqlite3
+*.log
+local_settings.py
+
+# Media (Imágenes subidas por usuarios y QRs)
+media/
+Gimnasio/Clientes/media/
+
+# Static (solo si usas collectstatic)
+staticfiles/
