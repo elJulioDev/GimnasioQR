@@ -1,18 +1,20 @@
+import json, csv
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import timedelta, date, datetime
 from django.db.models import Count, Sum, Q, Avg
-import json
 from .models import CustomUser, Plan, Membership, AccessLog
 from .forms import CustomUserCreationForm
-from .utils import send_qr_email
+from .utils import send_qr_email, generate_pdf_receipt
 from django.db.models.functions import TruncMonth, TruncDay
 from calendar import monthrange
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 # --- VISTAS DE AUTENTICACIONN ---
 
@@ -442,6 +444,12 @@ def index_admin(request):
                 'dias_restantes': membresia.days_remaining()
             })
 
+    # === HISTORIAL DE TRANSACCIONES ===
+    # Obtenemos las últimas 50 transacciones (excluyendo canceladas si lo deseas)
+    transacciones = Membership.objects.exclude(status='cancelled').select_related('user', 'plan').order_by('-payment_date')[:50]
+
+    # Calcular Total Histórico Real (Suma de todo amount_paid)
+    total_historico = Membership.objects.exclude(status='cancelled').aggregate(total=Sum('amount_paid'))['total'] or 0
 
     # ==================== CONTEXTO PARA EL TEMPLATE ====================
     
@@ -487,8 +495,11 @@ def index_admin(request):
         'logs_hoy': logs_hoy,
         'lista_ausentes': ausentes_data,
         'total_ausentes': len(ausentes_data),
-        'porcentaje_asistencia': round((accesos_hoy / socios_activos * 100), 1) if socios_activos > 0 else 0
-
+        'porcentaje_asistencia': round((accesos_hoy / socios_activos * 100), 1) if socios_activos > 0 else 0,
+        
+        # Nuevas variables para la sección de Pagos
+        'transacciones': transacciones,
+        'total_historico': total_historico,
     }
     
     return render(request, 'index_admin.html', context)
@@ -2058,3 +2069,77 @@ def moderador_eliminar_usuario(request, user_id):
     except CustomUser.DoesNotExist:
         messages.error(request, 'Usuario no encontrado')
         return redirect('index_moderador')
+    
+# --- GESTIÓN DE REPORTES Y PAGOS ---
+
+@login_required(login_url='inicio_sesion')
+def exportar_pagos_excel(request):
+    """Genera y descarga el reporte de pagos en Excel"""
+    if not request.user.role == 'admin':
+        return redirect('inicio_sesion')
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename=Reporte_Pagos_{timezone.now().strftime("%Y%m%d")}.xlsx'
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Historial de Transacciones"
+
+    # Estilos
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="000000", end_color="000000", fill_type="solid") # Fondo negro
+    center_align = Alignment(horizontal="center")
+    
+    # Encabezados
+    headers = ['ID', 'Fecha', 'RUT Socio', 'Nombre Socio', 'Plan', 'Método Pago', 'Monto', 'Estado', 'Realizado Por']
+    ws.append(headers)
+
+    # Aplicar estilo a encabezados
+    for cell in ws[1]:
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center_align
+
+    # Obtener datos (Todos, no solo los últimos 50)
+    pagos = Membership.objects.select_related('user', 'plan').all().order_by('-payment_date')
+
+    for pago in pagos:
+        # Determinar quién realizó la acción (si está en notas o log, aquí asumimos sistema o usuario actual si no hay registro)
+        ws.append([
+            pago.id,
+            pago.payment_date.strftime("%d/%m/%Y H:i"),
+            pago.user.rut,
+            pago.user.get_full_name(),
+            pago.plan.name,
+            pago.get_payment_method_display(),
+            pago.amount_paid,
+            pago.get_status_display(),
+            "Sistema" # Puedes personalizar esto si guardas el staff en la transacción
+        ])
+
+    # Ajustar ancho de columnas
+    column_widths = [10, 20, 15, 25, 20, 15, 12, 12, 15]
+    for i, width in enumerate(column_widths, 1):
+        ws.column_dimensions[chr(64+i)].width = width
+
+    wb.save(response)
+    return response
+
+@login_required(login_url='inicio_sesion')
+def ver_recibo_pago(request, payment_id):
+    """Genera el PDF del recibo de pago"""
+    try:
+        membership = Membership.objects.select_related('user', 'plan').get(id=payment_id)
+        pdf_content = generate_pdf_receipt(membership)
+        
+        if pdf_content:
+            response = HttpResponse(pdf_content, content_type='application/pdf')
+            response['Content-Disposition'] = f'inline; filename="Recibo_{membership.id}.pdf"'
+            return response
+        else:
+            messages.error(request, 'Error al generar el PDF')
+            return redirect('index_admin')
+            
+    except Membership.DoesNotExist:
+        messages.error(request, 'Transacción no encontrada')
+        return redirect('index_admin')

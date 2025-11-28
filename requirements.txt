@@ -4,3 +4,4 @@ Pillow
 qrcode[pil]
 xhtml2pdf
 Faker
+openpyxl

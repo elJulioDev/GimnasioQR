@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { size: A5 landscape; margin: 1cm; } /* Formato medio folio horizontal, ideal para recibos */
+        body { font-family: Helvetica, sans-serif; color: #000; font-size: 12px; }
+        
+        .header { border-bottom: 2px solid #00ff9d; padding-bottom: 10px; margin-bottom: 20px; }
+        .header h1 { margin: 0; color: #000; text-transform: uppercase; font-size: 24px; }
+        .header span { color: #555; font-size: 10px; }
+        
+        .receipt-info { float: right; text-align: right; margin-top: -40px; }
+        .receipt-number { font-size: 16px; font-weight: bold; color: #333; }
+        
+        .details-box { width: 100%; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; }
+        .row { width: 100%; margin-bottom: 5px; }
+        .label { font-weight: bold; width: 120px; display: inline-block; color: #555; }
+        
+        .total-section { text-align: right; margin-top: 20px; font-size: 18px; font-weight: bold; border-top: 1px solid #000; padding-top: 10px; }
+        
+        .footer { margin-top: 30px; text-align: center; font-size: 9px; color: #777; border-top: 1px dotted #ccc; padding-top: 5px; }
+        
+        .status-stamp {
+            font-size: 20px; font-weight: bold; color: #00ff9d; 
+            border: 2px solid #00ff9d; padding: 5px 10px; 
+            transform: rotate(-10deg); display: inline-block;
+            position: absolute; top: 120px; right: 30px; opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ClubHouse Digital</h1>
+        <span>Camino Monte Grande, Coltauco | +56 9 6504 9281</span>
+        <div class="receipt-info">
+            <div class="receipt-number">COMPROBANTE DE PAGO #{{ pago.id }}</div>
+            <div>Fecha: {{ pago.payment_date|date:"d/m/Y H:i" }}</div>
+        </div>
+    </div>
+
+    {% if pago.status == 'active' %}
+    <div class="status-stamp">PAGADO</div>
+    {% endif %}
+
+    <div class="details-box">
+        <div class="row"><span class="label">SOCIO:</span> {{ user.get_full_name|upper }}</div>
+        <div class="row"><span class="label">RUT:</span> {{ user.rut }}</div>
+        <div class="row"><span class="label">EMAIL:</span> {{ user.email }}</div>
+    </div>
+
+    <div class="details-box">
+        <div class="row"><span class="label">CONCEPTO:</span> {{ pago.plan.name }}</div>
+        <div class="row"><span class="label">VIGENCIA:</span> {{ pago.plan.duration_days }} Días ({{ pago.start_date|date:"d/m/Y" }} - {{ pago.end_date|date:"d/m/Y" }})</div>
+        <div class="row"><span class="label">MÉTODO DE PAGO:</span> {{ pago.get_payment_method_display|upper }}</div>
+    </div>
+
+    <div class="total-section">
+        TOTAL PAGADO: ${{ pago.amount_paid|floatformat:0 }}
+    </div>
+
+    <div class="footer">
+        Este documento es un comprobante electrónico generado automáticamente.<br>
+        ClubHouse Digital - Tu mejor versión.
+    </div>
+</body>
+</html>

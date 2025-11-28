@@ -150,6 +150,57 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+
+        /* --- Filtro Select Personalizado --- */
+
+        /* Contenedor para alinear bien el select */
+        .filter-container {
+            position: relative;
+            min-width: 180px;
+        }
+
+        select.form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            
+            /* Tu código solicitado */
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            background-color: rgba(255, 255, 255, 0.05); /* Fondo transparente sutil */
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select.form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
+        }
+
+        /* CORRECCIÓN: Fondo oscuro para las opciones del desplegable */
+        select.form-control option {
+            background-color: #121212; /* Color de fondo oscuro */
+            color: #ffffff;            /* Texto blanco */
+            padding: 10px;
+        }
+
+        /* Estilo al pasar el mouse por encima de las opciones */
+        select.form-control option:checked,
+        select.form-control option:hover {
+            background-color: var(--primary-color) !important;
+            color: #000000 !important;
+        }
+
     </style>
 </head>
 <body>
@@ -667,17 +718,100 @@
 
             <!-- ========== PAGOS SECTION ========== -->
             <section id="pagos" class="content-section">
-                <div class="content-header">
-                    <h2 class="page-title">
-                        <i class='bx bx-money'></i>
-                        Gestión de Pagos
-                    </h2>
+                <div class="content-header" style="margin-bottom: 1.5rem;">
+                    <div>
+                        <h2 class="page-title">
+                            <i class='bx bx-money'></i> Finanzas y Pagos
+                        </h2>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Registro histórico de transacciones</p>
+                    </div>
+                    <div class="header-actions">
+                        <a href="{% url 'exportar_pagos_excel' %}" class="btn btn-secondary">
+                            <i class='bx bx-download'></i> Exportar Excel
+                        </a>
+                    </div>
                 </div>
 
-                <div class="management-section" style="text-align: center; padding: 4rem 2rem;">
-                    <i class='bx bx-credit-card' style="font-size: 4rem; color: var(--text-secondary); opacity: 0.3;"></i>
-                    <h3 style="margin-top: 1rem; color: var(--text-secondary);">Sección en desarrollo</h3>
-                    <p style="color: var(--text-secondary); opacity: 0.7;">Integración con Webpay/Transbank próximamente</p>
+                <div class="management-section">
+                    <div class="table-controls">
+                        <div class="search-box">
+                            <i class='bx bx-search'></i>
+                            <input type="text" id="searchPaymentInput" placeholder="Buscar por socio, ID o monto..." onkeyup="filterTable('searchPaymentInput', 'payment-row')">
+                        </div>
+                        
+                        <div class="filter-container">
+                            <select class="form-control" id="paymentMethodFilter" onchange="filterByMethod()">
+                                <option value="all">Todos los métodos</option>
+                                <option value="efectivo">Efectivo</option>
+                                <option value="transferencia">Transferencia</option>
+                                <option value="tarjeta">Tarjeta</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%;">ID / Fecha</th>
+                                    <th style="width: 25%;">Socio</th>
+                                    <th style="width: 15%;">Método</th>
+                                    <th style="width: 10%;">Monto</th>
+                                    <th style="width: 10%;">Estado</th>
+                                    <th style="width: 5%;">Recibo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pago in transacciones %}
+                                <tr class="payment-row" data-method="{{ pago.payment_method }}">
+                                    <td>
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span style="font-family: 'Courier New', monospace; color: var(--primary-color); font-weight: 700;">#{{ pago.id }}</span>
+                                            <span style="font-size: 0.75rem; color: var(--text-secondary);">{{ pago.payment_date|date:"d M, H:i" }}</span>
+                                        </div>
+                                    </td>
+                                    
+                                    <td>
+                                        <div class="user-cell">
+                                            <div>
+                                                <div style="font-weight: 600; color: #fff; font-size: 0.9rem;">{{ pago.user.get_full_name }}</div>
+                                                <div style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.5px;">{{ pago.user.rut }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="method-pill {{ pago.payment_method }}">
+                                            {% if pago.payment_method == 'efectivo' %}<i class='bx bx-money'></i> Efectivo
+                                            {% elif pago.payment_method == 'transferencia' %}<i class='bx bx-transfer'></i> Transf.
+                                            {% elif pago.payment_method == 'tarjeta' %}<i class='bx bx-credit-card'></i> Tarjeta{% endif %}
+                                        </div>
+                                    </td>
+
+                                    <td><span style="font-weight: 700; color: #fff;">${{ pago.amount_paid|floatformat:0 }}</span></td>
+
+                                    <td>
+                                        {% if pago.status == 'active' %}
+                                            <i class='bx bxs-check-circle' style="color: var(--success-color); font-size: 1.2rem;" title="Completado"></i>
+                                        {% elif pago.status == 'pending' %}
+                                            <i class='bx bxs-time' style="color: var(--warning-color); font-size: 1.2rem;" title="Pendiente"></i>
+                                        {% else %}
+                                            <i class='bx bxs-x-circle' style="color: var(--danger-color); font-size: 1.2rem;" title="Cancelado"></i>
+                                        {% endif %}
+                                    </td>
+
+                                    <td style="text-align: right;">
+                                        <a href="{% url 'ver_recibo_pago' pago.id %}" target="_blank" class="btn-icon-subtle" title="Ver Recibo">
+                                            <i class='bx bx-receipt'></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="7" style="text-align: center; padding: 4rem;">No hay transacciones.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -1233,6 +1367,21 @@
             for (let i = 0; i < rows.length; i++) {
                 const textContent = rows[i].textContent || rows[i].innerText;
                 if (textContent.toLowerCase().indexOf(filter) > -1) {
+                    rows[i].style.display = "";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
+
+    function filterByMethod() {
+            const select = document.getElementById('paymentMethodFilter');
+            const filterValue = select.value;
+            const rows = document.getElementsByClassName('payment-row');
+
+            for (let i = 0; i < rows.length; i++) {
+                const rowMethod = rows[i].getAttribute('data-method');
+                if (filterValue === 'all' || rowMethod === filterValue) {
                     rows[i].style.display = "";
                 } else {
                     rows[i].style.display = "none";

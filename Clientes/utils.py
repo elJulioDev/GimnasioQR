@@ -70,3 +70,20 @@ def send_qr_email(user, membership, send_qr=False, send_contract=False):
     except Exception as e:
         print(f"Error enviando email: {str(e)}")
         return False
+    
+def generate_pdf_receipt(membership):
+    """Genera el PDF del recibo de pago."""
+    template_path = 'pdfs/receipt_template.html'
+    context = {
+        'pago': membership,
+        'user': membership.user,
+        'fecha_emision': timezone.now()
+    }
+    html = render_to_string(template_path, context)
+    result = BytesIO()
+    
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result, encoding='UTF-8')
+    
+    if not pdf.err:
+        return result.getvalue()
+    return None

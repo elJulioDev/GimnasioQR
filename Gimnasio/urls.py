@@ -41,7 +41,9 @@ urlpatterns = [
     # Otras vistas
     path('qr-scanner/', views.mostrar_Scanner, name='mostrar_Scanner'),
     path('QR/', views.mostrar_QRCodeEmail, name='mostrar_QRCodeEmail'),
-    
+    path('management/payments/export/', views.exportar_pagos_excel, name='exportar_pagos_excel'),
+    path('management/payments/<int:payment_id>/receipt/', views.ver_recibo_pago, name='ver_recibo_pago'),
+
     # API Endpoints
     path('api/plans/', views.get_plans, name='get_plans'),
     path('api/validate-rut/', views.validate_rut, name='validate_rut'),
