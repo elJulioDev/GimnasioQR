@@ -5,15 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Panel - ClubHouse Digital</title>
-    <!-- Fuentes -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Estilos CSS -->
     <link rel="stylesheet" href="{% static 'css/indexSocio.css' %}">
     <link rel="icon" type="image/svg+xml" href="{% static 'img/icono.svg' %}">
     <style>
-        /* --- Estilos Modal Multipasos --- */
+        /* --- Estilos Modal Multipasos (Existentes) --- */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -27,238 +24,207 @@
             animation: fadeIn 0.3s ease;
         }
 
-        .modal-content {
-            background: #121212;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 3rem;
-            width: 90%;
-            max-width: 480px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Iconos animados */
-        .modal-icon-large {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            display: inline-block;
-        }
-
+        /* ... (Mantener estilos de modal existentes) ... */
+        .modal-content { background: #121212; border: 1px solid var(--border-color); border-radius: 20px; padding: 3rem; width: 90%; max-width: 480px; text-align: center; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6); position: relative; overflow: hidden; }
+        .modal-icon-large { font-size: 4rem; margin-bottom: 1.5rem; display: inline-block; }
         .icon-lock { color: var(--warning-color); text-shadow: 0 0 20px rgba(255, 165, 2, 0.3); }
         .icon-key { color: var(--primary-color); text-shadow: 0 0 20px rgba(0, 255, 157, 0.3); }
         .icon-success { color: var(--success-color); animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-
-        @keyframes popIn {
-            0% { transform: scale(0); }
-            70% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+        @keyframes popIn { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .step-container { display: none; animation: slideInRight 0.4s ease; }
+        .step-container.active { display: block; }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .modal-title { font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.5rem; }
+        .modal-subtitle { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem; }
+        .input-wrapper-modern { position: relative; margin-bottom: 1.5rem; text-align: left; }
+        .input-wrapper-modern label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 600; text-transform: uppercase; }
+        .modern-input { width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.05); border: 2px solid var(--border-color); border-radius: 12px; color: white; font-size: 1.1rem; transition: all 0.3s ease; }
+        .modern-input:focus { outline: none; border-color: var(--primary-color); background: rgba(255, 255, 255, 0.08); box-shadow: 0 0 0 4px rgba(0, 255, 157, 0.1); }
+        .modern-input.valid { border-color: var(--success-color); }
+        .modern-input.invalid { border-color: var(--danger-color); }
+        .match-indicator { font-size: 0.8rem; margin-top: 5px; height: 20px; font-weight: 600; transition: 0.3s; }
+        .text-match { color: var(--success-color); }
+        .text-mismatch { color: var(--danger-color); }
+        .btn-full { width: 100%; padding: 14px; font-size: 1rem; margin-top: 1rem; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-text { background: none; border: none; color: var(--text-secondary); cursor: pointer; margin-top: 1rem; font-size: 0.9rem; }
+        .btn-text:hover { color: white; text-decoration: underline; }
+        .loader-spinner { border: 3px solid rgba(255,255,255,0.3); border-left-color: #ffffff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: none; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* --- ESTILOS CORREGIDOS (Proporcionados por el usuario) --- */
+        
+        /* Contenedor Grid para Planes (Estilo Admin) */
+        .plans-grid-admin {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
         }
 
-        /* Pasos */
-        .step-container {
-            display: none; /* Se controla por JS */
-            animation: slideInRight 0.4s ease;
-        }
-
-        .step-container.active {
-            display: block;
-        }
-
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 0.5rem;
-        }
-
-        .modal-subtitle {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            margin-bottom: 2rem;
-        }
-
-        /* Inputs mejorados */
-        .input-wrapper-modern {
+        /* Tarjeta de Plan (Estilo Admin) */
+        .plan-card-admin {
+            background: #121212; /* Fondo oscuro panel */
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            transition: 0.2s;
             position: relative;
-            margin-bottom: 1.5rem;
-            text-align: left;
+            cursor: pointer;
+            min-height: 180px;
         }
 
-        .input-wrapper-modern label {
-            display: block;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
+        .plan-card-admin:hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 255, 157, 0.04);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 20px rgba(0, 255, 157, 0.1);
+        }
+
+        .plan-card-admin .plan-name { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .plan-card-admin .plan-price { font-size: 1.5rem; color: var(--primary-color); font-weight: 800; margin-bottom: 15px; }
+        .plan-card-admin .plan-price span { font-size: 0.9rem; color: #888; font-weight: 400; }
+
+        .plan-card-admin .plan-features { list-style: none; padding: 0; margin: 0; }
+        .plan-card-admin .plan-features li {
+            font-size: 0.85rem; color: #bbb; margin-bottom: 8px; display: flex; gap: 10px; align-items: center;
+        }
+        .plan-card-admin .plan-features li i { color: var(--primary-color); font-size: 1.1rem; }
+
+        /* Botones de Acción Agrupados */
+        .plan-actions-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            align-items: center;
+        }
+
+        /* Botón Cancelar Estilizado (Soft Red) */
+        .btn-danger-soft {
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+            border: 1px solid #ff4757;
+            padding: 10px 20px;
+            border-radius: 8px;
             font-weight: 600;
-            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        .btn-danger-soft:hover {
+            background: rgba(255, 71, 87, 0.2);
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.2);
         }
 
-        .modern-input {
+        /* Modal de Advertencia (Cancelar) */
+        .modal-warning-content {
+            background: #1a1a1a;
+            border: 1px solid #ff4757; /* Borde rojo */
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%; max-width: 450px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255, 71, 87, 0.2);
+        }
+
+        /* --- Select Personalizado (Estilo Moderno) --- */
+        select.modern-input {
             width: 100%;
             padding: 14px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            color: white;
-            font-size: 1.1rem;
+            border: 2px solid var(--border-color); /* Usamos tu variable de borde */
+            border-radius: 12px; /* Radio de borde consistente con el resto */
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem; /* Tamaño de fuente consistente */
+            color: white; /* Texto blanco */
+            
+            /* Resetear estilos nativos para personalización total */
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            
+            /* Icono SVG personalizado */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.2em;
+            background-color: rgba(255, 255, 255, 0.05); /* Fondo transparente sutil */
+            
+            cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        .modern-input:focus {
+        select.modern-input:focus {
             outline: none;
             border-color: var(--primary-color);
-            background: rgba(255, 255, 255, 0.08);
+            background-color: rgba(255, 255, 255, 0.08); /* Ligeramente más claro al foco */
             box-shadow: 0 0 0 4px rgba(0, 255, 157, 0.1);
         }
 
-        /* Validación visual */
-        .modern-input.valid { border-color: var(--success-color); }
-        .modern-input.invalid { border-color: var(--danger-color); }
-
-        .match-indicator {
-            font-size: 0.8rem;
-            margin-top: 5px;
-            height: 20px;
-            font-weight: 600;
-            transition: 0.3s;
+        /* Fondo oscuro para las opciones del desplegable */
+        select.modern-input option {
+            background-color: #121212; /* Color de fondo oscuro sólido */
+            color: #ffffff;            /* Texto blanco */
+            padding: 10px;
         }
 
-        .text-match { color: var(--success-color); }
-        .text-mismatch { color: var(--danger-color); }
+        /* Estilo al pasar el mouse por encima de las opciones (hover) */
+        /* Nota: El hover en options depende del SO/Navegador, pero esto ayuda donde es soportado */
+        select.modern-input option:checked,
+        select.modern-input option:hover {
+            background-color: var(--primary-color) !important;
+            color: #000000 !important;
+        }
 
-        /* Botones */
-        .btn-full {
-            width: 100%;
-            padding: 14px;
+        /* --- Estilo para el botón de Confirmar Pago --- */
+        .btn-confirm-pay {
+            /* Fondo verde sólido y oscuro para contraste con texto blanco */
+            background: #00cc7d; 
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 700;
             font-size: 1rem;
-            margin-top: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 204, 125, 0.3);
+            
+            /* Flexbox para centrar contenido */
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .btn-text {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
-        .btn-text:hover { color: white; text-decoration: underline; }
-
-        /* Loader spinner dentro del botón */
-        .loader-spinner {
-            border: 3px solid rgba(255,255,255,0.3);
-            border-left-color: #ffffff;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: none; /* Oculto por defecto */
-            margin: 0 auto;
+        .btn-confirm-pay:hover {
+            background: #00b36e; /* Un poco más oscuro al hover */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 204, 125, 0.4);
         }
 
-        @keyframes spin { 
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .btn-confirm-pay:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
-/* --- NUEVO: Estilos de Tarjetas de Planes (Idéntico a Admin Create) --- */
-    .plans-grid-admin {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
-        margin-top: 1.5rem;
-    }
-
-    .plan-card-admin {
-        background: #121212; /* Fondo oscuro panel */
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        transition: 0.2s;
-        position: relative;
-        cursor: pointer;
-        min-height: 180px;
-    }
-
-    .plan-card-admin:hover {
-        border-color: var(--primary-color);
-        background: rgba(0, 255, 157, 0.04);
-        transform: translateY(-4px);
-        box-shadow: 0 4px 20px rgba(0, 255, 157, 0.1);
-    }
-
-    .plan-card-admin .plan-name { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
-    .plan-card-admin .plan-price { font-size: 1.5rem; color: var(--primary-color); font-weight: 800; margin-bottom: 15px; }
-    .plan-card-admin .plan-price span { font-size: 0.9rem; color: #888; font-weight: 400; }
-
-    .plan-card-admin .plan-features { list-style: none; padding: 0; margin: 0; }
-    .plan-card-admin .plan-features li {
-        font-size: 0.85rem; color: #bbb; margin-bottom: 8px; display: flex; gap: 10px; align-items: center;
-    }
-    .plan-card-admin .plan-features li i { color: var(--primary-color); font-size: 1.1rem; }
-
-    /* --- NUEVO: Botones de Acción Agrupados --- */
-    .plan-actions-group {
-        display: flex;
-        gap: 1rem;
-        margin-top: 2rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        align-items: center;
-    }
-
-    /* Botón Cancelar Estilizado */
-    .btn-danger-soft {
-        background: rgba(255, 71, 87, 0.1);
-        color: #ff4757;
-        border: 1px solid #ff4757;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.9rem;
-    }
-    .btn-danger-soft:hover {
-        background: rgba(255, 71, 87, 0.2);
-        box-shadow: 0 0 15px rgba(255, 71, 87, 0.2);
-    }
-
-    /* Modal de Advertencia (Cancelar) */
-    .modal-warning-content {
-        background: #1a1a1a;
-        border: 1px solid #ff4757; /* Borde rojo */
-        border-radius: 16px;
-        padding: 2rem;
-        width: 90%; max-width: 450px;
-        text-align: center;
-        box-shadow: 0 0 30px rgba(255, 71, 87, 0.2);
-    }
+        /* Asegurar que el texto dentro del botón sea visible */
+        .btn-confirm-pay .btn-text {
+            color: #ffffff; /* Forzar blanco */
+            font-weight: 700;
+        }
 
     </style>
 </head>
 <body>
 
     <div class="dashboard-wrapper">
-        
-        <!-- Sidebar -->
         <nav class="sidebar">
             <div class="sidebar-logo">
                 <i class="fas fa-dumbbell"></i>
@@ -270,46 +236,14 @@
             
             <ul class="sidebar-nav">
                 <li class="nav-section-title">Principal</li>
-                <li>
-                    <a href="#" class="nav-link active" data-target="dashboard">
-                        <i class="fas fa-home"></i>
-                        <span>Inicio</span>
-                    </a>
-                </li>
-                
+                <li><a href="#" class="nav-link active" data-target="dashboard"><i class="fas fa-home"></i><span>Inicio</span></a></li>
                 <li class="nav-section-title">Mi Cuenta</li>
-                <li>
-                    <a href="#" class="nav-link" data-target="mi-plan">
-                        <i class="fas fa-id-card"></i>
-                        <span>Mi Plan</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="nav-link" data-target="mis-asistencias">
-                        <i class="fas fa-calendar-check"></i>
-                        <span>Mis Asistencias</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="nav-link" data-target="mi-qr">
-                        <i class="fas fa-qrcode"></i>
-                        <span>Mi Código QR</span>
-                    </a>
-                </li>
-                
+                <li><a href="#" class="nav-link" data-target="mi-plan"><i class="fas fa-id-card"></i><span>Mi Plan</span></a></li>
+                <li><a href="#" class="nav-link" data-target="mis-asistencias"><i class="fas fa-calendar-check"></i><span>Mis Asistencias</span></a></li>
+                <li><a href="#" class="nav-link" data-target="mi-qr"><i class="fas fa-qrcode"></i><span>Mi Código QR</span></a></li>
                 <li class="nav-section-title">Gestión</li>
-                <li>
-                    <a href="#" class="nav-link" data-target="renovar">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Renovar Plan</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="nav-link" data-target="perfil">
-                        <i class="fas fa-user-cog"></i>
-                        <span>Mi Perfil</span>
-                    </a>
-                </li>
+                <li><a href="#" class="nav-link" data-target="renovar"><i class="fas fa-sync-alt"></i><span>Renovar Plan</span></a></li>
+                <li><a href="#" class="nav-link" data-target="perfil"><i class="fas fa-user-cog"></i><span>Mi Perfil</span></a></li>
             </ul>
 
             <div class="sidebar-footer">
@@ -320,170 +254,75 @@
                         <p>Socio</p>
                     </div>
                 </div>
-                <a href="{% url 'cerrar_sesion' %}" class="logout-button">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Cerrar Sesión</span>
-                </a>
-                <div class="copyright">
-                    © 2025 ClubHouse Digital
-                </div>
+                <a href="{% url 'cerrar_sesion' %}" class="logout-button"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
+                <div class="copyright">© 2025 ClubHouse Digital</div>
             </div>
         </nav>
 
-        <!-- Main Content -->
         <main class="main-content">
             
-            <!-- Dashboard Section -->
             <section id="dashboard" class="content-section active">
                 <div class="content-header">
                     <div>
-                        <h2 class="page-title">
-                            <i class="fas fa-home"></i>
-                            ¡Hola, {{ user.first_name }}!
-                        </h2>
+                        <h2 class="page-title"><i class="fas fa-home"></i> ¡Hola, {{ user.first_name }}!</h2>
                         <p class="page-subtitle">Bienvenido a tu panel de control</p>
                     </div>
                 </div>
-
-                <!-- Alert de vencimiento si faltan menos de 7 días -->
                 {% if membership and membership.days_remaining <= 7 and membership.days_remaining > 0 %}
                 <div class="alert-banner warning">
                     <i class="fas fa-exclamation-triangle"></i>
-                    <div>
-                        <strong>Tu plan vence pronto</strong>
-                        <p>Te quedan {{ membership.days_remaining }} días. Renueva ahora para no perder acceso.</p>
-                    </div>
+                    <div><strong>Tu plan vence pronto</strong><p>Te quedan {{ membership.days_remaining }} días. Renueva ahora para no perder acceso.</p></div>
                     <a href="#" class="btn-alert" onclick="navigateTo('renovar')">Renovar Ahora</a>
                 </div>
                 {% elif not has_active_membership %}
                 <div class="alert-banner danger">
                     <i class="fas fa-times-circle"></i>
-                    <div>
-                        <strong>Plan Vencido</strong>
-                        <p>Tu plan ha expirado. Renueva para continuar disfrutando del gimnasio.</p>
-                    </div>
+                    <div><strong>Plan Vencido</strong><p>Tu plan ha expirado. Renueva para continuar disfrutando del gimnasio.</p></div>
                     <a href="#" class="btn-alert" onclick="navigateTo('renovar')">Renovar Plan</a>
                 </div>
                 {% endif %}
                 
-                <!-- Estado del Plan -->
                 <div class="plan-status-card">
                     <div class="plan-status-header">
-                        <div class="plan-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
+                        <div class="plan-icon"><i class="fas fa-check-circle"></i></div>
                         <div class="plan-status-info">
                             <h3>Estado de tu Membresía</h3>
                             {% if has_active_membership %}
-                            <span class="status-badge active">
-                                <i class="fas fa-check"></i> Activo
-                            </span>
+                            <span class="status-badge active"><i class="fas fa-check"></i> Activo</span>
                             {% else %}
-                            <span class="status-badge expired">
-                                <i class="fas fa-times"></i> Vencido
-                            </span>
+                            <span class="status-badge expired"><i class="fas fa-times"></i> Vencido</span>
                             {% endif %}
                         </div>
                     </div>
-
                     {% if membership %}
                     <div class="plan-details-grid">
-                        <div class="plan-detail-item">
-                            <i class="fas fa-ticket-alt"></i>
-                            <div>
-                                <span class="detail-label">Plan Actual</span>
-                                <span class="detail-value">{{ membership.plan.name }}</span>
-                            </div>
-                        </div>
-                        <div class="plan-detail-item">
-                            <i class="fas fa-calendar-day"></i>
-                            <div>
-                                <span class="detail-label">Fecha de Inicio</span>
-                                <span class="detail-value">{{ membership.start_date|date:"d/m/Y" }}</span>
-                            </div>
-                        </div>
-                        <div class="plan-detail-item">
-                            <i class="fas fa-calendar-times"></i>
-                            <div>
-                                <span class="detail-label">Fecha de Vencimiento</span>
-                                <span class="detail-value">{{ membership.end_date|date:"d/m/Y" }}</span>
-                            </div>
-                        </div>
-                        <div class="plan-detail-item">
-                            <i class="fas fa-clock"></i>
-                            <div>
-                                <span class="detail-label">Días Restantes</span>
-                                <span class="detail-value {% if membership.days_remaining <= 7 %}text-warning{% endif %}">
-                                    {{ membership.days_remaining }} días
-                                </span>
-                            </div>
-                        </div>
+                        <div class="plan-detail-item"><i class="fas fa-ticket-alt"></i><div><span class="detail-label">Plan Actual</span><span class="detail-value">{{ membership.plan.name }}</span></div></div>
+                        <div class="plan-detail-item"><i class="fas fa-calendar-day"></i><div><span class="detail-label">Fecha de Inicio</span><span class="detail-value">{{ membership.start_date|date:"d/m/Y" }}</span></div></div>
+                        <div class="plan-detail-item"><i class="fas fa-calendar-times"></i><div><span class="detail-label">Fecha de Vencimiento</span><span class="detail-value">{{ membership.end_date|date:"d/m/Y" }}</span></div></div>
+                        <div class="plan-detail-item"><i class="fas fa-clock"></i><div><span class="detail-label">Días Restantes</span><span class="detail-value {% if membership.days_remaining <= 7 %}text-warning{% endif %}">{{ membership.days_remaining }} días</span></div></div>
                     </div>
-
-                    <!-- Progress bar de días -->
                     <div class="days-progress">
                         {% widthratio membership.days_remaining membership.plan.duration_days 100 as progress_percent %}
-                        <div class="progress-label">
-                            <span>Progreso del plan</span>
-                            <span>{{ progress_percent }}%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: {{ progress_percent }}%"></div>
-                        </div>
+                        <div class="progress-label"><span>Progreso del plan</span><span>{{ progress_percent }}%</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: {{ progress_percent }}%"></div></div>
                     </div>
                     {% else %}
-                    <div class="no-plan-message">
-                        <i class="fas fa-info-circle"></i>
-                        <p>No tienes un plan activo actualmente.</p>
-                        <a href="#" class="btn btn-primary" onclick="navigateTo('renovar')">
-                            <i class="fas fa-plus"></i>
-                            Adquirir Plan
-                        </a>
-                    </div>
+                    <div class="no-plan-message"><i class="fas fa-info-circle"></i><p>No tienes un plan activo actualmente.</p><a href="#" class="btn btn-primary" onclick="navigateTo('renovar')"><i class="fas fa-plus"></i> Adquirir Plan</a></div>
                     {% endif %}
                 </div>
 
-                <!-- Acciones Rápidas -->
                 <div class="quick-actions">
-                    <h3 class="section-title">
-                        <i class="fas fa-bolt"></i>
-                        Acciones Rápidas
-                    </h3>
+                    <h3 class="section-title"><i class="fas fa-bolt"></i> Acciones Rápidas</h3>
                     <div class="actions-grid">
-                        <a href="#" class="action-card" onclick="navigateTo('mi-qr')">
-                            <div class="action-icon primary">
-                                <i class="fas fa-qrcode"></i>
-                            </div>
-                            <h4>Ver mi QR</h4>
-                            <p>Descarga o muestra tu código de acceso</p>
-                        </a>
-                        <a href="#" class="action-card" onclick="navigateTo('renovar')">
-                            <div class="action-icon success">
-                                <i class="fas fa-sync-alt"></i>
-                            </div>
-                            <h4>Renovar Plan</h4>
-                            <p>Extiende tu membresía ahora</p>
-                        </a>
-                        <a href="#" class="action-card" onclick="navigateTo('mis-asistencias')">
-                            <div class="action-icon info">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
-                            <h4>Ver Asistencias</h4>
-                            <p>Revisa tu historial de visitas</p>
-                        </a>
-                        <a href="#" class="action-card" onclick="navigateTo('perfil')">
-                            <div class="action-icon warning">
-                                <i class="fas fa-user-edit"></i>
-                            </div>
-                            <h4>Editar Perfil</h4>
-                            <p>Actualiza tus datos personales</p>
-                        </a>
+                        <a href="#" class="action-card" onclick="navigateTo('mi-qr')"><div class="action-icon primary"><i class="fas fa-qrcode"></i></div><h4>Ver mi QR</h4><p>Descarga o muestra tu código de acceso</p></a>
+                        <a href="#" class="action-card" onclick="navigateTo('renovar')"><div class="action-icon success"><i class="fas fa-sync-alt"></i></div><h4>Renovar Plan</h4><p>Extiende tu membresía ahora</p></a>
+                        <a href="#" class="action-card" onclick="navigateTo('mis-asistencias')"><div class="action-icon info"><i class="fas fa-calendar-check"></i></div><h4>Ver Asistencias</h4><p>Revisa tu historial de visitas</p></a>
+                        <a href="#" class="action-card" onclick="navigateTo('perfil')"><div class="action-icon warning"><i class="fas fa-user-edit"></i></div><h4>Editar Perfil</h4><p>Actualiza tus datos personales</p></a>
                     </div>
                 </div>
             </section>
 
-            <!-- Mi Plan Section -->
-<section id="mi-plan" class="content-section">
+            <section id="mi-plan" class="content-section">
                 <div class="content-header">
                     <h2 class="page-title"><i class="fas fa-id-card"></i> Mi Plan</h2>
                 </div>
@@ -499,21 +338,19 @@
                         <h4><i class="fas fa-info-circle"></i> Detalles del Plan</h4>
                         <ul class="plan-features-list">
                             <li><i class="fas fa-check"></i> {{ membership.plan.access_days }}</li>
-                            </ul>
+                            <li><i class="fas fa-check"></i> Acceso a todas las áreas</li>
+                            <li><i class="fas fa-check"></i> Código QR personal</li>
+                            {% if membership.plan.includes_classes %}<li><i class="fas fa-check"></i> Clases grupales incluidas</li>{% endif %}
+                            {% if membership.plan.includes_nutritionist %}<li><i class="fas fa-check"></i> Asesoría nutricional</li>{% endif %}
+                        </ul>
                     </div>
-                    
+
                     <div class="plan-info-section">
                         <h4><i class="fas fa-calendar-alt"></i> Vigencia</h4>
                         <div class="date-range">
-                            <div class="date-item">
-                                <span class="date-label">Inicio</span>
-                                <span class="date-value">{{ membership.start_date|date:"d/m/Y" }}</span>
-                            </div>
+                            <div class="date-item"><span class="date-label">Inicio</span><span class="date-value">{{ membership.start_date|date:"d/m/Y" }}</span></div>
                             <div class="date-separator">→</div>
-                            <div class="date-item">
-                                <span class="date-label">Vencimiento</span>
-                                <span class="date-value">{{ membership.end_date|date:"d/m/Y" }}</span>
-                            </div>
+                            <div class="date-item"><span class="date-label">Vencimiento</span><span class="date-value">{{ membership.end_date|date:"d/m/Y" }}</span></div>
                         </div>
                     </div>
 
@@ -531,223 +368,80 @@
                 <div class="empty-state">
                     <i class="fas fa-inbox"></i>
                     <h3>No tienes un plan activo</h3>
-                    <button class="btn btn-primary" onclick="navigateTo('renovar')">
-                        <i class="fas fa-plus"></i> Ver Planes
-                    </button>
+                    <p>Adquiere un plan para comenzar a disfrutar del gimnasio</p>
+                    <button class="btn btn-primary" onclick="navigateTo('renovar')"><i class="fas fa-plus"></i> Ver Planes Disponibles</button>
                 </div>
                 {% endif %}
             </section>
 
-            <!-- Mis Asistencias Section -->
             <section id="mis-asistencias" class="content-section">
                 <div class="content-header">
-                    <h2 class="page-title">
-                        <i class="fas fa-calendar-check"></i>
-                        Mis Asistencias
-                    </h2>
+                    <h2 class="page-title"><i class="fas fa-calendar-check"></i> Mis Asistencias</h2>
                 </div>
-            
-                <!-- Indicador si ya ingresó hoy -->
                 {% if accessed_today %}
                 <div class="alert alert-info" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-check-circle" style="font-size: 24px;"></i>
-                    <div>
-                        <strong>¡Ya ingresaste hoy al gimnasio!</strong>
-                        <p style="margin: 5px 0 0 0; font-size: 0.9em;">Tu asistencia ha sido registrada correctamente.</p>
-                    </div>
+                    <div><strong>¡Ya ingresaste hoy al gimnasio!</strong><p style="margin: 5px 0 0 0; font-size: 0.9em;">Tu asistencia ha sido registrada correctamente.</p></div>
                 </div>
                 {% endif %}
-            
-                <!-- Estadísticas de Asistencia -->
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon primary">
-                            <i class="fas fa-calendar-alt"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3>Este Mes</h3>
-                            <div class="stat-value">{{ monthly_access }}</div>
-                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">
-                                {% if monthly_access > 0 %}
-                                    Asistencias registradas
-                                {% else %}
-                                    Sin asistencias aún
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon info">
-                            <i class="fas fa-calendar-week"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3>Esta Semana</h3>
-                            <div class="stat-value">{{ weekly_access }}</div>
-                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">
-                                Últimos 7 días
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon success">
-                            <i class="fas fa-fire"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3>Racha Actual</h3>
-                            <div class="stat-value">{{ streak_days }}</div>
-                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">
-                                {% if streak_days > 0 %}
-                                    Días consecutivos 🔥
-                                {% else %}
-                                    ¡Empieza tu racha!
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                            <i class="fas fa-history"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3>Total</h3>
-                            <div class="stat-value">{{ total_access }}</div>
-                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">
-                                Asistencias totales
-                            </p>
-                        </div>
-                    </div>
+                    <div class="stat-card"><div class="stat-icon primary"><i class="fas fa-calendar-alt"></i></div><div class="stat-content"><h3>Este Mes</h3><div class="stat-value">{{ monthly_access }}</div><p style="font-size: 0.85em; color: #666; margin-top: 5px;">Asistencias registradas</p></div></div>
+                    <div class="stat-card"><div class="stat-icon info"><i class="fas fa-calendar-week"></i></div><div class="stat-content"><h3>Esta Semana</h3><div class="stat-value">{{ weekly_access }}</div><p style="font-size: 0.85em; color: #666; margin-top: 5px;">Últimos 7 días</p></div></div>
+                    <div class="stat-card"><div class="stat-icon success"><i class="fas fa-fire"></i></div><div class="stat-content"><h3>Racha Actual</h3><div class="stat-value">{{ streak_days }}</div><p style="font-size: 0.85em; color: #666; margin-top: 5px;">Días consecutivos 🔥</p></div></div>
+                    <div class="stat-card"><div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"><i class="fas fa-history"></i></div><div class="stat-content"><h3>Total</h3><div class="stat-value">{{ total_access }}</div><p style="font-size: 0.85em; color: #666; margin-top: 5px;">Asistencias totales</p></div></div>
                 </div>
-            
-                <!-- Historial de Asistencias -->
                 <div class="management-section" style="margin-top: 30px;">
-                    <h3 class="section-title">
-                        <i class="fas fa-history"></i>
-                        Historial de Accesos (Últimos 30 días)
-                    </h3>
-            
+                    <h3 class="section-title"><i class="fas fa-history"></i> Historial de Accesos (Últimos 30 días)</h3>
                     {% if access_logs %}
                     <div class="table-responsive">
                         <table class="modern-table">
-                            <thead>
-                                <tr>
-                                    <th><i class="fas fa-calendar"></i> Fecha</th>
-                                    <th><i class="fas fa-clock"></i> Hora</th>
-                                    <th><i class="fas fa-calendar-day"></i> Día</th>
-                                    <th><i class="fas fa-tag"></i> Plan Activo</th>
-                                    <th><i class="fas fa-check-circle"></i> Estado</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th><i class="fas fa-calendar"></i> Fecha</th><th><i class="fas fa-clock"></i> Hora</th><th><i class="fas fa-calendar-day"></i> Día</th><th><i class="fas fa-tag"></i> Plan Activo</th><th><i class="fas fa-check-circle"></i> Estado</th></tr></thead>
                             <tbody>
                                 {% for log in access_logs %}
                                 <tr>
                                     <td><strong>{{ log.timestamp|date:"d/m/Y" }}</strong></td>
                                     <td>{{ log.timestamp|time:"H:i" }}</td>
-                                    <td>
-                                        {% if log.timestamp|date:"l" == "Monday" %}Lunes
-                                        {% elif log.timestamp|date:"l" == "Tuesday" %}Martes
-                                        {% elif log.timestamp|date:"l" == "Wednesday" %}Miércoles
-                                        {% elif log.timestamp|date:"l" == "Thursday" %}Jueves
-                                        {% elif log.timestamp|date:"l" == "Friday" %}Viernes
-                                        {% elif log.timestamp|date:"l" == "Saturday" %}Sábado
-                                        {% elif log.timestamp|date:"l" == "Sunday" %}Domingo
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if log.membership %}
-                                            {{ log.membership.plan.name }}
-                                        {% else %}
-                                            <span style="color: #999;">Sin plan</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <span class="status-badge allowed">
-                                            <i class="fas fa-check-circle"></i>
-                                            Permitido
-                                        </span>
-                                    </td>
+                                    <td>{{ log.timestamp|date:"l" }}</td>
+                                    <td>{{ log.membership.plan.name|default:"Sin plan" }}</td>
+                                    <td><span class="status-badge allowed"><i class="fas fa-check-circle"></i> Permitido</span></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
-                    
-                    {% if access_logs.count > 20 %}
-                    <p style="text-align: center; color: #666; margin-top: 15px; font-size: 0.9em;">
-                        <i class="fas fa-info-circle"></i> Mostrando las últimas 20 asistencias
-                    </p>
-                    {% endif %}
-                    
                     {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-clipboard-list"></i>
-                        <h3>Sin registros aún</h3>
-                        <p>Tus asistencias al gimnasio aparecerán aquí después de escanear tu código QR en la entrada.</p>
-                        <p style="margin-top: 10px; color: #666;">
-                            <i class="fas fa-qrcode"></i> Escanea tu QR en recepción para registrar tu ingreso
-                        </p>
-                    </div>
+                    <div class="empty-state"><i class="fas fa-clipboard-list"></i><h3>Sin registros aún</h3><p>Tus asistencias aparecerán aquí.</p></div>
                     {% endif %}
                 </div>
             </section>
 
-            <!-- Mi QR Section -->
             <section id="mi-qr" class="content-section">
-                <div class="content-header">
-                    <h2 class="page-title">
-                        <i class="fas fa-qrcode"></i>
-                        Mi Código QR
-                    </h2>
-                </div>
-
+                <div class="content-header"><h2 class="page-title"><i class="fas fa-qrcode"></i> Mi Código QR</h2></div>
                 <div class="qr-display-card">
-                    <div class="qr-instructions">
-                        <i class="fas fa-info-circle"></i>
-                        <p>Este es tu código QR personal para acceder al gimnasio. Muéstralo en recepción o descárgalo para tenerlo siempre disponible en tu móvil.</p>
-                    </div>
-
+                    <div class="qr-instructions"><i class="fas fa-info-circle"></i><p>Este es tu código QR personal para acceder al gimnasio.</p></div>
                     {% if user.qr_code %}
-                    <div class="qr-image-container">
-                        <img src="{{ user.qr_code.url }}" alt="Mi Código QR" class="qr-image">
-                    </div>
-
-                    <div class="qr-actions">
-                        <a href="{{ user.qr_code.url }}" download="mi_qr_clubhouse.png" class="btn btn-primary">
-                            <i class="fas fa-download"></i>
-                            Descargar QR
-                        </a>
-                        <button class="btn btn-secondary" onclick="shareQR()">
-                            <i class="fas fa-share-alt"></i>
-                            Compartir
-                        </button>
-                    </div>
-
-                    <div class="qr-info">
-                        <p><strong>ID Único:</strong> {{ user.qr_unique_id|slice:":20" }}...</p>
-                        <p><strong>RUT:</strong> {{ user.rut }}</p>
-                    </div>
+                    <div class="qr-image-container"><img src="{{ user.qr_code.url }}" alt="Mi Código QR" class="qr-image"></div>
+                    <div class="qr-actions"><a href="{{ user.qr_code.url }}" download="mi_qr_clubhouse.png" class="btn btn-primary"><i class="fas fa-download"></i> Descargar QR</a><button class="btn btn-secondary" onclick="shareQR()"><i class="fas fa-share-alt"></i> Compartir</button></div>
+                    <div class="qr-info"><p><strong>ID Único:</strong> {{ user.qr_unique_id|slice:":20" }}...</p><p><strong>RUT:</strong> {{ user.rut }}</p></div>
                     {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-qrcode"></i>
-                        <h3>QR no disponible</h3>
-                        <p>Contacta con recepción para generar tu código QR</p>
-                    </div>
+                    <div class="empty-state"><i class="fas fa-qrcode"></i><h3>QR no disponible</h3><p>Contacta con recepción.</p></div>
                     {% endif %}
                 </div>
             </section>
             
-            <!-- Renovar Plan Section -->
-<section id="renovar" class="content-section">
+            <section id="renovar" class="content-section">
                 <div class="content-header">
-                    <h2 class="page-title"><i class="fas fa-sync-alt"></i> Seleccionar Membresía</h2>
-                    <p class="page-subtitle">Elige un plan para renovar o cambiar tu suscripción actual.</p>
+                    <h2 class="page-title"><i class="fas fa-sync-alt"></i> Renovar o Cambiar Plan</h2>
+                    <p class="page-subtitle">Selecciona tu próximo objetivo</p>
                 </div>
 
                 <div class="plans-grid-admin">
                     {% for item in planes_renovacion %}
-                    <div class="plan-card-admin" onclick="selectPlanForRenewal('{{ item.obj.name }}', {{ item.obj.price }})">
+                    <div class="plan-card-admin" onclick="selectPlanForRenewal('{{ item.obj.name }}', {{ item.obj.price }}, {{ item.obj.id }})">
+                        {% if item.obj.plan_type == 'completo' or item.obj.plan_type == 'vip' %}
+                            <div style="position: absolute; top: 0; right: 0; background: linear-gradient(135deg, var(--warning-color), #ff6348); color: white; font-size: 0.7rem; font-weight: 700; padding: 6px 12px; border-bottom-left-radius: 16px; text-transform: uppercase;">Recomendado</div>
+                        {% endif %}
+
                         <div class="plan-name">{{ item.obj.name }}</div>
                         <div class="plan-price">${{ item.obj.price|floatformat:0 }} <span>/mes</span></div>
                         
@@ -755,17 +449,9 @@
                             <li><i class='fas fa-calendar-alt'></i> {{ item.obj.duration_days }} días de vigencia</li>
                             <li><i class='fas fa-clock'></i> {{ item.obj.access_days }}</li>
                             
-                            {% if item.obj.includes_classes %}
-                                <li><i class='fas fa-dumbbell'></i> Clases grupales incluidas</li>
-                            {% endif %}
-                            
-                            {% if item.obj.includes_nutritionist %}
-                                <li><i class='fas fa-apple-alt'></i> Evaluación nutricional</li>
-                            {% endif %}
-
-                            {% for beneficio in item.beneficios_extra %}
-                                <li><i class='fas fa-check-circle'></i> {{ beneficio }}</li>
-                            {% endfor %}
+                            {% if item.obj.includes_classes %}<li><i class='fas fa-dumbbell'></i> Clases grupales incluidas</li>{% endif %}
+                            {% if item.obj.includes_nutritionist %}<li><i class='fas fa-apple-alt'></i> Evaluación nutricional</li>{% endif %}
+                            {% for beneficio in item.beneficios_extra %}<li><i class='fas fa-check-circle'></i> {{ beneficio }}</li>{% endfor %}
                         </ul>
                     </div>
                     {% empty %}
@@ -773,84 +459,70 @@
                     {% endfor %}
                 </div>
 
-                <div id="renewalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(5px);">
-                    <div style="background: #121212; padding: 2rem; border-radius: 16px; max-width: 400px; width: 90%; border: 1px solid var(--primary-color); text-align: center; box-shadow: 0 0 30px rgba(0, 255, 157, 0.1);">
-                        <i class="fas fa-receipt" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
-                        <h3 style="color: white; margin-bottom: 1rem;">Confirmar Renovación</h3>
-                        <p style="color: #ccc; margin-bottom: 1.5rem;">
-                            Has seleccionado: <br>
-                            <strong id="modalPlanName" style="color: var(--primary-color); font-size: 1.2rem;">-</strong><br>
-                            Precio: <strong id="modalPlanPrice">-</strong>
-                        </p>
-                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: left;">
-                            <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 700;">Instrucciones:</p>
-                            <ol style="color: #ccc; font-size: 0.9rem; padding-left: 1.2rem; margin: 0;">
-                                <li>Acércate a recepción.</li>
-                                <li>Indica tu RUT y este plan.</li>
-                                <li>Realiza el pago presencial.</li>
-                            </ol>
+                <div id="renewalModal" class="modal-overlay">
+                    <div class="modal-content" style="text-align: left; max-width: 500px;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <i class="fas fa-receipt" style="font-size: 3rem; color: var(--primary-color);"></i>
+                            <h3 class="modal-title" style="margin-top: 10px;">Confirmar Renovación</h3>
+                            <p class="modal-subtitle">Estás a un paso de activar tu plan.</p>
                         </div>
-                        <button class="btn btn-secondary" onclick="document.getElementById('renewalModal').style.display='none'" style="width: 100%; justify-content: center;">Cerrar</button>
+
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="color: var(--text-secondary);">Plan Seleccionado:</span>
+                                <strong id="modalPlanName" style="color: white;">-</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">Total a Pagar:</span>
+                                <strong id="modalPlanPrice" style="color: var(--primary-color); font-size: 1.2rem;">-</strong>
+                            </div>
+                        </div>
+
+                        <form id="renewalForm" onsubmit="handleRenewalSubmit(event)">
+                            <input type="hidden" id="modalPlanId">
+
+                            <div class="input-wrapper-modern">
+                                <label>Método de Pago</label>
+                                <select id="paymentMethod" class="modern-input" required>
+                                    <option value="" disabled selected>Selecciona una opción...</option>
+                                    <option value="transferencia">Transferencia Bancaria</option>
+                                    <option value="tarjeta">Tarjeta (Crédito/Débito)</option>
+                                    <option value="efectivo">Efectivo (Pagar en caja)</option>
+                                </select>
+                            </div>
+
+                            <div class="input-wrapper-modern">
+                                <label>Comprobantes y Accesos</label>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 5px;">
+                                    <label class="checkbox-wrapper" style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-weight: normal; margin: 0;">
+                                        <input type="checkbox" id="checkQR" style="accent-color: var(--primary-color); width: 18px; height: 18px;">
+                                        <span>Enviar código QR a mi correo</span>
+                                    </label>
+                                    <label class="checkbox-wrapper" style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-weight: normal; margin: 0;">
+                                        <input type="checkbox" id="checkContract" checked style="accent-color: var(--primary-color); width: 18px; height: 18px;">
+                                        <span>Enviar contrato/comprobante a mi correo</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 10px; margin-top: 2rem;">
+                                <button type="button" class="btn btn-secondary" onclick="closeRenewalModal()" style="flex: 1; justify-content: center;">Cancelar</button>
+                                <button type="submit" class="btn-confirm-pay" id="btnConfirmRenewal" style="flex: 1;">
+                                    <span class="btn-text">Confirmar y Pagar</span>
+                                    <div class="loader-spinner"></div>
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </section>
 
-            <!-- Perfil Section -->
             <section id="perfil" class="content-section">
-                <div class="content-header">
-                    <h2 class="page-title">
-                        <i class="fas fa-user-cog"></i>
-                        Mi Perfil
-                    </h2>
-                </div>
-
+                <div class="content-header"><h2 class="page-title"><i class="fas fa-user-cog"></i> Mi Perfil</h2></div>
                 <div class="profile-card">
-                    <div class="profile-header">
-                        <div class="profile-avatar-large">
-                            {{ user.first_name.0 }}{{ user.last_name.0 }}
-                        </div>
-                        <div class="profile-header-info">
-                            <h3>{{ user.get_full_name }}</h3>
-                            <p>{{ user.email }}</p>
-                            <span class="member-since">
-                                <i class="fas fa-calendar"></i>
-                                Miembro desde {{ user.created_at|date:"F Y" }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="profile-details">
-                        <h4><i class="fas fa-id-card"></i> Información Personal</h4>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">RUT</span>
-                                <span class="detail-value">{{ user.rut }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Correo</span>
-                                <span class="detail-value">{{ user.email }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Teléfono</span>
-                                <span class="detail-value">{{ user.phone }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Fecha de Nacimiento</span>
-                                <span class="detail-value">{{ user.birthdate|date:"d/m/Y" }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="profile-actions">
-                        <a href="{% url 'edit_profile_socio' %}" class="btn btn-primary">
-                            <i class="fas fa-edit"></i>
-                            Editar Perfil
-                        </a>
-                        <button class="btn btn-secondary" onclick="openPasswordModal()">
-                            <i class="fas fa-key"></i>
-                            Cambiar Contraseña
-                        </button>
-                    </div>
+                    <div class="profile-header"><div class="profile-avatar-large">{{ user.first_name.0 }}{{ user.last_name.0 }}</div><div class="profile-header-info"><h3>{{ user.get_full_name }}</h3><p>{{ user.email }}</p><span class="member-since"><i class="fas fa-calendar"></i> Miembro desde {{ user.created_at|date:"F Y" }}</span></div></div>
+                    <div class="profile-details"><h4><i class="fas fa-id-card"></i> Información Personal</h4><div class="detail-grid"><div class="detail-item"><span class="detail-label">RUT</span><span class="detail-value">{{ user.rut }}</span></div><div class="detail-item"><span class="detail-label">Correo</span><span class="detail-value">{{ user.email }}</span></div><div class="detail-item"><span class="detail-label">Teléfono</span><span class="detail-value">{{ user.phone }}</span></div><div class="detail-item"><span class="detail-label">Fecha de Nacimiento</span><span class="detail-value">{{ user.birthdate|date:"d/m/Y" }}</span></div></div></div>
+                    <div class="profile-actions"><a href="{% url 'edit_profile_socio' %}" class="btn btn-primary"><i class="fas fa-edit"></i> Editar Perfil</a><button class="btn btn-secondary" onclick="openPasswordModal()"><i class="fas fa-key"></i> Cambiar Contraseña</button></div>
                 </div>
             </section>
 
@@ -859,76 +531,16 @@
 
     <div id="passwordModal" class="modal-overlay" style="display: none;">
         <div class="modal-content" onclick="event.stopPropagation()">
-            
-            <button type="button" onclick="closePasswordModal()" style="position: absolute; top: 20px; right: 20px; background:none; border:none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; z-index: 10;">
-                <i class="fas fa-times"></i>
-            </button>
-
+            <button type="button" onclick="closePasswordModal()" style="position: absolute; top: 20px; right: 20px; background:none; border:none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; z-index: 10;"><i class="fas fa-times"></i></button>
             <div id="step-1" class="step-container active">
-                <div class="modal-icon-large icon-lock">
-                    <i class="fas fa-user-lock"></i>
-                </div>
-                <h3 class="modal-title">Seguridad</h3>
-                <p class="modal-subtitle">Ingresa tu contraseña actual para continuar.</p>
-
-                <form id="formStep1" onsubmit="handleVerifyStep(event)">
-                    <div class="input-wrapper-modern">
-                        <label>Contraseña Actual</label>
-                        <input type="password" id="current_password_input" class="modern-input" placeholder="••••••••" required autofocus>
-                        <div id="step1-error" style="color: var(--danger-color); font-size: 0.85rem; margin-top: 5px; display: none;"></div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary btn-full" id="btn-verify">
-                        <span class="btn-text-content">Continuar <i class="fas fa-arrow-right"></i></span>
-                        <div class="loader-spinner"></div>
-                    </button>
-                </form>
+                <div class="modal-icon-large icon-lock"><i class="fas fa-user-lock"></i></div><h3 class="modal-title">Seguridad</h3><p class="modal-subtitle">Ingresa tu contraseña actual.</p>
+                <form id="formStep1" onsubmit="handleVerifyStep(event)"><div class="input-wrapper-modern"><label>Contraseña Actual</label><input type="password" id="current_password_input" class="modern-input" placeholder="••••••••" required autofocus><div id="step1-error" style="color: var(--danger-color); font-size: 0.85rem; margin-top: 5px; display: none;"></div></div><button type="submit" class="btn btn-primary btn-full" id="btn-verify"><span class="btn-text-content">Continuar <i class="fas fa-arrow-right"></i></span><div class="loader-spinner"></div></button></form>
             </div>
-
             <div id="step-2" class="step-container">
-                <div class="modal-icon-large icon-key">
-                    <i class="fas fa-key"></i>
-                </div>
-                <h3 class="modal-title">Nueva Contraseña</h3>
-                <p class="modal-subtitle">Define tu nueva clave de acceso.</p>
-
-                <form id="formStep2" onsubmit="handleSubmitNewPass(event)">
-                    <div class="input-wrapper-modern">
-                        <label>Nueva Contraseña</label>
-                        <input type="password" id="new_password_input" class="modern-input" placeholder="Mínimo 8 caracteres" required oninput="validatePasswordsUI()">
-                    </div>
-
-                    <div class="input-wrapper-modern">
-                        <label>Confirmar</label>
-                        <input type="password" id="confirm_password_input" class="modern-input" placeholder="Repite la contraseña" required oninput="validatePasswordsUI()">
-                        <div id="match-feedback" class="match-indicator"></div>
-                    </div>
-
-                    <div id="step2-error" style="color: var(--danger-color); font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
-
-                    <button type="submit" class="btn btn-primary btn-full" id="btn-save-pass">
-                        <span class="btn-text-content">Cambiar Contraseña</span>
-                        <div class="loader-spinner"></div>
-                    </button>
-                    
-                    <button type="button" class="btn-text" onclick="showStep(1)">
-                        Volver
-                    </button>
-                </form>
+                <div class="modal-icon-large icon-key"><i class="fas fa-key"></i></div><h3 class="modal-title">Nueva Contraseña</h3><p class="modal-subtitle">Define tu nueva clave.</p>
+                <form id="formStep2" onsubmit="handleSubmitNewPass(event)"><div class="input-wrapper-modern"><label>Nueva Contraseña</label><input type="password" id="new_password_input" class="modern-input" placeholder="Mínimo 8 caracteres" required oninput="validatePasswordsUI()"></div><div class="input-wrapper-modern"><label>Confirmar</label><input type="password" id="confirm_password_input" class="modern-input" placeholder="Repite la contraseña" required oninput="validatePasswordsUI()"><div id="match-feedback" class="match-indicator"></div></div><div id="step2-error" style="color: var(--danger-color); font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div><button type="submit" class="btn btn-primary btn-full" id="btn-save-pass"><span class="btn-text-content">Cambiar Contraseña</span><div class="loader-spinner"></div></button><button type="button" class="btn-text" onclick="showStep(1)">Volver</button></form>
             </div>
-
-            <div id="step-3" class="step-container">
-                <div class="modal-icon-large icon-success">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h3 class="modal-title">¡Listo!</h3>
-                <p class="modal-subtitle">Tu contraseña ha sido actualizada correctamente.</p>
-
-                <button type="button" class="btn btn-primary btn-full" onclick="closePasswordModal()">
-                    Cerrar
-                </button>
-            </div>
-
+            <div id="step-3" class="step-container"><div class="modal-icon-large icon-success"><i class="fas fa-check-circle"></i></div><h3 class="modal-title">¡Listo!</h3><p class="modal-subtitle">Contraseña actualizada.</p><button type="button" class="btn btn-primary btn-full" onclick="closePasswordModal()">Cerrar</button></div>
         </div>
     </div>
 
@@ -948,293 +560,54 @@
     </div>
 
     <script>
-
         function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        // ¿Este string de cookie comienza con el nombre que queremos?
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
                     }
                 }
-                return cookieValue;
             }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Navegación entre secciones
             const navLinks = document.querySelectorAll('.nav-link');
             const sections = document.querySelectorAll('.content-section');
-
             navLinks.forEach(link => {
                 if(link.getAttribute('data-target')) {
                     link.addEventListener('click', function(e) {
                         e.preventDefault();
-                        
                         const targetId = this.getAttribute('data-target');
-                        
                         navLinks.forEach(nav => nav.classList.remove('active'));
                         sections.forEach(sec => sec.classList.remove('active'));
-                        
                         this.classList.add('active');
                         document.getElementById(targetId).classList.add('active');
-
-                        document.querySelector('.main-content').scrollTo({
-                            top: 0,
-                            behavior: 'smooth'
-                        });
+                        document.querySelector('.main-content').scrollTo({ top: 0, behavior: 'smooth' });
                     });
                 }
             });
         });
 
-        // Función helper para navegar entre secciones
         function navigateTo(sectionId) {
             event.preventDefault();
             const targetSection = document.getElementById(sectionId);
             const targetLink = document.querySelector(`[data-target="${sectionId}"]`);
-            
             if (targetSection && targetLink) {
                 document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
                 document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-                
                 targetLink.classList.add('active');
                 targetSection.classList.add('active');
-                
-                document.querySelector('.main-content').scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
+                document.querySelector('.main-content').scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
-        // Funciones para QR
-        function printQR() {
-            window.print();
-        }
-
-        function shareQR() {
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Mi QR ClubHouse',
-                    text: 'Mi código QR de acceso al gimnasio',
-                    url: window.location.href
-                }).catch(console.error);
-            } else {
-                alert('Función de compartir no disponible en este navegador');
-            }
-        }
-
-        // Función mejorada para seleccionar plan
-        function selectPlanForRenewal(planName, price) {
-            // Actualizar contenido del modal
-            document.getElementById('modalPlanName').textContent = planName;
-            document.getElementById('modalPlanPrice').textContent = '$' + price.toLocaleString('es-CL');
-            
-            // Mostrar modal
-            const modal = document.getElementById('renewalModal');
-            modal.style.display = 'flex';
-            
-            // Animación simple de entrada
-            modal.querySelector('div').style.animation = 'fadeInUp 0.3s ease';
-        }
-
-        // Cerrar modal al hacer click fuera
-        window.onclick = function(event) {
-            const modal = document.getElementById('renewalModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-
-        /* --- Lógica Segura del Modal de Contraseña --- */
-        // 1. Abrir Modal
-        function openPasswordModal() {
-            const modal = document.getElementById('passwordModal');
-            
-            // Limpiar campos
-            document.getElementById('formStep1').reset();
-            document.getElementById('formStep2').reset();
-            
-            // Limpiar errores
-            document.getElementById('step1-error').style.display = 'none';
-            document.getElementById('step2-error').style.display = 'none';
-            document.getElementById('match-feedback').textContent = '';
-            
-            // Resetear clases visuales
-            document.querySelectorAll('.modern-input').forEach(i => i.classList.remove('valid', 'invalid'));
-
-            // Mostrar paso 1
-            showStep(1);
-            
-            modal.style.display = 'flex';
-        }
-
-        // 2. Cerrar Modal
-        function closePasswordModal() {
-            document.getElementById('passwordModal').style.display = 'none';
-        }
-
-        // 3. Cambiar de paso (UI)
-        function showStep(step) {
-            document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
-            document.getElementById(`step-${step}`).classList.add('active');
-        }
-
-        // 4. Lógica Paso 1: VERIFICAR CONTRASEÑA ACTUAL (Conexión Servidor)
-        async function handleVerifyStep(e) {
-            e.preventDefault();
-            
-            const passInput = document.getElementById('current_password_input');
-            const currentPass = passInput.value;
-            const errorDiv = document.getElementById('step1-error');
-            const btn = document.getElementById('btn-verify');
-            const btnText = btn.querySelector('.btn-text-content');
-            const loader = btn.querySelector('.loader-spinner');
-
-            if (!currentPass) return;
-
-            // UI Loading
-            btn.disabled = true;
-            btnText.style.display = 'none';
-            loader.style.display = 'block';
-            errorDiv.style.display = 'none';
-
-            try {
-                const response = await fetch('/api/verify-password/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({ password: currentPass })
-                });
-
-                const data = await response.json();
-
-                if (data.valid) {
-                    // Éxito: Pasar al paso 2
-                    showStep(2);
-                } else {
-                    // Error: Contraseña incorrecta
-                    errorDiv.textContent = data.error || "Contraseña incorrecta";
-                    errorDiv.style.display = 'block';
-                    passInput.classList.add('invalid');
-                }
-            } catch (error) {
-                console.error(error);
-                errorDiv.textContent = "Error de conexión. Intente nuevamente.";
-                errorDiv.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                btnText.style.display = 'block';
-                loader.style.display = 'none';
-            }
-        }
-
-        // 5. Validación visual en Paso 2 (Mientras escribe)
-        function validatePasswordsUI() {
-            const p1 = document.getElementById('new_password_input');
-            const p2 = document.getElementById('confirm_password_input');
-            const feedback = document.getElementById('match-feedback');
-
-            // Longitud
-            if (p1.value.length > 0 && p1.value.length < 8) p1.classList.add('invalid');
-            else p1.classList.remove('invalid');
-
-            // Coincidencia
-            if (p2.value.length > 0) {
-                if (p1.value === p2.value) {
-                    p2.classList.remove('invalid');
-                    p2.classList.add('valid');
-                    feedback.innerHTML = '<span class="text-match"><i class="fas fa-check"></i> Coinciden</span>';
-                } else {
-                    p2.classList.remove('valid');
-                    p2.classList.add('invalid');
-                    feedback.innerHTML = '<span class="text-mismatch"><i class="fas fa-times"></i> No coinciden</span>';
-                }
-            } else {
-                feedback.innerHTML = '';
-                p2.classList.remove('valid', 'invalid');
-            }
-        }
-
-        // 6. Lógica Paso 2: GUARDAR NUEVA CONTRASEÑA
-        async function handleSubmitNewPass(e) {
-            e.preventDefault();
-
-            const newPass = document.getElementById('new_password_input').value;
-            const confirmPass = document.getElementById('confirm_password_input').value;
-            const errorDiv = document.getElementById('step2-error');
-            const btn = document.getElementById('btn-save-pass');
-            const btnText = btn.querySelector('.btn-text-content');
-            const loader = btn.querySelector('.loader-spinner');
-
-            // Validaciones locales finales
-            if (newPass.length < 8) {
-                errorDiv.textContent = "La contraseña debe tener mínimo 8 caracteres.";
-                errorDiv.style.display = 'block';
-                return;
-            }
-            if (newPass !== confirmPass) {
-                errorDiv.textContent = "Las contraseñas no coinciden.";
-                errorDiv.style.display = 'block';
-                return;
-            }
-
-            // UI Loading
-            btn.disabled = true;
-            btnText.style.display = 'none';
-            loader.style.display = 'block';
-            errorDiv.style.display = 'none';
-
-            try {
-                const response = await fetch('/api/change-password/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({
-                        new_password: newPass,
-                        confirm_password: confirmPass
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showStep(3); // Mostrar éxito
-                } else {
-                    errorDiv.textContent = data.error || "Error al actualizar.";
-                    errorDiv.style.display = 'block';
-                }
-            } catch (error) {
-                console.error(error);
-                errorDiv.textContent = "Error de conexión con el servidor.";
-                errorDiv.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                btnText.style.display = 'block';
-                loader.style.display = 'none';
-            }
-        }
-
-        // PREVENIR CIERRE ACCIDENTAL: Solo cerramos si es el modal de renovación (si quieres)
-        // Pero para el de contraseña, NO ponemos lógica aquí para cerrar al hacer click afuera.
-        window.onclick = function(event) {
-            const renewalModal = document.getElementById('renewalModal');
-            // Solo cerramos el modal de renovación si se hace click fuera
-            if (event.target == renewalModal) {
-                renewalModal.style.display = "none";
-            }
-            // El passwordModal ya NO se cierra aquí.
-        }
-
+        // --- Lógica del Modal de Cancelación ---
         function openCancelModal() {
             const modal = document.getElementById('cancelModal');
             modal.style.display = 'flex';
@@ -1245,7 +618,6 @@
             document.getElementById('cancelModal').style.display = 'none';
         }
 
-        // Ejecutar cancelación
         async function confirmCancelPlan() {
             const btn = document.querySelector('#cancelModal button[style*="background: #ff4757"]');
             const originalText = btn.innerText;
@@ -1264,7 +636,6 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // Cerrar modal y mostrar éxito (puedes usar un alert simple o recargar)
                     closeCancelModal();
                     location.reload(); 
                 } else {
@@ -1280,15 +651,163 @@
             }
         }
 
-        // Cerrar modal al hacer click fuera
+        // --- Lógica de Renovación ---
+        function selectPlanForRenewal(planName, price, planId) {
+            document.getElementById('modalPlanName').textContent = planName;
+            document.getElementById('modalPlanPrice').textContent = '$' + price.toLocaleString('es-CL');
+            document.getElementById('modalPlanId').value = planId;
+            document.getElementById('paymentMethod').value = "";
+            document.getElementById('checkQR').checked = false;
+            document.getElementById('checkContract').checked = true;
+            const modal = document.getElementById('renewalModal');
+            modal.style.display = 'flex';
+        }
+
+        function closeRenewalModal() {
+            document.getElementById('renewalModal').style.display = 'none';
+        }
+
+        async function handleRenewalSubmit(e) {
+            e.preventDefault();
+            const planId = document.getElementById('modalPlanId').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const sendQr = document.getElementById('checkQR').checked;
+            const sendContract = document.getElementById('checkContract').checked;
+            
+            const btn = document.getElementById('btnConfirmRenewal');
+            const btnText = btn.querySelector('.btn-text');
+            const loader = btn.querySelector('.loader-spinner');
+
+            btn.disabled = true;
+            if(btnText) btnText.style.display = 'none';
+            if(loader) loader.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/renovar-plan/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                    body: JSON.stringify({
+                        plan_id: planId,
+                        payment_method: paymentMethod,
+                        send_qr: sendQr,
+                        send_contract: sendContract,
+                        notes: "Renovación automática desde panel socio"
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert("¡Plan renovado con éxito!");
+                    location.reload();
+                } else {
+                    alert("Error: " + data.error);
+                    btn.disabled = false;
+                    if(btnText) btnText.style.display = 'block';
+                    if(loader) loader.style.display = 'none';
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión.");
+                btn.disabled = false;
+                if(btnText) btnText.style.display = 'block';
+                if(loader) loader.style.display = 'none';
+            }
+        }
+
+        // --- Lógica Cambio Contraseña ---
+        function openPasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            document.getElementById('formStep1').reset();
+            document.getElementById('formStep2').reset();
+            document.getElementById('step1-error').style.display = 'none';
+            document.getElementById('step2-error').style.display = 'none';
+            document.getElementById('match-feedback').textContent = '';
+            document.querySelectorAll('.modern-input').forEach(i => i.classList.remove('valid', 'invalid'));
+            showStep(1);
+            modal.style.display = 'flex';
+        }
+
+        function closePasswordModal() { document.getElementById('passwordModal').style.display = 'none'; }
+        function showStep(step) {
+            document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+        }
+
+        async function handleVerifyStep(e) {
+            e.preventDefault();
+            const passInput = document.getElementById('current_password_input');
+            const currentPass = passInput.value;
+            const errorDiv = document.getElementById('step1-error');
+            const btn = document.getElementById('btn-verify');
+            const btnText = btn.querySelector('.btn-text-content');
+            const loader = btn.querySelector('.loader-spinner');
+
+            if (!currentPass) return;
+            btn.disabled = true; btnText.style.display = 'none'; loader.style.display = 'block'; errorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/verify-password/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                    body: JSON.stringify({ password: currentPass })
+                });
+                const data = await response.json();
+                if (data.valid) { showStep(2); } 
+                else { errorDiv.textContent = data.error || "Contraseña incorrecta"; errorDiv.style.display = 'block'; passInput.classList.add('invalid'); }
+            } catch (error) { errorDiv.textContent = "Error de conexión."; errorDiv.style.display = 'block'; } 
+            finally { btn.disabled = false; btnText.style.display = 'block'; loader.style.display = 'none'; }
+        }
+
+        function validatePasswordsUI() {
+            const p1 = document.getElementById('new_password_input');
+            const p2 = document.getElementById('confirm_password_input');
+            const feedback = document.getElementById('match-feedback');
+            if (p1.value.length > 0 && p1.value.length < 8) p1.classList.add('invalid'); else p1.classList.remove('invalid');
+            if (p2.value.length > 0) {
+                if (p1.value === p2.value) { p2.classList.remove('invalid'); p2.classList.add('valid'); feedback.innerHTML = '<span class="text-match"><i class="fas fa-check"></i> Coinciden</span>'; } 
+                else { p2.classList.remove('valid'); p2.classList.add('invalid'); feedback.innerHTML = '<span class="text-mismatch"><i class="fas fa-times"></i> No coinciden</span>'; }
+            } else { feedback.innerHTML = ''; p2.classList.remove('valid', 'invalid'); }
+        }
+
+        async function handleSubmitNewPass(e) {
+            e.preventDefault();
+            const newPass = document.getElementById('new_password_input').value;
+            const confirmPass = document.getElementById('confirm_password_input').value;
+            const errorDiv = document.getElementById('step2-error');
+            const btn = document.getElementById('btn-save-pass');
+            const btnText = btn.querySelector('.btn-text-content');
+            const loader = btn.querySelector('.loader-spinner');
+
+            if (newPass.length < 8) { errorDiv.textContent = "La contraseña debe tener mínimo 8 caracteres."; errorDiv.style.display = 'block'; return; }
+            if (newPass !== confirmPass) { errorDiv.textContent = "Las contraseñas no coinciden."; errorDiv.style.display = 'block'; return; }
+
+            btn.disabled = true; btnText.style.display = 'none'; loader.style.display = 'block'; errorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/change-password/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                    body: JSON.stringify({ new_password: newPass, confirm_password: confirmPass })
+                });
+                const data = await response.json();
+                if (data.success) { showStep(3); } else { errorDiv.textContent = data.error || "Error al actualizar."; errorDiv.style.display = 'block'; }
+            } catch (error) { errorDiv.textContent = "Error de conexión."; errorDiv.style.display = 'block'; } 
+            finally { btn.disabled = false; btnText.style.display = 'block'; loader.style.display = 'none'; }
+        }
+
+        function shareQR() {
+            if (navigator.share) { navigator.share({ title: 'Mi QR ClubHouse', text: 'Mi código QR de acceso al gimnasio', url: window.location.href }).catch(console.error); } 
+            else { alert('Función de compartir no disponible en este navegador'); }
+        }
+
+        // Cierre de modales
         window.onclick = function(event) {
             const renewalModal = document.getElementById('renewalModal');
             const cancelModal = document.getElementById('cancelModal');
-            
             if (event.target == renewalModal) renewalModal.style.display = "none";
             if (event.target == cancelModal) cancelModal.style.display = "none";
         }
-
     </script>
 
 </body>

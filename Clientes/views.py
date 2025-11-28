@@ -1832,62 +1832,101 @@ def moderador_nuevo_usuario(request):
     
     return render(request, 'moderador_nuevo_usuario.html', {'planes': planes})
 
+# En Clientes/views.py
+
 @require_http_methods(["POST"])
 @login_required(login_url='inicio_sesion')
 def api_renovar_plan(request):
-    """API para procesar la renovación, calculando fechas y guardando notas"""
+    """API para procesar la renovación o cambio de plan con lógica inteligente de fechas"""
     try:
         data = json.loads(request.body)
-        rut = data.get('rut')
+        
+        # Obtener usuario según contexto
+        if request.user.role == 'socio':
+            user = request.user
+        else:
+            rut = data.get('rut')
+            user = CustomUser.objects.get(rut=rut)
+
         plan_id = data.get('plan_id')
         payment_method = data.get('payment_method')
-        notes = data.get('notes', '') # Capturamos las notas del formulario
+        notes = data.get('notes', '')
 
-        # 1. Obtener Usuario y Plan
-        user = CustomUser.objects.get(rut=rut)
-        plan = Plan.objects.get(id=plan_id)
+        # Nuevo plan seleccionado
+        new_plan = Plan.objects.get(id=plan_id)
 
-        # 2. Calcular fechas inteligentes
+        # Fechas base
         today = timezone.now().date()
         
-        # Verificar si tiene una membresía que vence en el futuro para extenderla
+        # Buscar si tiene un plan VIGENTE (Activo y que vence hoy o después)
         current_membership = Membership.objects.filter(
             user=user, 
             is_active=True, 
             end_date__gte=today
         ).order_by('-end_date').first()
         
+        # --- LÓGICA CORREGIDA DE FECHAS ---
         if current_membership:
-            # Si tiene plan activo, el nuevo empieza el día después de que termine el actual
-            start_date = current_membership.end_date + timedelta(days=1)
-            # Opcional: Desactivamos la anterior para que solo haya una "primary"
-            # current_membership.is_active = False 
-            # current_membership.save()
+            # CASO A: TIENE PLAN VIGENTE
+            
+            if current_membership.plan.id == new_plan.id:
+                # Escenario 1: Es el MISMO plan -> RENOVACIÓN (Sumar días)
+                # El nuevo empieza cuando termina el actual
+                start_date = current_membership.end_date + timedelta(days=1)
+                end_date = start_date + timedelta(days=new_plan.duration_days)
+                
+            else:
+                # Escenario 2: Es OTRO plan -> CAMBIO DE PLAN (Mantener días)
+                # "Los días actuales se deben mantener"
+                
+                # Empieza hoy (Reemplazo inmediato)
+                start_date = today
+                
+                # Mantiene la fecha de vencimiento del plan anterior
+                end_date = current_membership.end_date
+                
+                # IMPORTANTE: Cancelamos el plan anterior para que no se solapen como activos
+                current_membership.status = 'cancelled'
+                current_membership.is_active = False
+                current_membership.notes = (current_membership.notes or "") + f" | Reemplazado por cambio a {new_plan.name} el {today}"
+                current_membership.save()
+                
         else:
-            # Si no tiene plan o está vencido, empieza hoy
+            # CASO B: PLAN CADUCADO O SIN PLAN
+            # "Debe tener los días que otorga el plan de vuelta"
             start_date = today
+            end_date = start_date + timedelta(days=new_plan.duration_days)
 
-        # Calcular fecha de fin basada en la duración del plan
-        end_date = start_date + timedelta(days=plan.duration_days)
+        # -----------------------------------
 
-        # 3. Crear Nueva Membresía
-        Membership.objects.create(
+        # Crear la nueva membresía con las fechas calculadas
+        membership = Membership.objects.create(
             user=user,
-            plan=plan,
+            plan=new_plan,
             start_date=start_date,
-            end_date=end_date, # Guardamos la fecha calculada
+            end_date=end_date,
             payment_method=payment_method,
-            amount_paid=plan.price,
+            amount_paid=new_plan.price, # Se registra el pago del nuevo plan
             status='active',
             is_active=True,
-            notes=f"Renovación: {notes} - Atendido por {request.user.get_full_name()}"
+            notes=f"Gestión por: {request.user.get_full_name()} | {notes}"
         )
 
-        # 4. Actualizar estado del usuario
+        # Actualizar estado del usuario
         user.is_active_member = True
         user.save()
 
-        return JsonResponse({'success': True, 'message': 'Plan renovado correctamente'})
+        # Enviar correos si corresponde
+        send_qr = data.get('send_qr', False)
+        send_contract = data.get('send_contract', False)
+
+        if send_qr or send_contract:
+            try:
+                send_qr_email(user, membership, send_qr=send_qr, send_contract=send_contract)
+            except Exception as e:
+                print(f"Error enviando email: {e}")
+
+        return JsonResponse({'success': True, 'message': 'Plan procesado correctamente'})
 
     except CustomUser.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Usuario no encontrado'}, status=404)
