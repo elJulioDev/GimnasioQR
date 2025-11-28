@@ -35,6 +35,6 @@ class Command(BaseCommand):
                 email='root@clubhouse.com',
                 password='123'
             )
-            self.stdout.write(self.style.SUCCESS('CREADO - Superuser Django: User "root" / Pass: rootpassword'))
+            self.stdout.write(self.style.SUCCESS('CREADO - Superuser Django: User "admin" / Pass: 123'))
         else:
             self.stdout.write(self.style.WARNING('Ya existe un superusuario.'))

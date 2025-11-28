@@ -182,8 +182,9 @@ def index_admin(request):
         return redirect_by_role(request.user)
     
     # ==================== ESTADISTICAS DEL DASHBOARD ====================
-    from django.db.models import Count, Sum, Q
+    from django.db.models import Count, Sum, Q, Avg
     from datetime import date, timedelta
+    from django.db.models.functions import TruncDate
     
     # 1. Usuarios Activos (socios con membresia activa)
     usuarios_activos = CustomUser.objects.filter(role='socio', is_active_member=True).count()
@@ -194,6 +195,7 @@ def index_admin(request):
     anio_actual = today.year
     primer_dia_anio = date(anio_actual, 1, 1)
     mes_pasado = today - timedelta(days=30)
+    
     usuarios_activos_mes_pasado = CustomUser.objects.filter(
         role='socio',
         is_active_member=True,
@@ -203,29 +205,25 @@ def index_admin(request):
     cambio_usuarios = calcular_porcentaje_cambio(usuarios_activos_mes_pasado, usuarios_activos)
     
     # 2. Ingresos Mensuales (suma de membresias del mes actual)
-    primer_dia_mes = today.replace(day=1)
     ingresos_mensuales = Membership.objects.filter(
         payment_date__gte=primer_dia_mes,
-        status__in=['active', 'pending']
-    ).aggregate(total=Sum('amount_paid'))['total'] or 0
+    ).exclude(status='cancelled').aggregate(total=Sum('amount_paid'))['total'] or 0
 
-    # --- NUEVO: Ingresos Anuales (Year-to-Date) ---
+    # --- Ingresos Anuales (Year-to-Date) ---
     ingresos_anuales = Membership.objects.filter(
         payment_date__gte=primer_dia_anio,
-        status__in=['active', 'pending']
-    ).aggregate(total=Sum('amount_paid'))['total'] or 0
+        # QUITAMOS: status__in=['active', 'pending'] <--- ESTO BORRABA LA HISTORIA
+    ).exclude(status='cancelled').aggregate(total=Sum('amount_paid'))['total'] or 0
 
-    # --- NUEVO: Ticket Promedio (ARPU - Average Revenue Per Unit de ventas) ---
+    # --- Ticket Promedio (ARPU) ---
     ticket_promedio = Membership.objects.filter(
         payment_date__year=anio_actual,
-        status__in=['active', 'pending']
-    ).aggregate(promedio=Avg('amount_paid'))['promedio'] or 0
+    ).exclude(status='cancelled').aggregate(promedio=Avg('amount_paid'))['promedio'] or 0
 
-    # Nuevo: Distribución por Método de Pago ---
+    # --- Distribución por Método de Pago ---
     metodos_pago_data = Membership.objects.filter(
         payment_date__year=anio_actual,
-        status__in=['active', 'pending']
-    ).values('payment_method').annotate(
+    ).exclude(status='cancelled').values('payment_method').annotate(
         total=Count('id'),
         dinero=Sum('amount_paid')
     ).order_by('-dinero')
@@ -240,8 +238,7 @@ def index_admin(request):
     ingresos_mes_anterior = Membership.objects.filter(
         payment_date__gte=mes_anterior_inicio,
         payment_date__lte=mes_anterior_fin,
-        status__in=['active', 'pending']
-    ).aggregate(total=Sum('amount_paid'))['total'] or 0
+    ).exclude(status='cancelled').aggregate(total=Sum('amount_paid'))['total'] or 0
     
     cambio_ingresos = calcular_porcentaje_cambio(ingresos_mes_anterior, ingresos_mensuales)
     
@@ -265,7 +262,6 @@ def index_admin(request):
     cambio_planes = calcular_porcentaje_cambio(planes_venciendo_semana_pasada, planes_por_vencer)
     
     # 4. Accesos Hoy
-    from django.db.models.functions import TruncDate
     accesos_hoy = AccessLog.objects.filter(
         timestamp__date=today,
         status='allowed'
@@ -282,7 +278,7 @@ def index_admin(request):
     
     # ==================== GESTION DE USUARIOS ====================
     
-    # Obtener SOCIOS (excluyendo admins y moderadores)
+    # Obtener SOCIOS
     socios = CustomUser.objects.filter(
         role='socio',
         is_superuser=False
@@ -306,41 +302,28 @@ def index_admin(request):
         is_superuser=False
     ).order_by('-created_at')
 
-    # --- AGREGAR ESTO: Obtener ADMINISTRADORES ---
+    # Obtener ADMINISTRADORES
     administradores = CustomUser.objects.filter(
         role='admin',
-        is_superuser=False # Excluímos al superuser de Django si lo deseas, o quítalo para ver todos
+        is_superuser=False 
     ).order_by('-created_at')
 
     # Estadisticas adicionales de usuarios
     total_socios = socios.count()
     total_moderadores = moderadores.count()
-    total_admins = administradores.count() # <--- AGREGAR ESTO
-    
-    # Estadisticas adicionales de usuarios
-    total_socios = socios.count()
-    total_moderadores = moderadores.count()
+    total_admins = administradores.count()
     socios_activos = socios.filter(is_active_member=True).count()
     socios_inactivos = socios.filter(is_active_member=False).count()
     
     # ==================== GESTION DE PLANES ====================
     
     planes = Plan.objects.filter(is_active=True).annotate(
-        usuarios_inscritos=Count(
-            'memberships',
-            filter=Q(memberships__is_active=True)
-        )
-    ).order_by('price')
-
-    planes = Plan.objects.filter(is_active=True).annotate(
         usuarios_inscritos=Count('memberships', filter=Q(memberships__is_active=True))
     ).order_by('price')
 
-    # En la seccion de planes, reemplaza:
     planes_data = []
-    total_ingresos_historico_planes = 0
-
-    # Primero calculamos totales para porcentajes
+    
+    # Total de ingresos históricos para calcular el 'share' (porcentaje)
     total_revenue_all = Membership.objects.filter(status__in=['active', 'pending']).aggregate(t=Sum('amount_paid'))['t'] or 1
 
     for plan in planes:
@@ -362,37 +345,33 @@ def index_admin(request):
             'plan': plan,
             'usuarios_inscritos': plan.usuarios_inscritos,
             'ingresos_mes': ingresos_plan,
-            'ingresos_total': ingresos_historicos_plan, # Nuevo
-            'share': round(share_ganancias, 1) # Nuevo
+            'ingresos_total': ingresos_historicos_plan,
+            'share': round(share_ganancias, 1)
         })
 
 
     # ==================== DATOS PARA GRAFICOS ====================
     
-    # 1. Gráfico de Ingresos (Últimos 6 meses)
-    ingresos_chart_labels = []
-    ingresos_chart_data = []
+    # 1. Gráfico de Ingresos (AÑO COMPLETO REAL)
+    ingresos_chart_labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+    ingresos_chart_data = [0] * 12
     
-    for i in range(5, -1, -1):
-        fecha_mes = today.replace(day=1) - timedelta(days=i*30) # Aprox
-        mes_inicio = fecha_mes.replace(day=1)
-        # Truco para obtener el fin de mes
-        siguiente_mes = mes_inicio + timedelta(days=32)
-        mes_fin = siguiente_mes.replace(day=1) - timedelta(days=1)
-        
-        total_mes = Membership.objects.filter(
-            payment_date__gte=mes_inicio,
-            payment_date__lte=mes_fin,
-            status__in=['active', 'pending']
-        ).aggregate(total=Sum('amount_paid'))['total'] or 0
-        
-        # Nombres de meses en español
-        meses_es = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
-        nombre_mes = meses_es[mes_inicio.month - 1]
-        
-        ingresos_chart_labels.append(nombre_mes)
-        ingresos_chart_data.append(float(total_mes))
+    current_year = timezone.now().year
+    current_month = timezone.now().month
 
+    # Obtenemos TODOS los pagos de este año (Activos, Vencidos, etc, menos cancelados)
+    pagos_del_anio = Membership.objects.filter(
+        payment_date__year=current_year
+    ).exclude(status='cancelled').select_related('plan')
+
+    for pago in pagos_del_anio:
+        mes_index = pago.payment_date.month - 1
+        monto = getattr(pago, 'amount_paid', pago.plan.price)
+        ingresos_chart_data[mes_index] += float(monto)
+
+    ingresos_chart_labels = ingresos_chart_labels[:current_month]
+    ingresos_chart_data = ingresos_chart_data[:current_month]
+    
     # 2. Gráfico de Distribución de Planes
     planes_dist = Membership.objects.filter(is_active=True).values('plan__name').annotate(total=Count('id'))
     planes_labels = [p['plan__name'] for p in planes_dist]
@@ -411,7 +390,7 @@ def index_admin(request):
         asistencias_labels.append(fecha.strftime("%d/%m"))
         asistencias_data.append(cnt)
 
-    # ==================== NUEVO: GESTIÓN DE ASISTENCIAS ====================
+    # ==================== GESTIÓN DE ASISTENCIAS ====================
     
     # 1. Obtener todos los logs de HOY
     logs_hoy = AccessLog.objects.filter(
@@ -419,13 +398,11 @@ def index_admin(request):
     ).select_related('user', 'membership', 'membership__plan').order_by('-timestamp')
 
     # 2. Calcular Ausentes (Usuarios con membresía activa que NO están en los logs de hoy)
-    # Obtenemos IDs únicos de quienes asistieron hoy (solo accesos permitidos)
     ids_asistentes_hoy = AccessLog.objects.filter(
         timestamp__date=today,
         status='allowed'
     ).values_list('user_id', flat=True)
 
-    # Filtramos socios activos excluyendo a los que vinieron
     socios_ausentes = CustomUser.objects.filter(
         role='socio',
         is_active_member=True
@@ -433,7 +410,6 @@ def index_admin(request):
         id__in=ids_asistentes_hoy
     ).select_related().order_by('last_name')
 
-    # Enriquecer datos de ausentes con su plan
     ausentes_data = []
     for socio in socios_ausentes:
         membresia = socio.get_active_membership()
@@ -445,10 +421,9 @@ def index_admin(request):
             })
 
     # === HISTORIAL DE TRANSACCIONES ===
-    # Obtenemos las últimas 50 transacciones (excluyendo canceladas si lo deseas)
-    transacciones = Membership.objects.exclude(status='cancelled').select_related('user', 'plan').order_by('-payment_date')[:50]
+    transacciones = Membership.objects.exclude(status='cancelled').select_related('user', 'plan').order_by('-payment_date')
 
-    # Calcular Total Histórico Real (Suma de todo amount_paid)
+    # Calcular Total Histórico Real
     total_historico = Membership.objects.exclude(status='cancelled').aggregate(total=Sum('amount_paid'))['total'] or 0
 
     # ==================== CONTEXTO PARA EL TEMPLATE ====================
@@ -483,21 +458,21 @@ def index_admin(request):
         'lista_planes': planes_data,
         'total_planes': planes.count(),
 
-        # NUEVAS VARIABLES PARA GRÁFICOS (Serializadas para JS)
+        # VARIABLES PARA GRÁFICOS (Serializadas para JS)
         'chart_ingresos_labels': json.dumps(ingresos_chart_labels),
-        'chart_ingresos_data': json.dumps(ingresos_chart_data),
+        'chart_ingresos_data': json.dumps(ingresos_chart_data), # ¡Ahora tiene los datos corregidos!
         'chart_planes_labels': json.dumps(planes_labels),
         'chart_planes_data': json.dumps(chart_planes_data_values),
         'chart_asistencias_labels': json.dumps(asistencias_labels),
         'chart_asistencias_data': json.dumps(asistencias_data),
 
-        # --- NUEVAS VARIABLES DE ASISTENCIA ---
+        # Variables de Asistencia
         'logs_hoy': logs_hoy,
         'lista_ausentes': ausentes_data,
         'total_ausentes': len(ausentes_data),
         'porcentaje_asistencia': round((accesos_hoy / socios_activos * 100), 1) if socios_activos > 0 else 0,
         
-        # Nuevas variables para la sección de Pagos
+        # Sección de Pagos
         'transacciones': transacciones,
         'total_historico': total_historico,
     }
@@ -1357,25 +1332,32 @@ def admin_plan_details(request, plan_id):
             status__in=['active', 'pending']
         ).aggregate(total=Sum('amount_paid'))['total'] or 0
 
-        # 3. Datos para el Gráfico (Últimos 6 meses)
-        # Esto agrupa las ventas de este plan por mes
-        six_months_ago = timezone.now().date() - timedelta(days=180)
-        chart_data_query = Membership.objects.filter(
-            plan=plan,
-            payment_date__gte=six_months_ago,
-            status__in=['active', 'pending']
-        ).annotate(month=TruncMonth('payment_date')).values('month').annotate(
-            total=Sum('amount_paid'),
-            count=Count('id')
-        ).order_by('month')
+        # 3. Datos para el Gráfico (AÑO ACTUAL COMPLETO)
+        # Reemplazamos la logica de "últimos 6 meses" por "Año Actual"
+        
+        # Inicializamos arrays fijos
+        chart_labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+        chart_values = [0] * 12
+        
+        current_year = timezone.now().year
+        current_month = timezone.now().month
 
-        # Formatear para Chart.js
-        chart_labels = []
-        chart_values = []
-        for entry in chart_data_query:
-            if entry['month']:
-                chart_labels.append(entry['month'].strftime("%b %Y")) # Ej: "Nov 2025"
-                chart_values.append(int(entry['total'])) # Ej: 50000
+        # Filtramos todos los pagos de este plan en el año actual (excluyendo cancelados)
+        pagos_plan_anio = Membership.objects.filter(
+            plan=plan,
+            payment_date__year=current_year
+        ).exclude(status='cancelled')
+
+        # Llenamos los datos mes a mes
+        for pago in pagos_plan_anio:
+            mes_index = pago.payment_date.month - 1
+            # Usamos amount_paid para ser exactos con el dinero real ingresado
+            monto = getattr(pago, 'amount_paid', plan.price) 
+            chart_values[mes_index] += int(monto)
+
+        # Recortamos para no mostrar meses futuros vacíos
+        chart_labels = chart_labels[:current_month]
+        chart_values = chart_values[:current_month]
 
         # 4. Beneficios como lista
         beneficios_lista = [b.strip() for b in plan.benefits.split(',')] if plan.benefits else []

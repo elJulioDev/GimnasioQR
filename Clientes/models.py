@@ -7,6 +7,11 @@ from io import BytesIO
 from django.core.files import File
 import hashlib
 
+# --- NUEVAS IMPORTACIONES NECESARIAS ---
+import os
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+# ---------------------------------------
 
 class CustomUserManager(UserManager):
     """Manager personalizado que diferencia entre superusuarios y usuarios normales"""
@@ -54,7 +59,7 @@ class CustomUser(AbstractUser):
     role = models.CharField(
         max_length=10, 
         choices=ROLE_CHOICES, 
-        null=True,  # AÑADIDO: Permite NULL para superusuarios
+        null=True,  # Permite NULL para superusuarios
         blank=True,
         verbose_name="Rol"
     )
@@ -108,15 +113,12 @@ class CustomUser(AbstractUser):
             super().save(*args, **kwargs)
             return
     
-        # Para usuarios normales (no superusuarios)
-        is_new = self.pk is None  # Verificar si es un nuevo usuario
-    
         # Generar qr_unique_id si es socio y tiene RUT
         if self.role == 'socio' and self.rut and not self.qr_unique_id:
             unique_string = f"{self.rut}-{timezone.now().timestamp()}"
             self.qr_unique_id = hashlib.sha256(unique_string.encode()).hexdigest()
     
-        # ✅ SIEMPRE hacer el save principal
+        # SIEMPRE hacer el save principal
         super().save(*args, **kwargs)
     
         # Generar QR después del save (si es necesario)
@@ -160,7 +162,7 @@ class CustomUser(AbstractUser):
             return None
         return self.memberships.filter(
             is_active=True,
-            end_date__gt=timezone.now().date()  # CAMBIADO: > en lugar de >=
+            end_date__gt=timezone.now().date()
         ).first()
     
     def has_active_membership(self):
@@ -169,7 +171,7 @@ class CustomUser(AbstractUser):
             return False
         return self.memberships.filter(
             is_active=True,
-            end_date__gt=timezone.now().date()  # CAMBIADO: > en lugar de >=
+            end_date__gt=timezone.now().date()
         ).exists()
 
 
@@ -288,13 +290,11 @@ class Membership(models.Model):
     def save(self, *args, **kwargs):
         """Override del save para calcular fecha de vencimiento y actualizar estado."""
         
-        # ✅ CORREGIDO: Calcular end_date correctamente
         if not self.end_date:
             # Sumar la duración completa del plan
             self.end_date = self.start_date + timedelta(days=self.plan.duration_days)
         
         # Actualizar estado basado en fecha
-        # ✅ CORREGIDO: Usar > en lugar de >= para la comparación
         if self.end_date <= timezone.now().date():
             self.status = 'expired'
             self.is_active = False
@@ -310,7 +310,6 @@ class Membership(models.Model):
     
     def is_valid(self):
         """Verifica si la membresía está vigente."""
-        # ✅ CORREGIDO: Usar > en lugar de >=
         return self.is_active and self.end_date > timezone.now().date()
     
     def days_remaining(self):
@@ -361,3 +360,22 @@ class AccessLog(models.Model):
     
     def __str__(self):
         return f"{self.user.get_full_name()} - {self.status} - {self.timestamp}"
+
+
+# ==============================================================================
+# SEÑAL PARA ELIMINAR EL ARCHIVO QR CUANDO SE ELIMINA EL USUARIO
+# ==============================================================================
+
+@receiver(post_delete, sender=CustomUser)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    """
+    Borra el archivo QR del sistema de archivos cuando se elimina el objeto CustomUser.
+    Funciona tanto desde el admin de Django como desde las vistas personalizadas.
+    """
+    if instance.qr_code:
+        if os.path.isfile(instance.qr_code.path):
+            try:
+                os.remove(instance.qr_code.path)
+            except Exception as e:
+                # Opcional: imprimir el error si no se pudo borrar, para debug
+                print(f"Error al borrar archivo QR para {instance.rut}: {e}")
