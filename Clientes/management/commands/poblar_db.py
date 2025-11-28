@@ -29,20 +29,20 @@ class Command(BaseCommand):
 
         for i in range(total):
             try:
-                # --- BALANCEO INTELIGENTE (30% Activos / 70% Historial) ---
-                # Esto asegura ~30 usuarios activos por cada 100 registros.
-                # El gráfico mostrará una tendencia de crecimiento (más ingresos recientes)
-                # pero mantendrá barras visibles en los meses anteriores.
+                # --- BALANCEO INTELIGENTE CORREGIDO (70% Activos / 30% Historial) ---
+                # Aumentamos la probabilidad de activos a 0.70
                 
-                if random.random() < 0.30:
-                    # 30% son usuarios NUEVOS (0 a 30 días) -> ACTIVOS
-                    dias_atras = random.randint(0, 30)
+                if random.random() < 0.70:
+                    # 70% son usuarios NUEVOS (0 a 28 días) -> ACTIVOS
+                    # Usamos 28 para asegurar que no caiga justo en el día de vencimiento (si son planes de 30 días)
+                    dias_atras = random.randint(0, 28)
                 else:
-                    # 70% son usuarios ANTIGUOS (31 días hasta Enero) -> VENCIDOS (Historial)
-                    # Validamos que haya días suficientes para evitar error en enero
+                    # 30% son usuarios ANTIGUOS (31 días hasta Enero) -> VENCIDOS (Historial)
                     if dias_totales_anio > 31:
                         dias_atras = random.randint(31, dias_totales_anio)
                     else:
+                        # Si estamos a principio de año y no hay historial suficiente,
+                        # forzamos que sean recientes o manejamos el borde
                         dias_atras = random.randint(0, dias_totales_anio)
 
                 # Fecha exacta del pasado simulado
