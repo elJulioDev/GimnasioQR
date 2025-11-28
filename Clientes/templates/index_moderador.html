@@ -42,6 +42,204 @@
         .btn-icon.edit:hover { background: rgba(60, 64, 198, 0.4); }
         .btn-icon.delete { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
         .btn-icon.delete:hover { background: rgba(255, 71, 87, 0.4); }
+
+        /* ==================== STATS GRID COMPACTO ==================== */
+        .stats-grid-compact {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card-compact {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card-compact:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .stat-compact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-compact-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-compact-header i {
+            font-size: 1.5rem;
+        }
+
+        .stat-compact-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .stat-trend-indicator {
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ==================== MANAGEMENT SECTION ==================== */
+        .management-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .chart-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chart-header h3 {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ==================== MODERN TABLE ==================== */
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: transparent;
+        }
+
+        .modern-table thead {
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .modern-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modern-table tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s ease;
+        }
+
+        .modern-table tbody tr:hover {
+            background: rgba(0, 255, 157, 0.03);
+        }
+
+        .modern-table td {
+            padding: 1rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        /* ==================== STATUS BADGES ==================== */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: rgba(46, 213, 115, 0.15);
+            color: #2ed573;
+        }
+
+        .status-badge.expired {
+            background: rgba(255, 71, 87, 0.15);
+            color: #ff4757;
+        }
+
+        /* ==================== VARIABLES CSS ==================== */
+        :root {
+            --primary-color: #00ff9d;
+            --success-color: #2ed573;
+            --danger-color: #ff4757;
+            --warning-color: #ffa502;
+            --info-color: #3742fa;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --bg-primary: #0a0a0a;
+            --bg-card: rgba(255, 255, 255, 0.02);
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* ==================== HEADER STYLES ==================== */
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* ==================== BUTTONS ==================== */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-qr {
+            background: var(--primary-color);
+            color: #000;
+        }
+
+        .btn-qr:hover {
+            background: #00d47f;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 157, 0.3);
+        }
+
+
     </style>
 </head>
 <body>
@@ -81,114 +279,116 @@
 
         <main class="main-content">
             <section id="dashboard" class="content-section active">
-                <div class="content-header">
-                    <h2 class="page-title"><i class="fas fa-chart-line"></i> Dashboard</h2>
+                <div class="content-header" style="margin-bottom: 1.5rem;">
+                    <div>
+                        <h2 class="page-title" style="font-size: 1.5rem;">
+                            <i class="fas fa-chart-line"></i> Dashboard
+                        </h2>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Vista general del rendimiento del negocio</p>
+                    </div>
                     <div class="header-actions">
-                        <button class="btn btn-qr" onclick="openQRWindow()"><i class="fas fa-qrcode"></i> Abrir Escáner QR (2° Monitor)</button>
+                        <button class="btn btn-qr" onclick="openQRWindow()">
+                            <i class="fas fa-qrcode"></i> Abrir Escáner QR (2° Monitor)
+                        </button>
                     </div>
                 </div>
                 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon primary"><i class='fas fa-qrcode'></i></div>
-                            <div class="stat-trend {% if cambio_accesos.es_positivo %}up{% else %}down{% endif %}">
-                                <i class='fas {% if cambio_accesos.es_positivo %}fa-arrow-up{% else %}fa-arrow-down{% endif %}'></i>
-                                {{ cambio_accesos.porcentaje }}%
-                            </div>
+                <!-- Stats Grid Compacto -->
+                <div class="stats-grid-compact">
+                    <!-- Card 1: Accesos Hoy -->
+                    <div class="stat-card-compact" style="border-left: 3px solid var(--primary-color);">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Accesos Hoy</span>
+                            <i class="fas fa-qrcode" style="color: var(--primary-color);"></i>
                         </div>
-                        <div class="stat-content">
-                            <h3>Accesos Hoy</h3>
-                            <div class="stat-value">{{ accesos_hoy }}</div>
-                            <div class="stat-footer"><i class='far fa-clock'></i> <span>vs ayer</span></div>
+                        <div class="stat-compact-value">{{ accesos_hoy }}</div>
+                        <div class="stat-trend-indicator" style="color: {% if cambio_accesos.es_positivo %}var(--success-color){% else %}var(--danger-color){% endif %};">
+                            <i class="fas {% if cambio_accesos.es_positivo %}fa-arrow-up{% else %}fa-arrow-down{% endif %}"></i>
+                            {{ cambio_accesos.porcentaje }}% vs ayer
                         </div>
                     </div>
 
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon info"><i class="fas fa-user-check"></i></div>
-                            <div class="stat-trend {% if cambio_usuarios.es_positivo %}up{% else %}down{% endif %}">
-                                <i class='fas {% if cambio_usuarios.es_positivo %}fa-arrow-up{% else %}fa-arrow-down{% endif %}'></i>
-                                {{ cambio_usuarios.porcentaje }}%
-                            </div>
+                    <!-- Card 2: Usuarios Activos -->
+                    <div class="stat-card-compact">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Usuarios Activos</span>
+                            <i class="fas fa-user-check" style="color: var(--primary-color);"></i>
                         </div>
-                        <div class="stat-content">
-                            <h3>Usuarios Activos</h3>
-                            <div class="stat-value">{{ usuarios_activos }}</div>
-                            <div class="stat-footer"><i class='far fa-clock'></i> <span>vs mes anterior</span></div>
+                        <div class="stat-compact-value">{{ usuarios_activos }}</div>
+                        <div class="stat-trend-indicator" style="color: {% if cambio_usuarios.es_positivo %}var(--success-color){% else %}var(--danger-color){% endif %};">
+                            <i class="fas {% if cambio_usuarios.es_positivo %}fa-arrow-up{% else %}fa-arrow-down{% endif %}"></i>
+                            {{ cambio_usuarios.porcentaje }}% vs mes anterior
                         </div>
                     </div>
-                       
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon warning"><i class="fas fa-user-clock"></i></div>
-                            <div class="stat-trend {% if cambio_planes.es_positivo %}up{% else %}down{% endif %}">
-                                <i class='fas {% if cambio_planes.es_positivo %}fa-arrow-up{% else %}fa-arrow-down{% endif %}'></i>
-                                {{ cambio_planes.porcentaje }}%
-                            </div>
+                    
+                    <!-- Card 3: Planes por Vencer -->
+                    <div class="stat-card-compact" style="border-left: 3px solid var(--warning-color);">
+                        <div class="stat-compact-header">
+                            <span class="stat-compact-label">Planes por Vencer</span>
+                            <i class="fas fa-user-clock" style="color: var(--warning-color);"></i>
                         </div>
-                        <div class="stat-content">
-                            <h3>Planes por Vencer</h3>
-                            <div class="stat-value">{{ planes_vencer }}</div>
-                            <div class="stat-footer"><i class='far fa-clock'></i> <span>próximos 7 días</span></div>
+                        <div class="stat-compact-value">{{ planes_vencer }}</div>
+                        <div class="stat-trend-indicator" style="color: {% if cambio_planes.es_positivo %}var(--success-color){% else %}var(--danger-color){% endif %};">
+                            <i class="fas {% if cambio_planes.es_positivo %}fa-arrow-up{% else %}fa-arrow-down{% endif %}"></i>
+                            {{ cambio_planes.porcentaje }}% próximos 7 días
                         </div>
                     </div>
                 </div>
 
+                <!-- Últimos Accesos con estilo de bitácora admin -->
                 <div class="management-section">
-                    <h3 class="section-title"><i class="fas fa-history"></i> Últimos Accesos (Hoy)</h3>
+                    <div class="chart-header">
+                        <h3><i class="fas fa-history"></i> Bitácora de Accesos (Hoy)</h3>
+                    </div>
                     <table class="modern-table">
                         <thead>
                             <tr>
-                                <th>Socio</th>
                                 <th>Hora</th>
-                                <th>Plan Utilizado</th>
-                                <th>Estado Acceso</th>
+                                <th>Usuario</th>
+                                <th>Plan</th>
+                                <th>Estado</th>
+                                <th>Detalle</th>
                             </tr>
                         </thead>
-                        <tbody id="accesos-tbody">
+                        <tbody>
                             {% for log in ultimos_accesos %}
-                            <tr class="user-row">
+                            <tr>
+                                <td style="font-weight: 600; color: var(--text-primary);">{{ log.timestamp|date:"H:i:s" }}</td>
                                 <td>
-                                    <div style="display: flex; align-items: center; gap: 12px;">
-                                        <div style="width: 32px; height: 32px; background: #3c40c6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;">
-                                            {{ log.user.first_name|slice:":1" }}{{ log.user.last_name|slice:":1" }}
-                                        </div>
-                                        <div style="display: flex; flex-direction: column;">
-                                            <span class="user-name" style="font-weight: 600; color: var(--text-primary);">{{ log.user.get_full_name }}</span>
-                                            <span style="font-size: 0.75rem; color: var(--text-secondary); font-family: monospace;">{{ log.user.rut }}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div style="color: var(--text-primary); font-weight: 500;">
-                                        <i class="far fa-clock" style="color: #888; margin-right: 5px;"></i> {{ log.timestamp|date:"H:i:s" }}
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        {{ log.user.first_name }} {{ log.user.last_name }}
                                     </div>
                                 </td>
                                 <td>
                                     {% if log.membership %}
-                                        <span style="color: var(--primary-color); font-weight: 500; font-size: 0.9rem;">{{ log.membership.plan.name }}</span>
+                                        {{ log.membership.plan.name }}
                                     {% else %}
-                                        <span style="color: #999; font-style: italic; font-size: 0.85rem;">Sin Plan</span>
+                                        <span style="color: var(--text-secondary);">-</span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if log.status == 'allowed' %}
-                                        <span style="background: rgba(46, 213, 115, 0.15); color: #2ed573; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
-                                            <i class="fas fa-check-circle"></i> Permitido
+                                        <span class="status-badge active">
+                                            <i class="fas fa-check"></i> Permitido
                                         </span>
                                     {% else %}
-                                        <span style="background: rgba(255, 71, 87, 0.15); color: #ff4757; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
-                                            <i class="fas fa-ban"></i> Denegado
+                                        <span class="status-badge expired">
+                                            <i class="fas fa-times"></i> Denegado
                                         </span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size: 0.85rem; color: var(--text-secondary);">
+                                    {% if log.status == 'denied' %}
+                                        {{ log.denial_reason }}
+                                    {% else %}
+                                        Acceso Correcto
                                     {% endif %}
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" style="text-align: center; padding: 3rem; color: #888;">
-                                    <i class="fas fa-history" style="font-size: 2rem; margin-bottom: 10px; display: block; opacity: 0.5;"></i>
-                                    No se han registrado accesos hoy.
+                                <td colspan="5" style="text-align: center; padding: 2rem;">
+                                    No hay registros de acceso hoy.
                                 </td>
                             </tr>
                             {% endfor %}
@@ -196,6 +396,7 @@
                     </table>
                 </div>
             </section>
+
 
             <section id="usuarios" class="content-section">
                 <div class="content-header">
@@ -213,10 +414,8 @@
                     <table class="modern-table">
                         <thead>
                             <tr>
-                                <th>RUT</th>
-                                <th>SOCIO</th>
-                                <th>CORREO</th>
-                                <th>PLAN</th>
+                                <th>NOMBRE</th>
+                                <th>PLAN ACTUAL</th>
                                 <th>ÚLTIMO ACCESO</th>
                                 <th>ESTADO</th>
                                 <th>ACCIONES</th>
@@ -225,17 +424,10 @@
                         <tbody id="usuarios-tbody">
                             {% for item in lista_usuarios %}
                             <tr class="user-row">
-                                <td style="font-family: monospace; color: #e0e0e0; font-weight: 500;">{{ item.user.rut }}</td>
                                 <td>
                                     <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div style="width: 32px; height: 32px; background: #3c40c6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;">
-                                            {{ item.user.first_name|slice:":1" }}{{ item.user.last_name|slice:":1" }}
-                                        </div>
                                         <span class="user-name" style="font-weight: 600; color: var(--text-primary);">{{ item.user.get_full_name }}</span>
                                     </div>
-                                </td>
-                                <td style="color: var(--text-secondary);">
-                                    <span class="truncate-text" title="{{ item.user.email }}">{{ item.user.email }}</span>
                                 </td>
                                 <td>
                                     {% if item.plan_name != 'Sin Plan Activo' %}
