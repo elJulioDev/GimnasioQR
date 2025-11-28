@@ -172,6 +172,86 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+/* --- NUEVO: Estilos de Tarjetas de Planes (Idéntico a Admin Create) --- */
+    .plans-grid-admin {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .plan-card-admin {
+        background: #121212; /* Fondo oscuro panel */
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        transition: 0.2s;
+        position: relative;
+        cursor: pointer;
+        min-height: 180px;
+    }
+
+    .plan-card-admin:hover {
+        border-color: var(--primary-color);
+        background: rgba(0, 255, 157, 0.04);
+        transform: translateY(-4px);
+        box-shadow: 0 4px 20px rgba(0, 255, 157, 0.1);
+    }
+
+    .plan-card-admin .plan-name { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
+    .plan-card-admin .plan-price { font-size: 1.5rem; color: var(--primary-color); font-weight: 800; margin-bottom: 15px; }
+    .plan-card-admin .plan-price span { font-size: 0.9rem; color: #888; font-weight: 400; }
+
+    .plan-card-admin .plan-features { list-style: none; padding: 0; margin: 0; }
+    .plan-card-admin .plan-features li {
+        font-size: 0.85rem; color: #bbb; margin-bottom: 8px; display: flex; gap: 10px; align-items: center;
+    }
+    .plan-card-admin .plan-features li i { color: var(--primary-color); font-size: 1.1rem; }
+
+    /* --- NUEVO: Botones de Acción Agrupados --- */
+    .plan-actions-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        align-items: center;
+    }
+
+    /* Botón Cancelar Estilizado */
+    .btn-danger-soft {
+        background: rgba(255, 71, 87, 0.1);
+        color: #ff4757;
+        border: 1px solid #ff4757;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+    .btn-danger-soft:hover {
+        background: rgba(255, 71, 87, 0.2);
+        box-shadow: 0 0 15px rgba(255, 71, 87, 0.2);
+    }
+
+    /* Modal de Advertencia (Cancelar) */
+    .modal-warning-content {
+        background: #1a1a1a;
+        border: 1px solid #ff4757; /* Borde rojo */
+        border-radius: 16px;
+        padding: 2rem;
+        width: 90%; max-width: 450px;
+        text-align: center;
+        box-shadow: 0 0 30px rgba(255, 71, 87, 0.2);
+    }
+
     </style>
 </head>
 <body>
@@ -403,12 +483,9 @@
             </section>
 
             <!-- Mi Plan Section -->
-            <section id="mi-plan" class="content-section">
+<section id="mi-plan" class="content-section">
                 <div class="content-header">
-                    <h2 class="page-title">
-                        <i class="fas fa-id-card"></i>
-                        Mi Plan
-                    </h2>
+                    <h2 class="page-title"><i class="fas fa-id-card"></i> Mi Plan</h2>
                 </div>
 
                 {% if membership %}
@@ -422,17 +499,9 @@
                         <h4><i class="fas fa-info-circle"></i> Detalles del Plan</h4>
                         <ul class="plan-features-list">
                             <li><i class="fas fa-check"></i> {{ membership.plan.access_days }}</li>
-                            <li><i class="fas fa-check"></i> Acceso a todas las áreas</li>
-                            <li><i class="fas fa-check"></i> Código QR personal</li>
-                            {% if membership.plan.includes_classes %}
-                            <li><i class="fas fa-check"></i> Clases grupales incluidas</li>
-                            {% endif %}
-                            {% if membership.plan.includes_nutritionist %}
-                            <li><i class="fas fa-check"></i> Asesoría nutricional</li>
-                            {% endif %}
-                        </ul>
+                            </ul>
                     </div>
-
+                    
                     <div class="plan-info-section">
                         <h4><i class="fas fa-calendar-alt"></i> Vigencia</h4>
                         <div class="date-range">
@@ -448,10 +517,13 @@
                         </div>
                     </div>
 
-                    <div class="plan-actions">
-                        <button class="btn btn-primary" onclick="navigateTo('renovar')">
-                            <i class="fas fa-sync-alt"></i>
-                            Renovar Plan
+                    <div class="plan-actions-group">
+                        <button class="btn btn-primary" onclick="navigateTo('renovar')" style="flex: 1; justify-content: center;">
+                            <i class="fas fa-sync-alt"></i> Renovar Plan
+                        </button>
+
+                        <button class="btn-danger-soft" onclick="openCancelModal()">
+                            <i class="fas fa-times-circle"></i> Cancelar Suscripción
                         </button>
                     </div>
                 </div>
@@ -459,10 +531,8 @@
                 <div class="empty-state">
                     <i class="fas fa-inbox"></i>
                     <h3>No tienes un plan activo</h3>
-                    <p>Adquiere un plan para comenzar a disfrutar del gimnasio</p>
                     <button class="btn btn-primary" onclick="navigateTo('renovar')">
-                        <i class="fas fa-plus"></i>
-                        Ver Planes Disponibles
+                        <i class="fas fa-plus"></i> Ver Planes
                     </button>
                 </div>
                 {% endif %}
@@ -669,64 +739,42 @@
             </section>
             
             <!-- Renovar Plan Section -->
-            <section id="renovar" class="content-section">
+<section id="renovar" class="content-section">
                 <div class="content-header">
-                    <h2 class="page-title">
-                        <i class="fas fa-sync-alt"></i>
-                        Renovar o Cambiar Plan
-                    </h2>
+                    <h2 class="page-title"><i class="fas fa-sync-alt"></i> Seleccionar Membresía</h2>
+                    <p class="page-subtitle">Elige un plan para renovar o cambiar tu suscripción actual.</p>
                 </div>
 
-                <div class="plans-horizontal-container">
+                <div class="plans-grid-admin">
                     {% for item in planes_renovacion %}
-                    <div class="plan-card-horizontal {% if item.obj.plan_type == 'completo' or item.obj.plan_type == 'vip' %}featured-horizontal{% endif %}">
+                    <div class="plan-card-admin" onclick="selectPlanForRenewal('{{ item.obj.name }}', {{ item.obj.price }})">
+                        <div class="plan-name">{{ item.obj.name }}</div>
+                        <div class="plan-price">${{ item.obj.price|floatformat:0 }} <span>/mes</span></div>
                         
-                        {% if item.obj.plan_type == 'completo' or item.obj.plan_type == 'vip' %}
-                            <div class="horizontal-badge">RECOMENDADO</div>
-                        {% endif %}
-
-                        <div class="plan-horizontal-left">
-                            <div class="plan-horizontal-header">
-                                <h3>{{ item.obj.name }}</h3>
-                                <div class="plan-horizontal-price">
-                                    ${{ item.obj.price|floatformat:0 }}<span>/mes</span>
-                                </div>
-                            </div>
+                        <ul class="plan-features">
+                            <li><i class='fas fa-calendar-alt'></i> {{ item.obj.duration_days }} días de vigencia</li>
+                            <li><i class='fas fa-clock'></i> {{ item.obj.access_days }}</li>
                             
-                            <ul class="plan-horizontal-features">
-                                <li><i class="fas fa-calendar-alt"></i> {{ item.obj.access_days }}</li>
-                                <li><i class="fas fa-qrcode"></i> Acceso QR Automatizado</li>
-                                
-                                {% if item.obj.includes_classes %}
-                                    <li><i class="fas fa-dumbbell"></i> Clases grupales</li>
-                                {% endif %}
-                                
-                                {% if item.obj.includes_nutritionist %}
-                                    <li><i class="fas fa-apple-alt"></i> Nutricionista</li>
-                                {% endif %}
+                            {% if item.obj.includes_classes %}
+                                <li><i class='fas fa-dumbbell'></i> Clases grupales incluidas</li>
+                            {% endif %}
+                            
+                            {% if item.obj.includes_nutritionist %}
+                                <li><i class='fas fa-apple-alt'></i> Evaluación nutricional</li>
+                            {% endif %}
 
-                                {% for beneficio in item.beneficios_extra %}
-                                    <li><i class="fas fa-check-circle"></i> {{ beneficio }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-
-                        <div class="plan-horizontal-right">
-                            <button class="btn {% if item.obj.plan_type == 'completo' %}btn-primary{% else %}btn-outline{% endif %}" 
-                                    onclick="selectPlanForRenewal('{{ item.obj.name }}', {{ item.obj.price }})">
-                                <i class="fas fa-check"></i>
-                                Seleccionar Plan
-                            </button>
-                        </div>
+                            {% for beneficio in item.beneficios_extra %}
+                                <li><i class='fas fa-check-circle'></i> {{ beneficio }}</li>
+                            {% endfor %}
+                        </ul>
                     </div>
                     {% empty %}
-                        <p style="color: var(--text-secondary);">No hay planes disponibles en este momento.</p>
+                        <p style="color: #888;">No hay planes disponibles.</p>
                     {% endfor %}
                 </div>
 
-                <!-- Modal existente -->
-                <div id="renewalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
-                    <div style="background: #151515; padding: 2rem; border-radius: 16px; max-width: 400px; width: 90%; border: 1px solid var(--primary-color); text-align: center;">
+                <div id="renewalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(5px);">
+                    <div style="background: #121212; padding: 2rem; border-radius: 16px; max-width: 400px; width: 90%; border: 1px solid var(--primary-color); text-align: center; box-shadow: 0 0 30px rgba(0, 255, 157, 0.1);">
                         <i class="fas fa-receipt" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
                         <h3 style="color: white; margin-bottom: 1rem;">Confirmar Renovación</h3>
                         <p style="color: #ccc; margin-bottom: 1.5rem;">
@@ -735,14 +783,14 @@
                             Precio: <strong id="modalPlanPrice">-</strong>
                         </p>
                         <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: left;">
-                            <p style="font-size: 0.9rem; color: #aaa; margin-bottom: 0.5rem;">Próximos pasos:</p>
-                            <ol style="color: #ccc; font-size: 0.9rem; padding-left: 1.2rem;">
+                            <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 700;">Instrucciones:</p>
+                            <ol style="color: #ccc; font-size: 0.9rem; padding-left: 1.2rem; margin: 0;">
                                 <li>Acércate a recepción.</li>
-                                <li>Indica tu RUT y el plan seleccionado.</li>
-                                <li>Realiza el pago (Efectivo/Tarjeta).</li>
+                                <li>Indica tu RUT y este plan.</li>
+                                <li>Realiza el pago presencial.</li>
                             </ol>
                         </div>
-                        <button class="btn btn-secondary" onclick="document.getElementById('renewalModal').style.display='none'">Cerrar</button>
+                        <button class="btn btn-secondary" onclick="document.getElementById('renewalModal').style.display='none'" style="width: 100%; justify-content: center;">Cerrar</button>
                     </div>
                 </div>
             </section>
@@ -881,6 +929,21 @@
                 </button>
             </div>
 
+        </div>
+    </div>
+
+    <div id="cancelModal" class="modal-overlay">
+        <div class="modal-warning-content">
+            <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #ff4757; margin-bottom: 1rem;"></i>
+            <h3 style="color: white; margin-bottom: 0.5rem;">¿Estás seguro?</h3>
+            <p style="color: #ccc; margin-bottom: 2rem; font-size: 0.95rem;">
+                Al cancelar tu plan, perderás el acceso al gimnasio de forma inmediata. Esta acción no se puede deshacer.
+            </p>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button class="btn btn-secondary" onclick="closeCancelModal()">Volver</button>
+                <button class="btn" style="background: #ff4757; color: white; border: none;" onclick="confirmCancelPlan()">Sí, Cancelar Plan</button>
+            </div>
         </div>
     </div>
 
@@ -1171,6 +1234,61 @@
             }
             // El passwordModal ya NO se cierra aquí.
         }
+
+        function openCancelModal() {
+            const modal = document.getElementById('cancelModal');
+            modal.style.display = 'flex';
+            modal.querySelector('.modal-warning-content').style.animation = 'popIn 0.3s ease';
+        }
+
+        function closeCancelModal() {
+            document.getElementById('cancelModal').style.display = 'none';
+        }
+
+        // Ejecutar cancelación
+        async function confirmCancelPlan() {
+            const btn = document.querySelector('#cancelModal button[style*="background: #ff4757"]');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = "Procesando...";
+
+            try {
+                const response = await fetch('/api/cancelar-plan/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Cerrar modal y mostrar éxito (puedes usar un alert simple o recargar)
+                    closeCancelModal();
+                    location.reload(); 
+                } else {
+                    alert("Error: " + data.error);
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión al intentar cancelar el plan.");
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        }
+
+        // Cerrar modal al hacer click fuera
+        window.onclick = function(event) {
+            const renewalModal = document.getElementById('renewalModal');
+            const cancelModal = document.getElementById('cancelModal');
+            
+            if (event.target == renewalModal) renewalModal.style.display = "none";
+            if (event.target == cancelModal) cancelModal.style.display = "none";
+        }
+
     </script>
 
 </body>

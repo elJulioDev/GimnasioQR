@@ -2125,3 +2125,29 @@ def ver_recibo_pago(request, payment_id):
     except Membership.DoesNotExist:
         messages.error(request, 'Transacción no encontrada')
         return redirect('index_admin')
+
+@require_http_methods(["POST"])
+@login_required(login_url='inicio_sesion')
+def api_cancelar_plan(request):
+    """API para que el socio cancele su plan actual inmediatamente"""
+    try:
+        user = request.user
+        membership = user.get_active_membership()
+
+        if not membership:
+            return JsonResponse({'success': False, 'error': 'No tienes un plan activo para cancelar.'})
+
+        # Cancelar membresía
+        membership.status = 'cancelled'
+        membership.is_active = False
+        membership.notes = (membership.notes or "") + f" | Cancelado por el usuario el {timezone.now().strftime('%Y-%m-%d')}"
+        membership.save()
+
+        # Actualizar estado del usuario
+        user.is_active_member = False
+        user.save()
+
+        return JsonResponse({'success': True, 'message': 'Plan cancelado exitosamente.'})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

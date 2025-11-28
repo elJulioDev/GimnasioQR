@@ -50,7 +50,8 @@ urlpatterns = [
     path('api/validate-email/', views.validate_email, name='validate_email'),
     path('api/verify-password/', views.verify_password, name='verify_password'),
     path('api/change-password/', views.change_password_socio, name='change_password_socio'),
-
+    path('api/cancelar-plan/', views.api_cancelar_plan, name='api_cancelar_plan'),
+    
     # Nueva ruta para procesar QR
     path('api/process-qr-scan/', views.process_qr_scan, name='process_qr_scan'),
     #probando cosas
