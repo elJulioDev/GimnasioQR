@@ -160,6 +160,7 @@ function setupSearch(inputId, rowClass, noResultsId, originalEmptyId) {
     });
 }
 
+setupSearch('searchSocioInput', 'searchable-socio-row', 'search-socio-no-results', 'no-socios-row');
 // 1. Configurar búsqueda de Socios
 setupSearch('searchInput', 'searchable-row', 'search-no-results', 'no-results-row');
 

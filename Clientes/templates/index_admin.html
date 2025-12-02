@@ -275,7 +275,7 @@
                         <div class="table-controls">
                             <div class="search-box">
                                 <i class='bx bx-search'></i>
-                                <input type="text" id="searchInput" placeholder="Buscar por nombre, RUT o email...">
+                                <input type="text" id="searchSocioInput" placeholder="Buscar por nombre, RUT o plan...">
                             </div>
                         </div>
 
@@ -291,8 +291,11 @@
                             </thead>
                             <tbody>
                                 {% for socio_data in socios %}
-                                <tr class="searchable-row" data-search="{{ socio_data.user.get_full_name }} {{ socio_data.user.rut }} {{ socio_data.user.email }}">
-                                    <td><strong>{{ socio_data.user.get_full_name }}</strong></td>
+                                <tr class="searchable-socio-row" data-search="{{ socio_data.user.get_full_name }} {{ socio_data.user.rut }} {{ socio_data.plan_name }}">
+                                    <td>
+                                        <strong>{{ socio_data.user.get_full_name }}</strong>
+                                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ socio_data.user.rut }}</div>
+                                    </td>
                                     <td>{{ socio_data.plan_name }}</td>
                                     <td>
                                         <span class="status-badge {% if socio_data.estado == 'Activo' %}active{% else %}expired{% endif %}">
@@ -323,15 +326,16 @@
                                     </td>
                                 </tr>
                                 {% empty %}
-                                <tr id="no-results-row">
+                                <tr id="no-socios-row">
                                     <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-                                        No hay socios registrados
+                                        No hay socios registrados.
                                     </td>
                                 </tr>
                                 {% endfor %}
-                                <tr id="search-no-results" style="display: none;">
+                                
+                                <tr id="search-socio-no-results" style="display: none;">
                                     <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-                                        No se encontraron resultados para tu búsqueda.
+                                        No se encontraron socios con esos datos.
                                     </td>
                                 </tr>
                             </tbody>
