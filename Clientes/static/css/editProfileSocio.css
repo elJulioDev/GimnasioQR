@@ -1,0 +1,239 @@
+
+/* --- Variables del Tema (Extraídas de indexAdmin.css) --- */
+:root {
+    --primary-color: #00ff9d;
+    --primary-dark: #00cc7d;
+    --danger-color: #ff4757;
+    --text-primary: #ffffff;
+    --text-secondary: #b4b4b4;
+    --bg-dark: #0a0a0a;
+    --bg-card: rgba(255, 255, 255, 0.03);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --blur-amount: 16px;
+    --border-radius: 16px;
+    --transition-speed: 0.3s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    color: var(--text-primary);
+    background: linear-gradient(-45deg, #0a0a0a, #1a1a1a, #0f0f0f, #151515);
+    background-size: 400% 400%;
+    animation: animatedGradient 15s ease infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+@keyframes animatedGradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* --- Contenedor Principal Compacto --- */
+.profile-container {
+    width: 100%;
+    max-width: 700px; /* Más angosto para sensación compacta */
+    animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Tarjeta Glassmorphism --- */
+.glass-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--blur-amount));
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Borde superior neón sutil */
+.glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+}
+
+/* --- Header Compacto --- */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.avatar-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), #00ccff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #0a0a0a;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+    flex-shrink: 0;
+}
+
+.header-info h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    background: linear-gradient(90deg, #fff, #b4b4b4);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.badges-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.info-badge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.info-badge i { color: var(--primary-color); font-size: 0.8rem; }
+
+/* --- Grid del Formulario --- */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 columnas forzadas */
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-left: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-input-wrapper {
+    position: relative;
+}
+
+.form-input-wrapper i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.form-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 16px 12px 40px; /* Padding izquierdo para el icono */
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.form-input:focus + i {
+    color: var(--primary-color);
+}
+
+/* --- Botones --- */
+.actions-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-ghost {
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+.btn-ghost:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #00ccff);
+    color: #0a0a0a;
+    box-shadow: 0 4px 15px rgba(0, 255, 157, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 255, 157, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .profile-header { flex-direction: column; text-align: center; }
+    .actions-footer { flex-direction: column-reverse; }
+    .btn { width: 100%; justify-content: center; }
+}

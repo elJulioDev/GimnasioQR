@@ -1,0 +1,306 @@
+:root {
+    --bg-dark: #0a0a0a;
+    --bg-card: #151515;
+    --success: #00ff9d;
+    --danger: #ff4757;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --border: #2a2a2a;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Contenedor principal */
+.scanner-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 2rem;
+}
+
+/* Estado idle con icono y visor de cámara */
+.scanner-idle {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.scanner-idle-icon {
+    font-size: 120px;
+    color: #ffffff;
+    filter: drop-shadow(0 0 40px rgba(255, 255, 255, 0.15));
+    margin-bottom: 1rem;
+}
+
+.scanner-idle-text {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    margin-bottom: 2rem;
+}
+
+/* Visor de cámara - SIEMPRE VISIBLE */
+#qr-reader {
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+#qr-reader video {
+    border-radius: 18px;
+}
+
+/* Ocultar cuando se muestra resultado */
+.result-active .scanner-idle,
+.result-active #qr-reader {
+    display: none;
+}
+
+/* Log de debug */
+.debug-log {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    background: rgba(21, 21, 21, 0.95);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    z-index: 10000;
+    max-height: 150px;
+    overflow-y: auto;
+    display: none;
+}
+
+.debug-log.show {
+    display: block;
+}
+
+.debug-log-entry {
+    font-size: 0.8rem;
+    padding: 2px 0;
+    color: var(--text-secondary);
+    font-family: 'Courier New', monospace;
+}
+
+.debug-log-entry.success {
+    color: var(--success);
+}
+
+.debug-log-entry.error {
+    color: var(--danger);
+}
+
+/* Botón debug */
+.debug-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    z-index: 10001;
+}
+
+/* Tarjeta de resultado */
+.result-card {
+    display: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    position: relative;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.result-card.show {
+    display: block;
+}
+
+.result-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 24px 24px 0 0;
+}
+
+.result-card.success::before {
+    background: var(--success);
+    box-shadow: 0 0 20px var(--success);
+}
+
+.result-card.denied::before {
+    background: var(--danger);
+    box-shadow: 0 0 20px var(--danger);
+}
+
+.result-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+    font-size: 45px;
+}
+
+.result-icon.success {
+    background: rgba(0, 255, 157, 0.12);
+    color: var(--success);
+    box-shadow: 0 0 40px rgba(0, 255, 157, 0.3);
+}
+
+.result-icon.denied {
+    background: rgba(255, 71, 87, 0.12);
+    color: var(--danger);
+    box-shadow: 0 0 40px rgba(255, 71, 87, 0.3);
+}
+
+.result-name {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    letter-spacing: -0.5px;
+}
+
+.result-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 2rem;
+}
+
+.result-status.allowed {
+    background: rgba(0, 255, 157, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(0, 255, 157, 0.3);
+}
+
+.result-status.denied {
+    background: rgba(255, 71, 87, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(255, 71, 87, 0.3);
+}
+
+.result-details {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.detail-row:first-child {
+    padding-top: 0;
+}
+
+.detail-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.countdown {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.countdown span {
+    color: var(--success);
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+    .scanner-container {
+        padding: 1rem;
+    }
+    
+    .scanner-idle-icon {
+        font-size: 100px;
+    }
+    
+    .result-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .result-name {
+        font-size: 1.6rem;
+    }
+
+    /* Estilo para advertencia (Ya ingresó hoy) */
+    .result-card.warning::before {
+        background: #FF9800;
+        box-shadow: 0 0 20px #FF9800;
+    }
+
+    .result-icon.warning {
+        background: rgba(255, 152, 0, 0.12);
+        color: #FF9800;
+        box-shadow: 0 0 40px rgba(255, 152, 0, 0.3);
+    }
+
+    .result-status.warning {
+        background: rgba(255, 152, 0, 0.15);
+        color: #FF9800;
+        border: 1px solid rgba(255, 152, 0, 0.3);
+    }
+}

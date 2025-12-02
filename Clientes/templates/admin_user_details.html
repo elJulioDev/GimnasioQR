@@ -8,350 +8,7 @@
     <link rel="stylesheet" href="{% static 'css/indexAdmin.css' %}">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="{% static 'img/icono.svg' %}">
-    <style>
-        .details-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 2rem;
-        }
-
-        .details-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-        }
-
-        .header-info {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .user-avatar-large {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: 700;
-            color: #000;
-        }
-
-        .header-text h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }
-
-        .user-role-badge {
-            display: inline-block;
-            padding: 0.35rem 0.75rem;
-            background: rgba(0, 255, 157, 0.15);
-            border: 1px solid var(--primary-color);
-            border-radius: 20px;
-            color: var(--primary-color);
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: #000;
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-danger {
-            background: rgba(255, 71, 87, 0.15);
-            color: var(--danger-color);
-            border: 1px solid var(--danger-color);
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .details-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .detail-card {
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 1.5rem;
-        }
-
-        .detail-card.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .card-title {
-            font-size: 1.2rem;
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid rgba(0, 255, 157, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .info-value {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        .stats-mini-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .stat-mini-card {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 1rem;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-mini-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        .stat-mini-label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-
-        .qr-preview {
-            text-align: center;
-            padding: 1.5rem;
-        }
-
-        .qr-preview img {
-            max-width: 200px;
-            border-radius: 10px;
-            background: white;
-            padding: 10px;
-        }
-
-        .table-logs {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table-logs th,
-        .table-logs td {
-            padding: 0.875rem;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .table-logs th {
-            color: var(--primary-color);
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-        }
-
-        .table-logs td {
-            color: var(--text-primary);
-        }
-
-/* Modal de Confirmación de Eliminación */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 0.3s ease;
-}
-
-.modal-overlay.active {
-    display: flex;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.modal-content {
-    background: rgba(20, 20, 20, 0.95);
-    border: 2px solid rgba(255, 71, 87, 0.5);
-    border-radius: 20px;
-    padding: 2.5rem;
-    max-width: 500px;
-    width: 90%;
-    text-align: center;
-    animation: slideIn 0.3s ease;
-    box-shadow: 0 20px 60px rgba(255, 71, 87, 0.3);
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.modal-icon {
-    font-size: 5rem;
-    color: var(--danger-color);
-    margin-bottom: 1rem;
-    animation: shake 0.5s ease;
-}
-
-@keyframes shake {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(-10deg); }
-    75% { transform: rotate(10deg); }
-}
-
-.modal-title {
-    font-size: 1.8rem;
-    color: var(--danger-color);
-    margin-bottom: 1rem;
-    font-weight: 700;
-}
-
-.modal-message {
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
-    line-height: 1.6;
-}
-
-.modal-user-info {
-    background: rgba(255, 71, 87, 0.1);
-    border: 1px solid rgba(255, 71, 87, 0.3);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 1.5rem 0;
-}
-
-.modal-user-name {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-}
-
-.modal-user-rut {
-    color: var(--text-secondary);
-    font-size: 1rem;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    margin-top: 2rem;
-}
-
-.modal-btn {
-    padding: 0.875rem 2rem;
-    border: none;
-    border-radius: 10px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.modal-btn-cancel {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-}
-
-.modal-btn-cancel:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-}
-
-.modal-btn-delete {
-    background: var(--danger-color);
-    color: white;
-}
-
-.modal-btn-delete:hover {
-    background: #ff2f47;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 71, 87, 0.4);
-}
-
-.modal-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-    </style>
-    
+    <link rel="stylesheet" href="{% static 'css/adminUserDetails.css' %}">    
 </head>
 <body>
     <div class="details-container">
@@ -618,38 +275,38 @@
 </div>
 
 <script>
-// Funciones del Modal de Eliminación
-let deleteUserId = null;
+    // Funciones del Modal de Eliminación
+    let deleteUserId = null;
 
-function showDeleteModal(userId, userName, userRut) {
-    deleteUserId = userId;
-    document.getElementById('modalUserName').textContent = userName;
-    document.getElementById('modalUserRut').textContent = 'RUT: ' + userRut;
-    document.getElementById('deleteModal').classList.add('active');
-    
-    // Actualizar la acción del formulario
-    const deleteForm = document.getElementById('deleteForm');
-    deleteForm.action = `/management/users/${userId}/delete/`;
-}
-
-function closeDeleteModal() {
-    document.getElementById('deleteModal').classList.remove('active');
-    deleteUserId = null;
-}
-
-// Cerrar modal al hacer clic fuera de él
-document.getElementById('deleteModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeDeleteModal();
+    function showDeleteModal(userId, userName, userRut) {
+        deleteUserId = userId;
+        document.getElementById('modalUserName').textContent = userName;
+        document.getElementById('modalUserRut').textContent = 'RUT: ' + userRut;
+        document.getElementById('deleteModal').classList.add('active');
+        
+        // Actualizar la acción del formulario
+        const deleteForm = document.getElementById('deleteForm');
+        deleteForm.action = `/management/users/${userId}/delete/`;
     }
-});
 
-// Cerrar modal con tecla ESC
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeDeleteModal();
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        deleteUserId = null;
     }
-});
+
+    // Cerrar modal al hacer clic fuera de él
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+
+    // Cerrar modal con tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
 </script>
 
 
