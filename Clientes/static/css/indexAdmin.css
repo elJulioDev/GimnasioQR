@@ -1250,3 +1250,51 @@ select.form-control option:hover {
     display: block;
     animation: fadeIn 0.3s ease;
 }
+
+/* --- Contenedor de los filtros --- */
+.filter-container {
+    display: flex;
+    gap: 15px; /* Espacio entre los filtros */
+    align-items: center;
+}
+
+/* --- Estilo visual de los Selects --- */
+.filter-container select.form-control {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px; /* Bordes redondeados pero sutiles */
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 160px; /* Ancho mínimo para que se vean uniformes */
+    
+    /* Eliminar estilo por defecto feo y poner flecha personalizada (opcional) */
+    appearance: none; 
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    padding-right: 40px; /* Espacio para la flecha */
+}
+
+/* --- Efectos Hover y Focus --- */
+.filter-container select.form-control:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.filter-container select.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 255, 157, 0.1); /* Resplandor suave */
+}
+
+/* --- Opciones del desplegable (para navegadores que lo permitan) --- */
+.filter-container select.form-control option {
+    background-color: #1a1a1a; /* Fondo oscuro sólido */
+    color: #fff;
+    padding: 10px;
+}

@@ -205,7 +205,7 @@
                                 <td style="width: 25%;">
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <div class="profit-bar-container">
-                                            <div class="profit-bar-fill" style="width: {{ item.share }}%;"></div>
+                                            <div class="profit-bar-fill" style="width: {{ item.share|stringformat:'.1f' }}%;"></div>
                                         </div>
                                         <span style="font-size: 0.8rem; font-weight: bold;">{{ item.share }}%</span>
                                     </div>
@@ -551,11 +551,27 @@
                         </div>
                         
                         <div class="filter-container">
-                            <select class="form-control" id="paymentMethodFilter" onchange="filterByMethod()">
+                            <select class="form-control" id="paymentMethodFilter" onchange="filterPayments()">
                                 <option value="all">Todos los métodos</option>
                                 <option value="efectivo">Efectivo</option>
                                 <option value="transferencia">Transferencia</option>
                                 <option value="tarjeta">Tarjeta</option>
+                            </select>
+
+                            <select class="form-control" id="paymentMonthFilter" onchange="filterPayments()">
+                                <option value="all">Todos los meses</option>
+                                <option value="01">Enero</option>
+                                <option value="02">Febrero</option>
+                                <option value="03">Marzo</option>
+                                <option value="04">Abril</option>
+                                <option value="05">Mayo</option>
+                                <option value="06">Junio</option>
+                                <option value="07">Julio</option>
+                                <option value="08">Agosto</option>
+                                <option value="09">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
                             </select>
                         </div>
                     </div>
@@ -574,7 +590,7 @@
                             </thead>
                             <tbody>
                                 {% for pago in transacciones %}
-                                <tr class="payment-row" data-method="{{ pago.payment_method }}">
+                                <tr class="payment-row" data-method="{{ pago.payment_method }}" data-month="{{ pago.payment_date|date:'m' }}">
                                     <td>
                                         <div style="display: flex; flex-direction: column;">
                                             <span style="font-family: 'Courier New', monospace; color: var(--primary-color); font-weight: 700;">#{{ pago.id }}</span>

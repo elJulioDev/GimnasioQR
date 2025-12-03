@@ -336,17 +336,32 @@ function filterTable(inputId, rowClass) {
     }
 }
 
-function filterByMethod() {
-    const select = document.getElementById('paymentMethodFilter');
-    const filterValue = select.value;
+function filterPayments() {
+    // 1. Obtener los valores de ambos filtros
+    const methodSelect = document.getElementById('paymentMethodFilter');
+    const monthSelect = document.getElementById('paymentMonthFilter');
+    
+    const selectedMethod = methodSelect.value;
+    const selectedMonth = monthSelect.value; // Será "01", "02", "all", etc.
+
+    // 2. Obtener todas las filas
     const rows = document.getElementsByClassName('payment-row');
 
+    // 3. Recorrer y filtrar
     for (let i = 0; i < rows.length; i++) {
-        const rowMethod = rows[i].getAttribute('data-method');
-        if (filterValue === 'all' || rowMethod === filterValue) {
-            rows[i].style.display = "";
+        const row = rows[i];
+        const rowMethod = row.getAttribute('data-method'); // ej: "efectivo"
+        const rowMonth = row.getAttribute('data-month');   // ej: "10"
+
+        // Lógica de coincidencia
+        const matchMethod = (selectedMethod === 'all' || rowMethod === selectedMethod);
+        const matchMonth = (selectedMonth === 'all' || rowMonth === selectedMonth);
+
+        // Mostrar solo si AMBOS filtros coinciden
+        if (matchMethod && matchMonth) {
+            row.style.display = ""; // Mostrar
         } else {
-            rows[i].style.display = "none";
+            row.style.display = "none"; // Ocultar
         }
     }
 }

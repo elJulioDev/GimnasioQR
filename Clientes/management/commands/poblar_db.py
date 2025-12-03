@@ -1,4 +1,4 @@
-import random
+import random, calendar
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from faker import Faker
@@ -9,119 +9,123 @@ from Clientes.models import CustomUser, Plan, Membership, AccessLog
 fake = Faker(['es_CL'])
 
 class Command(BaseCommand):
-    help = 'Puebla la base de datos con usuarios históricos, planes y registros de prueba'
+    help = 'Puebla la base de datos definiendo cantidades exactas por mes (Ej: --enero 10 --marzo 5)'
 
     def add_arguments(self, parser):
-        parser.add_argument('total', type=int, help='Indica cuantos usuarios quieres crear')
+        # Argumentos opcionales para cada mes del año
+        parser.add_argument('--enero', type=int, default=15, help='Propósitos de año nuevo')
+        parser.add_argument('--febrero', type=int, default=10, help='Vacaciones (baja leve)')
+        parser.add_argument('--marzo', type=int, default=20, help='Vuelta a clases/trabajo (peak)')
+        parser.add_argument('--abril', type=int, default=12, help='Mantención')
+        parser.add_argument('--mayo', type=int, default=10, help='Comienzo del frío')
+        parser.add_argument('--junio', type=int, default=8, help='Invierno/Lluvias (baja)')
+        parser.add_argument('--julio', type=int, default=8, help='Invierno/Vacaciones invierno (baja)')
+        parser.add_argument('--agosto', type=int, default=10, help='Pasando agosto')
+        parser.add_argument('--septiembre', type=int, default=15, help='Pre-18 y primavera')
+        parser.add_argument('--octubre', type=int, default=20, help='Operación verano (subida)')
+        parser.add_argument('--noviembre', type=int, default=25, help='Full verano (peak)')
+        parser.add_argument('--diciembre', type=int, default=12, help='Fiestas y gastos (baja leve)')
 
     def handle(self, *args, **kwargs):
-        total = kwargs['total']
-        self.stdout.write(f'Creando {total} registros históricos distribuidos en 6 meses...')
-
-        # 1. Asegurar planes
         self.crear_planes_base()
         planes = list(Plan.objects.filter(is_active=True))
 
-        # Calculamos cuántos días han pasado desde el 1 de Enero de este año
+        if not planes:
+            self.stdout.write(self.style.ERROR('No hay planes activos. Imposible crear registros.'))
+            return
+
         now = timezone.now()
-        inicio_anio = now.replace(month=1, day=1, hour=0, minute=0, second=0)
-        dias_totales_anio = (now - inicio_anio).days
+        current_year = now.year
 
-        for i in range(total):
-            try:
-                # --- BALANCEO INTELIGENTE CORREGIDO (70% Activos / 30% Historial) ---
-                # Aumentamos la probabilidad de activos a 0.70
+        # Mapeo de argumentos a números de mes
+        configuracion_meses = [
+            (1, kwargs['enero']), (2, kwargs['febrero']), (3, kwargs['marzo']),
+            (4, kwargs['abril']), (5, kwargs['mayo']), (6, kwargs['junio']),
+            (7, kwargs['julio']), (8, kwargs['agosto']), (9, kwargs['septiembre']),
+            (10, kwargs['octubre']), (11, kwargs['noviembre']), (12, kwargs['diciembre'])
+        ]
+
+        total_creados = 0
+
+        for mes_num, cantidad in configuracion_meses:
+            if cantidad > 0:
+                self.stdout.write(f"--- Procesando MES {mes_num} ({cantidad} usuarios) ---")
                 
-                if random.random() < 0.70:
-                    # 70% son usuarios NUEVOS (0 a 28 días) -> ACTIVOS
-                    # Usamos 28 para asegurar que no caiga justo en el día de vencimiento (si son planes de 30 días)
-                    dias_atras = random.randint(0, 28)
-                else:
-                    # 30% son usuarios ANTIGUOS (31 días hasta Enero) -> VENCIDOS (Historial)
-                    if dias_totales_anio > 31:
-                        dias_atras = random.randint(31, dias_totales_anio)
-                    else:
-                        # Si estamos a principio de año y no hay historial suficiente,
-                        # forzamos que sean recientes o manejamos el borde
-                        dias_atras = random.randint(0, dias_totales_anio)
-
-                # Fecha exacta del pasado simulado
-                fecha_simulada = timezone.now() - timedelta(days=dias_atras)
-
-                # 2. Crear Usuario
-                rut = self.generar_rut_unico()
-                first_name = fake.first_name()
-                last_name = fake.last_name()
-                username = f"{first_name.lower()}.{last_name.lower()}{random.randint(100,999)}"
+                # Obtener el último día de ese mes
+                _, last_day = calendar.monthrange(current_year, mes_num)
                 
-                if CustomUser.objects.filter(username=username).exists():
+                # Si estamos creando datos en el mes actual, no pasarnos del día de hoy
+                if mes_num == now.month:
+                    last_day = min(last_day, now.day)
+                
+                # Si pedimos datos para un mes futuro (ej: Diciembre si estamos en Noviembre), avisar y saltar
+                if mes_num > now.month: # Opcional: Si quieres permitir futuro, borra este if
+                    self.stdout.write(self.style.WARNING(f"Saltando Mes {mes_num} porque es futuro."))
                     continue
 
-                user = CustomUser.objects.create_user(
-                    username=username,
-                    email=f"{username}@example.com",
-                    password='password123',
-                    first_name=first_name,
-                    last_name=last_name,
-                    rut=rut,
-                    phone=f"+569{random.randint(10000000, 99999999)}",
-                    birthdate=fake.date_of_birth(minimum_age=18, maximum_age=65),
-                    role='socio',
-                    is_active=True,
-                )
+                for i in range(cantidad):
+                    try:
+                        # 1. FECHAS
+                        dia_random = random.randint(1, last_day)
+                        
+                        # Fecha de inicio (y de pago)
+                        fecha_registro = timezone.datetime(current_year, mes_num, dia_random, 
+                                                         random.randint(9, 21), random.randint(0, 59),
+                                                         tzinfo=timezone.get_current_timezone())
+                        start_date = fecha_registro.date()
 
-                # --- FORZAR FECHA DE REGISTRO DEL USUARIO ---
-                # Django pone 'now' por defecto. Aquí lo sobrescribimos manualemente.
-                user.date_joined = fecha_simulada
-                user.created_at = fecha_simulada
-                user.save(update_fields=['date_joined', 'created_at'])
+                        # Plan y Vencimiento
+                        plan = random.choice(planes)
+                        end_date = start_date + timedelta(days=plan.duration_days)
+                        
+                        # Estado real hoy
+                        is_active = end_date >= now.date()
+                        status = 'active' if is_active else 'expired'
 
-                # 3. Crear Membresía Histórica
-                # El 90% de los usuarios creados tendrán una compra asociada a esa fecha
-                if random.random() < 0.90:
-                    plan = random.choice(planes)
-                    
-                    # La fecha de inicio del plan es la fecha simulada
-                    start_date = fecha_simulada.date()
-                    membership = Membership.objects.create(
-                        user=user,
-                        plan=plan,
-                        start_date=start_date,
-                        # payment_date se define aquí explícitamente para el gráfico de ingresos
-                        payment_date=fecha_simulada, 
-                        payment_method=random.choice(['efectivo', 'transferencia', 'tarjeta']),
-                        amount_paid=plan.price,
-                        notes="Registro histórico generado por script"
-                    )
-                    
-                    # --- FORZAR METADATA DE LA MEMBRESÍA ---
-                    # update_fields es clave para saltarse el auto_now_add=True inmutable
-                    membership.created_at = fecha_simulada
-                    
-                    # Calculamos si está vencida o activa basado en la fecha simulada + duración
-                    fecha_vencimiento = start_date + timedelta(days=plan.duration_days)
-                    membership.end_date = fecha_vencimiento
+                        # 2. CREAR USUARIO
+                        rut = self.generar_rut_unico()
+                        first_name = fake.first_name()
+                        last_name = fake.last_name()
+                        email = f"{first_name}.{last_name}_{mes_num}_{i}@example.com".lower()
 
-                    if fecha_vencimiento < timezone.now().date():
-                        membership.status = 'expired'
-                        membership.is_active = False
-                    else:
-                        membership.status = 'active'
-                        membership.is_active = True
-                    
-                    # Guardamos los cambios de fecha forzados
-                    membership.save()
+                        user = CustomUser.objects.create_user(
+                            username=rut,
+                            email=email,
+                            rut=rut,
+                            password='password123',
+                            first_name=first_name,
+                            last_name=last_name,
+                            phone=f"+569{random.randint(10000000, 99999999)}",
+                            birthdate=fake.date_of_birth(minimum_age=18, maximum_age=60),
+                            role='socio'
+                        )
+                        
+                        # Ajustar fecha de registro del usuario para que coincida con el mes
+                        user.date_joined = fecha_registro
+                        user.save()
 
-                    # 4. Generar Accesos Históricos (Si aplica)
-                    self.generar_asistencias(user, membership)
+                        # 3. CREAR MEMBRESÍA (Con Ingreso en el mes correcto)
+                        membership = Membership.objects.create(
+                            user=user,
+                            plan=plan,
+                            start_date=start_date,
+                            end_date=end_date,
+                            amount_paid=plan.price,
+                            payment_method=random.choice(['efectivo', 'transferencia', 'tarjeta']),
+                            payment_date=fecha_registro, # <--- CLAVE PARA TUS GRÁFICOS
+                            status=status,
+                            is_active=is_active
+                        )
 
-                if (i + 1) % 10 == 0:
-                    self.stdout.write(self.style.SUCCESS(f'Progreso: {i + 1}/{total} - Fecha: {fecha_simulada.strftime("%Y-%m-%d")}'))
+                        # 4. HISTORIAL DE ACCESOS
+                        self.generar_asistencias(user, membership)
+                        
+                        total_creados += 1
 
-            except Exception as e:
-                self.stdout.write(self.style.ERROR(f'Error: {str(e)}'))
+                    except Exception as e:
+                        self.stdout.write(self.style.ERROR(f"Error: {e}"))
 
-        self.stdout.write(self.style.SUCCESS(f'¡Listo! Se inyectaron ingresos desde {fecha_simulada.strftime("%B")} hasta hoy.'))
+        self.stdout.write(self.style.SUCCESS(f'¡Listo! Total usuarios creados: {total_creados}'))
 
     def crear_planes_base(self):
         self.stdout.write('Sincronizando planes base...')

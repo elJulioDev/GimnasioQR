@@ -993,11 +993,11 @@ def admin_user_edit(request, user_id):
             if new_role in ['socio', 'moderador', 'admin']:
                 user.role = new_role
             
-            user.is_active = request.POST.get('is_active') == 'on'
+            user.is_active = 'is_active' in request.POST
             
             # 2. Gestión de Membresía
             if user.role == 'socio':
-                user.is_active_member = request.POST.get('is_active_member') == 'on'
+                user.is_active_member = 'is_active_member' in request.POST
                 
                 plan_id = request.POST.get('plan_id')
                 start_date_str = request.POST.get('membership_start')
@@ -1024,10 +1024,18 @@ def admin_user_edit(request, user_id):
                             
                             # Forzar estado activo si las fechas son válidas
                             if end_date_obj:
+                                # Verificamos si la fecha es válida (futura o hoy)
                                 if end_date_obj >= timezone.now().date():
-                                    current_membership.status = 'active'
-                                    current_membership.is_active = True
+                                    # Si las fechas están bien, RESPETAMOS lo que decidió el admin en el checkbox (user.is_active_member)
+                                    if user.is_active_member:
+                                        current_membership.status = 'active'
+                                        current_membership.is_active = True
+                                    else:
+                                        # Si el admin desmarcó la casilla, ponemos la membresía como inactiva aunque las fechas sirvan
+                                        current_membership.status = 'inactive'
+                                        current_membership.is_active = False
                                 else:
+                                    # Si la fecha ya pasó, se vence automáticamente
                                     current_membership.status = 'expired'
                                     current_membership.is_active = False
                             
