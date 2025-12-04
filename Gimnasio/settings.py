@@ -21,6 +21,10 @@ DEBUG = 'RENDER' not in os.environ
 # Permitir hosts: Necesario para que Render funcione
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://gimnasioclubhousedigital.onrender.com', 
+]
+
 # ==============================================================================
 # APLICACIONES E INSTALACIÓN
 # ==============================================================================
@@ -135,7 +139,7 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
