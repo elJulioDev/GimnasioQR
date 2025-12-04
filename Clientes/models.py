@@ -2,9 +2,6 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
-import qrcode
-from io import BytesIO
-from django.core.files import File
 import hashlib
 
 # --- NUEVAS IMPORTACIONES NECESARIAS ---
@@ -65,7 +62,7 @@ class CustomUser(AbstractUser):
     )
     
     # QR Code
-    qr_code = models.ImageField(upload_to='qr_codes/', blank=True, null=True, verbose_name="Código QR")
+    #qr_code = models.ImageField(upload_to='qr_codes/', blank=True, null=True, verbose_name="Código QR")
     qr_unique_id = models.CharField(max_length=64, unique=True, blank=True, null=True, verbose_name="ID Único QR")
     
     # Metadata
@@ -121,40 +118,26 @@ class CustomUser(AbstractUser):
         # SIEMPRE hacer el save principal
         super().save(*args, **kwargs)
     
-        # Generar QR después del save (si es necesario)
-        if self.role == 'socio' and self.rut and not self.qr_code:
-            self.generate_qr_code()
 
-    
     def generate_qr_code(self):
-        """Genera QR solo para socios"""
-        if not self.rut or self.is_superuser:
-            return
-        
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=10,
-            border=4,
-        )
-        
-        qr_data = {
+        """
+        Método de compatibilidad: asegura que exista el qr_unique_id.
+        Ya no genera imagen física.
+        """
+        if self.role == 'socio' and self.rut and not self.qr_unique_id:
+            self.save() # El save() generará el ID
+
+    def get_qr_data(self):
+        """Retorna el string exacto que se debe codificar en el QR"""
+        if not self.qr_unique_id:
+            return None
+            
+        data_dict = {
             'user_id': self.id,
             'qr_id': self.qr_unique_id,
             'rut': self.rut
         }
-        
-        qr.add_data(str(qr_data))
-        qr.make(fit=True)
-        img = qr.make_image(fill_color="black", back_color="white")
-        
-        buffer = BytesIO()
-        img.save(buffer, format='PNG')
-        buffer.seek(0)
-        
-        filename = f'qr_{self.rut}_{self.id}.png'
-        self.qr_code.save(filename, File(buffer), save=False)
-        super().save(update_fields=['qr_code'])
+        return str(data_dict) # Retorna la representación en texto del diccionario
     
     def get_active_membership(self):
         """Retorna la membresía activa del usuario o None."""
@@ -360,22 +343,3 @@ class AccessLog(models.Model):
     
     def __str__(self):
         return f"{self.user.get_full_name()} - {self.status} - {self.timestamp}"
-
-
-# ==============================================================================
-# SEÑAL PARA ELIMINAR EL ARCHIVO QR CUANDO SE ELIMINA EL USUARIO
-# ==============================================================================
-
-@receiver(post_delete, sender=CustomUser)
-def auto_delete_file_on_delete(sender, instance, **kwargs):
-    """
-    Borra el archivo QR del sistema de archivos cuando se elimina el objeto CustomUser.
-    Funciona tanto desde el admin de Django como desde las vistas personalizadas.
-    """
-    if instance.qr_code:
-        if os.path.isfile(instance.qr_code.path):
-            try:
-                os.remove(instance.qr_code.path)
-            except Exception as e:
-                # Opcional: imprimir el error si no se pudo borrar, para debug
-                print(f"Error al borrar archivo QR para {instance.rut}: {e}")

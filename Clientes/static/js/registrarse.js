@@ -147,8 +147,10 @@ async function processPayment() {
         const data = await response.json();
 
         if (data.success) {
-            if (data.qr_code_url) {
-                document.getElementById('qrContainer').innerHTML = `<img src="${data.qr_code_url}" alt="QR Code">`;
+            // CAMBIO AQUÍ: Usamos qr_code_b64 en lugar de qr_code_url
+            if (data.qr_code_b64) {
+                // Como ya viene con el prefijo "data:image/png;base64,...", lo ponemos directo en el src
+                document.getElementById('qrContainer').innerHTML = `<img src="${data.qr_code_b64}" alt="QR Code">`;
             }
             nextStep(); // Ir al paso 4
         } else {

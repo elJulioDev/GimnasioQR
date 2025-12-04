@@ -17,3 +17,14 @@ Gimnasio/Clientes/media/
 staticfiles/
 
 run.py
+
+# Ignorar archivos de migración, pero mantener el módulo (__init__.py)
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# Archivos de sistema y entorno (recomendado)
+.DS_Store
+.env
+venv/
+.idea/
+.vscode/

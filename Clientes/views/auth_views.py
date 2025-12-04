@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from ..models import CustomUser, Plan, Membership
 from ..utils import send_qr_email
+from ..templatetags.qr_tags import generate_qr_base64
 
 # --- VISTAS DE AUTENTICACIONN ---
 
@@ -220,13 +221,10 @@ def process_registration(request):
             is_active_member=False
         )
         
-        # IMPORTANTE: Refrescar el usuario desde la BD
-        # Esto asegura que el QR fue generado en el save()
-        user.refresh_from_db()
-        
-        # Si el QR no se genero automaticamente, generarlo manualmente
-        if not user.qr_code:
-            user.generate_qr_code()
+        # --- BLOQUE NUEVO ---
+        # Aseguramos que el usuario tenga el ID único generado
+        if not user.qr_unique_id:
+            user.save() 
             user.refresh_from_db()
 
         # Crear la membresia
@@ -264,12 +262,15 @@ def process_registration(request):
         
         user.backend = 'Clientes.backends.RUTorEmailBackend'
         login(request, user)
+
+        # --- GENERACIÓN DEL QR BASE64 PARA LA RESPUESTA JSON ---
+        qr_image_b64 = generate_qr_base64(user.get_qr_data())
         
         return JsonResponse({
             'success': True,
             'message': 'Registro exitoso',
             'user_id': user.id,
-            'qr_code_url': user.qr_code.url if user.qr_code else None,
+            'qr_code_b64': qr_image_b64,
             'email_sent': email_sent
         })
         

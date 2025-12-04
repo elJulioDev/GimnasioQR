@@ -1,4 +1,5 @@
 {% load static %}
+{% load qr_tags %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -197,12 +198,28 @@
                 <div class="content-header"><h2 class="page-title"><i class="fas fa-qrcode"></i> Mi Código QR</h2></div>
                 <div class="qr-display-card">
                     <div class="qr-instructions"><i class="fas fa-info-circle"></i><p>Este es tu código QR personal para acceder al gimnasio.</p></div>
-                    {% if user.qr_code %}
-                    <div class="qr-image-container"><img src="{{ user.qr_code.url }}" alt="Mi Código QR" class="qr-image"></div>
-                    <div class="qr-actions"><a href="{{ user.qr_code.url }}" download="mi_qr_clubhouse.png" class="btn btn-primary"><i class="fas fa-download"></i> Descargar QR</a><button class="btn btn-secondary" onclick="shareQR()"><i class="fas fa-share-alt"></i> Compartir</button></div>
-                    <div class="qr-info"><p><strong>ID Único:</strong> {{ user.qr_unique_id|slice:":20" }}...</p><p><strong>RUT:</strong> {{ user.rut }}</p></div>
+                    
+                    {% if user.qr_unique_id %}
+                        <div class="qr-image-container">
+                            <img src="{% generate_qr_base64 user.get_qr_data %}" alt="Mi Código QR" class="qr-image">
+                        </div>
+                        
+                        <div class="qr-actions">
+                            <button onclick="downloadBase64QR('QR_{{ user.rut }}')" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Descargar QR
+                            </button>
+                            
+                            <button class="btn btn-secondary" onclick="shareQR()">
+                                <i class="fas fa-share-alt"></i> Compartir
+                            </button>
+                        </div>
+                        
+                        <div class="qr-info">
+                            <p><strong>ID Único:</strong> {{ user.qr_unique_id|slice:":20" }}...</p>
+                            <p><strong>RUT:</strong> {{ user.rut }}</p>
+                        </div>
                     {% else %}
-                    <div class="empty-state"><i class="fas fa-qrcode"></i><h3>QR no disponible</h3><p>Contacta con recepción.</p></div>
+                        <div class="empty-state"><i class="fas fa-qrcode"></i><h3>QR no disponible</h3><p>Contacta con recepción.</p></div>
                     {% endif %}
                 </div>
             </section>

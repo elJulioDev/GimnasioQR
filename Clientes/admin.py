@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.utils.html import format_html
 from .models import CustomUser, Plan, Membership, AccessLog
-
+import qrcode
+import base64
+from io import BytesIO
 
 @admin.register(CustomUser)
 class CustomUserAdmin(BaseUserAdmin):
@@ -10,7 +13,6 @@ class CustomUserAdmin(BaseUserAdmin):
     # Filtrar por defecto para mostrar solo usuarios de la app (no superusuarios)
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        # Mostrar superusuarios separados (opcional)
         if not request.GET.get('all'):
             return qs.filter(is_superuser=False)
         return qs
@@ -21,6 +23,37 @@ class CustomUserAdmin(BaseUserAdmin):
     search_fields = ('rut', 'email', 'first_name', 'last_name', 'username')
     ordering = ('-created_at',)
     
+    # --- MÉTODO NUEVO: Generar visualización del QR para el Admin ---
+    def display_qr_code(self, obj):
+        if obj.qr_unique_id:
+            # Obtener datos del modelo
+            data_string = obj.get_qr_data()
+            if not data_string:
+                return "Error en datos QR"
+
+            # Generar QR en memoria
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=4,
+                border=1,
+            )
+            qr.add_data(data_string)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            
+            # Convertir a Base64
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+            img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+            
+            # Retornar HTML seguro
+            return format_html('<img src="data:image/png;base64,{}" width="150" height="150" style="border:1px solid #ccc; padding:5px;" />', img_str)
+        return "Sin Código QR asignado"
+    
+    display_qr_code.short_description = "Vista Previa QR (Generado)"
+
+    # --- FIELDSETS ACTUALIZADOS ---
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         ('Información Personal', {'fields': ('first_name', 'last_name', 'email')}),
@@ -33,7 +66,7 @@ class CustomUserAdmin(BaseUserAdmin):
             'classes': ('collapse',)
         }),
         ('Código QR', {
-            'fields': ('qr_code', 'qr_unique_id'),
+            'fields': ('display_qr_code', 'qr_unique_id'), # Usamos el método display, no el campo
             'classes': ('collapse',)
         }),
         ('Fechas Importantes', {
@@ -59,39 +92,34 @@ class CustomUserAdmin(BaseUserAdmin):
         }),
     )
     
-    readonly_fields = ('qr_code', 'qr_unique_id', 'created_at', 'updated_at')
+    # qr_code eliminado de aquí, agregamos display_qr_code
+    readonly_fields = ('display_qr_code', 'qr_unique_id', 'created_at', 'updated_at')
 
     def save_model(self, request, obj, form, change):
         """
         Guardar el modelo con validaciones especiales
         """
-        # Si es una edición (change=True)
         if change:
-            # Limpiar campos relacionados con QR si el rol cambió de 'socio' a otro
+            # Si cambia el rol y deja de ser socio
             if 'role' in form.changed_data:
                 old_role = form.initial.get('role')
                 new_role = obj.role
                 
-                # Si deja de ser socio, limpiar QR
                 if old_role == 'socio' and new_role != 'socio':
-                    obj.qr_code = None
+                    # obj.qr_code = None  <-- ELIMINADO
                     obj.qr_unique_id = None
                     obj.is_active_member = False
         
-        # Si es un nuevo usuario (change=False)
         else:
-            # Asegurar valores por defecto para campos obligatorios
             if not obj.rut and not obj.is_superuser:
                 obj.rut = f"TEMP_{obj.username}"
             
             if not obj.phone:
                 obj.phone = ""
             
-            # Si no tiene rol y no es superusuario, asignar 'socio' por defecto
             if not obj.role and not obj.is_superuser:
                 obj.role = 'socio'
         
-        # Guardar el modelo
         super().save_model(request, obj, form, change)
 
 @admin.register(Plan)

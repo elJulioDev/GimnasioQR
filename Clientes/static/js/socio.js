@@ -247,3 +247,17 @@ window.onclick = function(event) {
     if (event.target == renewalModal) renewalModal.style.display = "none";
     if (event.target == cancelModal) cancelModal.style.display = "none";
 }
+
+function downloadBase64QR(filename) {
+    const img = document.querySelector('.qr-image'); // Selecciona la imagen generada
+    if (img && img.src.startsWith('data:image')) {
+        const link = document.createElement('a');
+        link.href = img.src;
+        link.download = filename + '.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } else {
+        alert("No se encontró la imagen QR para descargar.");
+    }
+}

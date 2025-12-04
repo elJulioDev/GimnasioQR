@@ -5,6 +5,7 @@ from django.utils import timezone
 import os
 from io import BytesIO
 from xhtml2pdf import pisa
+import qrcode
 
 def generate_pdf_contract(user, membership):
     """Genera el PDF del contrato y lo devuelve como bytes."""
@@ -26,7 +27,7 @@ def generate_pdf_contract(user, membership):
 
 def send_qr_email(user, membership, send_qr=False, send_contract=False):
     """
-    Envía el correo de bienvenida con los adjuntos seleccionados.
+    Envía el correo de bienvenida generando el QR en memoria.
     """
     try:
         # Contexto para el correo
@@ -35,8 +36,8 @@ def send_qr_email(user, membership, send_qr=False, send_contract=False):
             'membership': membership,
             'plan_name': membership.plan.name,
             'qr_unique_id': user.qr_unique_id,
-            'send_qr': send_qr,          # Pasamos flags al template
-            'send_contract': send_contract # Pasamos flags al template
+            'send_qr': send_qr,
+            'send_contract': send_contract
         }
         
         html_message = render_to_string('emails/qr_code_email.html', context)
@@ -50,14 +51,31 @@ def send_qr_email(user, membership, send_qr=False, send_contract=False):
         )
         email.content_subtype = 'html'
         
-        # CORRECCIÓN 2: Lógica separada para adjuntos
+        # 1. Generar y Adjuntar QR en Memoria (Si se solicitó)
+        if send_qr and user.qr_unique_id:
+            # Obtener el texto del QR usando el método del modelo
+            qr_data = user.get_qr_data()
+            
+            # Generar imagen QR
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(qr_data)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            
+            # Guardar en buffer de memoria
+            buffer = BytesIO()
+            img.save(buffer, format='PNG')
+            qr_bytes = buffer.getvalue()
+            
+            # Adjuntar al correo
+            email.attach(f'AccesoQR_{user.rut}.png', qr_bytes, 'image/png')
         
-        # 1. Adjuntar QR SOLO si se solicitó (send_qr=True)
-        if send_qr and user.qr_code and os.path.exists(user.qr_code.path):
-            with open(user.qr_code.path, 'rb') as qr_file:
-                email.attach(f'AccesoQR_{user.rut}.png', qr_file.read(), 'image/png')
-        
-        # 2. Adjuntar Contrato SOLO si se solicitó (send_contract=True)
+        # 2. Adjuntar Contrato (Igual que antes)
         if send_contract:
             pdf_content = generate_pdf_contract(user, membership)
             if pdf_content:
