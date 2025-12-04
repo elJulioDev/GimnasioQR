@@ -1,399 +1,399 @@
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 40px 20px;
-        }
-        
-        .email-wrapper {
-            max-width: 650px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-        
-        /* Header con gradiente oscuro elegante */
-        .email-header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            padding: 50px 40px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .email-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0,255,157,0.1) 0%, transparent 70%);
-            animation: pulse 4s ease-in-out infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-        }
-        
-        .logo-container {
-            position: relative;
-            z-index: 1;
-            margin-bottom: 20px;
-        }
-        
-        .logo-icon {
-            display: inline-block;
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #00ff9d, #00d4ff);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            margin: 0 auto 15px;
-            box-shadow: 0 10px 30px rgba(0, 255, 157, 0.4);
-        }
-        
-        .email-header h1 {
-            color: #ffffff;
-            font-size: 32px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            position: relative;
-            z-index: 1;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        }
-        
-        .email-header .subtitle {
-            color: #00ff9d;
-            font-size: 16px;
-            font-weight: 500;
-            margin-top: 10px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        /* Body con mejor espaciado */
-        .email-body {
-            padding: 50px 40px;
-            background-color: #ffffff;
-        }
-        
-        .welcome-message {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        .welcome-message h2 {
-            color: #1a1a2e;
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-        
-        .welcome-message p {
-            color: #64748b;
-            font-size: 16px;
-            line-height: 1.6;
-        }
-        
-        /* Card de información con diseño moderno */
-        .info-card {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: 12px;
-            padding: 30px;
-            margin: 30px 0;
-            border-left: 5px solid #00ff9d;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-        
-        .info-card-title {
-            color: #1a1a2e;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .info-card-title::before {
-            content: '✓';
-            display: inline-block;
-            width: 28px;
-            height: 28px;
-            background: linear-gradient(135deg, #00ff9d, #00d4ff);
-            border-radius: 50%;
-            text-align: center;
-            line-height: 28px;
-            color: #1a1a2e;
-            font-weight: bold;
-            font-size: 16px;
-        }
-        
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .info-row:last-child {
-            border-bottom: none;
-        }
-        
-        .info-label {
-            color: #64748b;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .info-value {
-            color: #1a1a2e;
-            font-size: 14px;
-            font-weight: 700;
-        }
-        
-        /* QR Instructions con mejor diseño */
-        .qr-section {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            border-radius: 12px;
-            padding: 35px;
-            margin: 30px 0;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .qr-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #00ff9d, #00d4ff, #00ff9d);
-            background-size: 200% 100%;
-            animation: shimmer 3s infinite;
-        }
-        
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        
-        .qr-icon {
-            font-size: 50px;
-            margin-bottom: 15px;
-        }
-        
-        .qr-section h3 {
-            color: #00ff9d;
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-        
-        .qr-section p {
-            color: #cbd5e1;
-            font-size: 15px;
-            line-height: 1.7;
-            margin-bottom: 10px;
-        }
-        
-        .qr-id {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            display: inline-block;
-        }
-        
-        .qr-id-label {
-            color: #94a3b8;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .qr-id-value {
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 700;
-            font-family: 'Courier New', monospace;
-        }
-        
-        /* Steps list con iconos */
-        .steps-section {
-            margin: 35px 0;
-        }
-        
-        .steps-section h3 {
-            color: #1a1a2e;
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-        
-        .steps-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .steps-list li {
-            color: #475569;
-            font-size: 15px;
-            padding: 15px 0;
-            padding-left: 45px;
-            position: relative;
-            line-height: 1.6;
-        }
-        
-        .steps-list li::before {
-            content: attr(data-step);
-            position: absolute;
-            left: 0;
-            top: 12px;
-            width: 30px;
-            height: 30px;
-            background: linear-gradient(135deg, #00ff9d, #00d4ff);
-            border-radius: 50%;
-            color: #1a1a2e;
-            font-weight: 700;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Divider */
-        .divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
-            margin: 35px 0;
-        }
-        
-        /* CTA Button */
-        .cta-button {
-            display: inline-block;
-            padding: 16px 40px;
-            background: linear-gradient(135deg, #00ff9d, #00d4ff);
-            color: #1a1a2e;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 16px;
-            margin: 25px 0;
-            box-shadow: 0 10px 25px rgba(0, 255, 157, 0.3);
-            transition: all 0.3s ease;
-        }
-        
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 35px rgba(0, 255, 157, 0.4);
-        }
-        
-        /* Footer elegante */
-        .email-footer {
-            background: #0f172a;
-            padding: 40px;
-            text-align: center;
-        }
-        
-        .footer-logo {
-            margin-bottom: 20px;
-        }
-        
-        .footer-logo h4 {
-            color: #00ff9d;
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-        
-        .footer-tagline {
-            color: #64748b;
-            font-size: 13px;
-            margin-bottom: 25px;
-        }
-        
-        .footer-links {
-            margin: 20px 0;
-        }
-        
-        .footer-links a {
-            color: #94a3b8;
-            text-decoration: none;
-            margin: 0 15px;
-            font-size: 13px;
-            transition: color 0.3s ease;
-        }
-        
-        .footer-links a:hover {
-            color: #00ff9d;
-        }
-        
-        .footer-social {
-            margin: 25px 0;
-        }
-        
-        .social-icon {
-            display: inline-block;
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            margin: 0 8px;
-            line-height: 36px;
-            color: #94a3b8;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        .social-icon:hover {
-            background: #00ff9d;
-            color: #0f172a;
-        }
-        
-        .copyright {
-            color: #475569;
-            font-size: 12px;
-            margin-top: 20px;
-        }
-        
-        /* Responsive */
-        @media only screen and (max-width: 600px) {
-            body {
-                padding: 20px 10px;
-            }
-            
-            .email-header,
-            .email-body,
-            .email-footer {
-                padding: 30px 20px;
-            }
-            
-            .email-header h1 {
-                font-size: 26px;
-            }
-            
-            .welcome-message h2 {
-                font-size: 24px;
-            }
-            
-            .info-row {
-                flex-direction: column;
-                gap: 5px;
-            }
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px 20px;
+}
+
+.email-wrapper {
+    max-width: 650px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Header con gradiente oscuro elegante */
+.email-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    padding: 50px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.email-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0,255,157,0.1) 0%, transparent 70%);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.logo-container {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 20px;
+}
+
+.logo-icon {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #00ff9d, #00d4ff);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 15px;
+    box-shadow: 0 10px 30px rgba(0, 255, 157, 0.4);
+}
+
+.email-header h1 {
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.email-header .subtitle {
+    color: #00ff9d;
+    font-size: 16px;
+    font-weight: 500;
+    margin-top: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Body con mejor espaciado */
+.email-body {
+    padding: 50px 40px;
+    background-color: #ffffff;
+}
+
+.welcome-message {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.welcome-message h2 {
+    color: #1a1a2e;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.welcome-message p {
+    color: #64748b;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* Card de información con diseño moderno */
+.info-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 12px;
+    padding: 30px;
+    margin: 30px 0;
+    border-left: 5px solid #00ff9d;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.info-card-title {
+    color: #1a1a2e;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-card-title::before {
+    content: '✓';
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #00ff9d, #00d4ff);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 28px;
+    color: #1a1a2e;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.info-value {
+    color: #1a1a2e;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* QR Instructions con mejor diseño */
+.qr-section {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 12px;
+    padding: 35px;
+    margin: 30px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.qr-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00ff9d, #00d4ff, #00ff9d);
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.qr-icon {
+    font-size: 50px;
+    margin-bottom: 15px;
+}
+
+.qr-section h3 {
+    color: #00ff9d;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.qr-section p {
+    color: #cbd5e1;
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 10px;
+}
+
+.qr-id {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    display: inline-block;
+}
+
+.qr-id-label {
+    color: #94a3b8;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.qr-id-value {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+}
+
+/* Steps list con iconos */
+.steps-section {
+    margin: 35px 0;
+}
+
+.steps-section h3 {
+    color: #1a1a2e;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.steps-list {
+    list-style: none;
+    padding: 0;
+}
+
+.steps-list li {
+    color: #475569;
+    font-size: 15px;
+    padding: 15px 0;
+    padding-left: 45px;
+    position: relative;
+    line-height: 1.6;
+}
+
+.steps-list li::before {
+    content: attr(data-step);
+    position: absolute;
+    left: 0;
+    top: 12px;
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #00ff9d, #00d4ff);
+    border-radius: 50%;
+    color: #1a1a2e;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Divider */
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+    margin: 35px 0;
+}
+
+/* CTA Button */
+.cta-button {
+    display: inline-block;
+    padding: 16px 40px;
+    background: linear-gradient(135deg, #00ff9d, #00d4ff);
+    color: #1a1a2e;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    margin: 25px 0;
+    box-shadow: 0 10px 25px rgba(0, 255, 157, 0.3);
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 255, 157, 0.4);
+}
+
+/* Footer elegante */
+.email-footer {
+    background: #0f172a;
+    padding: 40px;
+    text-align: center;
+}
+
+.footer-logo {
+    margin-bottom: 20px;
+}
+
+.footer-logo h4 {
+    color: #00ff9d;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.footer-tagline {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 25px;
+}
+
+.footer-links {
+    margin: 20px 0;
+}
+
+.footer-links a {
+    color: #94a3b8;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 13px;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: #00ff9d;
+}
+
+.footer-social {
+    margin: 25px 0;
+}
+
+.social-icon {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    margin: 0 8px;
+    line-height: 36px;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    background: #00ff9d;
+    color: #0f172a;
+}
+
+.copyright {
+    color: #475569;
+    font-size: 12px;
+    margin-top: 20px;
+}
+
+/* Responsive */
+@media only screen and (max-width: 600px) {
+    body {
+        padding: 20px 10px;
+    }
+    
+    .email-header,
+    .email-body,
+    .email-footer {
+        padding: 30px 20px;
+    }
+    
+    .email-header h1 {
+        font-size: 26px;
+    }
+    
+    .welcome-message h2 {
+        font-size: 24px;
+    }
+    
+    .info-row {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
