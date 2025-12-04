@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.utils import timezone
-from datetime import timedelta, date
+from datetime import timedelta
 import qrcode
 from io import BytesIO
 from django.core.files import File
