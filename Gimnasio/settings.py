@@ -127,11 +127,18 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# Carpeta donde buscarás tus estáticos en desarrollo
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')] # Corregido de STATICFILES_DIR a STATICFILES_DIRS
+# --- CORRECCIÓN INTELIGENTE AQUÍ ---
+# Verificamos si la carpeta 'static' global existe antes de agregarla.
+# Esto elimina el Warning W004 si la carpeta falta.
+GLOBAL_STATIC_DIR = BASE_DIR / 'static'
+
+if GLOBAL_STATIC_DIR.exists():
+    STATICFILES_DIRS = [GLOBAL_STATIC_DIR]
+else:
+    STATICFILES_DIRS = []
 
 # Carpeta donde Whitenoise/Django recolectará todo para producción
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Configuración de almacenamiento para Whitenoise (Compresión y Cache)
 STORAGES = {
@@ -148,7 +155,8 @@ STORAGES = {
 # ==============================================================================
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'Clientes', 'media')
+# Nota: Es más estándar usar BASE_DIR / 'media', pero si prefieres dentro de Clientes, está bien.
+MEDIA_ROOT = BASE_DIR / 'Clientes' / 'media'
 
 # ==============================================================================
 # CONFIGURACIÓN PERSONALIZADA (USUARIOS, EMAIL, LOGIN)
@@ -175,5 +183,6 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'alextheprolapz@gmail.com'
-EMAIL_HOST_PASSWORD = 'wsvv idno esbi fyjn'
+# IMPORTANTE: Usa variables de entorno para esto en producción
+EMAIL_HOST_PASSWORD = 'wsvv idno esbi fyjn' 
 DEFAULT_FROM_EMAIL = 'ClubHouse Digital <alextheprolapz@gmail.com>'

@@ -12,19 +12,19 @@ class Command(BaseCommand):
     help = 'Puebla la base de datos definiendo cantidades exactas por mes (Ej: --enero 10 --marzo 5)'
 
     def add_arguments(self, parser):
-        # Argumentos opcionales para cada mes del año
-        parser.add_argument('--enero', type=int, default=15, help='Propósitos de año nuevo')
-        parser.add_argument('--febrero', type=int, default=10, help='Vacaciones (baja leve)')
-        parser.add_argument('--marzo', type=int, default=20, help='Vuelta a clases/trabajo (peak)')
-        parser.add_argument('--abril', type=int, default=12, help='Mantención')
-        parser.add_argument('--mayo', type=int, default=10, help='Comienzo del frío')
-        parser.add_argument('--junio', type=int, default=8, help='Invierno/Lluvias (baja)')
-        parser.add_argument('--julio', type=int, default=8, help='Invierno/Vacaciones invierno (baja)')
-        parser.add_argument('--agosto', type=int, default=10, help='Pasando agosto')
-        parser.add_argument('--septiembre', type=int, default=15, help='Pre-18 y primavera')
-        parser.add_argument('--octubre', type=int, default=20, help='Operación verano (subida)')
-        parser.add_argument('--noviembre', type=int, default=25, help='Full verano (peak)')
-        parser.add_argument('--diciembre', type=int, default=12, help='Fiestas y gastos (baja leve)')
+        # CAMBIO 1: Ponemos default=None para saber si el usuario lo escribió o no
+        parser.add_argument('--enero', type=int, default=None, help='Propósitos de año nuevo')
+        parser.add_argument('--febrero', type=int, default=None, help='Vacaciones (baja leve)')
+        parser.add_argument('--marzo', type=int, default=None, help='Vuelta a clases/trabajo (peak)')
+        parser.add_argument('--abril', type=int, default=None, help='Mantención')
+        parser.add_argument('--mayo', type=int, default=None, help='Comienzo del frío')
+        parser.add_argument('--junio', type=int, default=None, help='Invierno/Lluvias (baja)')
+        parser.add_argument('--julio', type=int, default=None, help='Invierno/Vacaciones invierno (baja)')
+        parser.add_argument('--agosto', type=int, default=None, help='Pasando agosto')
+        parser.add_argument('--septiembre', type=int, default=None, help='Pre-18 y primavera')
+        parser.add_argument('--octubre', type=int, default=None, help='Operación verano (subida)')
+        parser.add_argument('--noviembre', type=int, default=None, help='Full verano (peak)')
+        parser.add_argument('--diciembre', type=int, default=None, help='Fiestas y gastos (baja leve)')
 
     def handle(self, *args, **kwargs):
         self.crear_planes_base()
@@ -37,13 +37,36 @@ class Command(BaseCommand):
         now = timezone.now()
         current_year = now.year
 
-        # Mapeo de argumentos a números de mes
-        configuracion_meses = [
-            (1, kwargs['enero']), (2, kwargs['febrero']), (3, kwargs['marzo']),
-            (4, kwargs['abril']), (5, kwargs['mayo']), (6, kwargs['junio']),
-            (7, kwargs['julio']), (8, kwargs['agosto']), (9, kwargs['septiembre']),
-            (10, kwargs['octubre']), (11, kwargs['noviembre']), (12, kwargs['diciembre'])
-        ]
+        # Definimos los valores por defecto "ideales" aquí dentro
+        defaults_ideales = {
+            'enero': 15, 'febrero': 10, 'marzo': 20, 'abril': 12,
+            'mayo': 10, 'junio': 8, 'julio': 8, 'agosto': 10,
+            'septiembre': 15, 'octubre': 20, 'noviembre': 25, 'diciembre': 12
+        }
+
+        # CAMBIO 2: Lógica de detección de argumentos
+        # Lista de claves de meses
+        keys_meses = list(defaults_ideales.keys())
+        
+        # Verificamos si el usuario especificó AL MENOS un mes manualmente
+        usuario_especifico_algo = any(kwargs[k] is not None for k in keys_meses)
+
+        configuracion_meses = []
+
+        # Construimos la configuración final
+        for i, key in enumerate(keys_meses, start=1):
+            valor_usuario = kwargs[key]
+            
+            if usuario_especifico_algo:
+                # MODO MANUAL: Si el usuario puso algo (ej: --enero 1),
+                # usamos su valor. Si los otros son None, los convertimos a 0.
+                cantidad = valor_usuario if valor_usuario is not None else 0
+            else:
+                # MODO AUTOMÁTICO: El usuario no puso nada (corrió el script solo),
+                # usamos los defaults ideales.
+                cantidad = defaults_ideales[key]
+            
+            configuracion_meses.append((i, cantidad))
 
         total_creados = 0
 
@@ -53,13 +76,11 @@ class Command(BaseCommand):
                 
                 # Obtener el último día de ese mes
                 _, last_day = calendar.monthrange(current_year, mes_num)
-                
-                # Si estamos creando datos en el mes actual, no pasarnos del día de hoy
                 if mes_num == now.month:
                     last_day = min(last_day, now.day)
                 
                 # Si pedimos datos para un mes futuro (ej: Diciembre si estamos en Noviembre), avisar y saltar
-                if mes_num > now.month: # Opcional: Si quieres permitir futuro, borra este if
+                if mes_num > now.month: 
                     self.stdout.write(self.style.WARNING(f"Saltando Mes {mes_num} porque es futuro."))
                     continue
 

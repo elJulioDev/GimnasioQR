@@ -15,3 +15,5 @@ Gimnasio/Clientes/media/
 
 # Static (solo si usas collectstatic)
 staticfiles/
+
+run.py
