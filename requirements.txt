@@ -5,3 +5,7 @@ qrcode[pil]
 xhtml2pdf
 Faker
 openpyxl
+gunicorn
+psycopg2-binary
+dj-database-url
+whitenoise

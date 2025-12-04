@@ -1,22 +1,29 @@
+"""
+Django settings for Gimnasio project.
+"""
+import os
 from pathlib import Path
+import dj_database_url  # Librería para conectar la BD de Neon
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ==============================================================================
+# SEGURIDAD Y ENTORNO
+# ==============================================================================
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+# Clave secreta: En producción la tomará de Render, en local usa la insegura
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-=z4&=g+wg@8lu&kr$1ag3@eqm=0r$0s7*bmzf*c1ved)w4hl@b')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=z4&=g+wg@8lu&kr$1ag3@eqm=0r$0s7*bmzf*c1ved)w4hl@b'
+# DEBUG: False si estamos en Render, True si estamos en local
+DEBUG = 'RENDER' not in os.environ
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Permitir hosts: Necesario para que Render funcione
+ALLOWED_HOSTS = ['*']
 
-ALLOWED_HOSTS = []
-
-
-# Application definition
+# ==============================================================================
+# APLICACIONES E INSTALACIÓN
+# ==============================================================================
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -30,6 +37,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # <--- IMPORTANTE: Whitenoise para estilos en la nube
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -58,93 +66,110 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Gimnasio.wsgi.application'
 
+# ==============================================================================
+# BASE DE DATOS (CONFIGURACIÓN HÍBRIDA)
+# ==============================================================================
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-import pymysql
-pymysql.install_as_MySQLdb()
+# Si existe DATABASE_URL en las variables de entorno (Render/Neon), usa PostgreSQL.
+# Si no existe, usa MySQL (Tu XAMPP local).
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'GimnasioDB',
-        'USER': 'root',
-        'PASSWORD': ''
+if 'DATABASE_URL' in os.environ:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600
+        )
     }
-}
+else:
+    # Configuración Local (XAMPP/MySQL)
+    try:
+        import pymysql
+        pymysql.install_as_MySQLdb()
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': 'GimnasioDB',
+                'USER': 'root',
+                'PASSWORD': ''
+            }
+        }
+    except ImportError:
+        # Fallback por si pymysql no está instalado en algún entorno
+        pass
 
-
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
+# ==============================================================================
+# VALIDACIÓN DE PASSWORD
+# ==============================================================================
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
+# ==============================================================================
+# IDIOMA Y ZONA HORARIA
+# ==============================================================================
 
 LANGUAGE_CODE = 'es-cl'
-
 TIME_ZONE = 'America/Santiago'
-
 USE_I18N = True
-
 USE_TZ = True
 
+# ==============================================================================
+# ARCHIVOS ESTÁTICOS (CSS, JS, IMAGES)
+# ==============================================================================
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-import os
 STATIC_URL = 'static/'
-STATICFILES_DIR = [os.path.join(BASE_DIR, 'static')]
 
-# Archivos de medios (subidas)
+# Carpeta donde buscarás tus estáticos en desarrollo
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')] # Corregido de STATICFILES_DIR a STATICFILES_DIRS
+
+# Carpeta donde Whitenoise/Django recolectará todo para producción
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Configuración de almacenamiento para Whitenoise (Compresión y Cache)
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+# ==============================================================================
+# ARCHIVOS MEDIA (SUBIDAS DE USUARIOS)
+# ==============================================================================
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'Clientes', 'media')
 
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+# ==============================================================================
+# CONFIGURACIÓN PERSONALIZADA (USUARIOS, EMAIL, LOGIN)
+# ==============================================================================
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
 AUTH_USER_MODEL = 'Clientes.CustomUser'
 
-# Configuración de Email
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # Para Gmail
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'alextheprolapz@gmail.com'
-EMAIL_HOST_PASSWORD = 'wsvv idno esbi fyjn'
-DEFAULT_FROM_EMAIL = 'ClubHouse Digital <alextheprolapz@gmail.com>'
-
-# Para desarrollo local (opcional - comentar cuando uses SMTP real)
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-# Custom User Model
-AUTH_USER_MODEL = 'Clientes.CustomUser'
-
 # Custom Authentication Backend
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',  # Para /admin (superusuarios)
-    'Clientes.backends.RUTorEmailBackend',  # Para /login web (usuarios normales)
+    'django.contrib.auth.backends.ModelBackend',  # Para /admin
+    'Clientes.backends.RUTorEmailBackend',        # Para login con RUT/Email
 ]
 
 # Login redirect
 LOGIN_URL = '/'
 LOGIN_REDIRECT_URL = '/'
+
+# Configuración de Email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'alextheprolapz@gmail.com'
+EMAIL_HOST_PASSWORD = 'wsvv idno esbi fyjn'
+DEFAULT_FROM_EMAIL = 'ClubHouse Digital <alextheprolapz@gmail.com>'
