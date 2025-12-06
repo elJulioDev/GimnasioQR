@@ -5,7 +5,7 @@ from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db.models import Sum
-from ..models import Plan, Membership
+from ..models import Plan, Membership, Payment
 from ..utils import generate_pdf_receipt
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
@@ -312,19 +312,23 @@ def exportar_pagos_excel(request):
 
 @login_required(login_url='inicio_sesion')
 def ver_recibo_pago(request, payment_id):
-    """Genera el PDF del recibo de pago"""
+    """Genera el PDF del recibo de pago usando el historial (Payment)"""
     try:
-        membership = Membership.objects.select_related('user', 'plan').get(id=payment_id)
-        pdf_content = generate_pdf_receipt(membership)
+        # CAMBIO: Usamos Payment en lugar de Membership
+        pago = Payment.objects.get(id=payment_id)
+        
+        # Generamos el PDF pasando el objeto Payment
+        pdf_content = generate_pdf_receipt(pago)
         
         if pdf_content:
             response = HttpResponse(pdf_content, content_type='application/pdf')
-            response['Content-Disposition'] = f'inline; filename="Recibo_{membership.id}.pdf"'
+            # Nombre del archivo con ID de transacción
+            response['Content-Disposition'] = f'inline; filename="Recibo_Transaccion_{pago.id}.pdf"'
             return response
         else:
             messages.error(request, 'Error al generar el PDF')
             return redirect('index_admin')
             
-    except Membership.DoesNotExist:
+    except Payment.DoesNotExist: # CAMBIO: Catch de Payment
         messages.error(request, 'Transacción no encontrada')
         return redirect('index_admin')

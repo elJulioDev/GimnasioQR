@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from faker import Faker
 from datetime import timedelta
-from Clientes.models import CustomUser, Plan, Membership, AccessLog
+from Clientes.models import CustomUser, Plan, Membership, AccessLog, Payment
 
 # Configuración de Faker para español de Chile
 fake = Faker(['es_CL'])
@@ -125,6 +125,8 @@ class Command(BaseCommand):
                         user.date_joined = fecha_registro
                         user.save()
 
+                        metodo_pago = random.choice(['efectivo', 'transferencia', 'tarjeta'])
+
                         # 3. CREAR MEMBRESÍA (Con Ingreso en el mes correcto)
                         membership = Membership.objects.create(
                             user=user,
@@ -132,10 +134,25 @@ class Command(BaseCommand):
                             start_date=start_date,
                             end_date=end_date,
                             amount_paid=plan.price,
-                            payment_method=random.choice(['efectivo', 'transferencia', 'tarjeta']),
+                            payment_method=metodo_pago,
                             payment_date=fecha_registro, # <--- CLAVE PARA TUS GRÁFICOS
                             status=status,
                             is_active=is_active
+                        )
+                        
+                        # Esto asegura que el dinero aparezca en el Dashboard financiero
+                        Payment.objects.create(
+                            user=user,
+                            plan=plan,
+                            # Datos de respaldo (Snapshot)
+                            user_backup_name=user.get_full_name(),
+                            user_backup_rut=user.rut,
+                            plan_backup_name=plan.name,
+                            # Datos financieros
+                            amount=plan.price,
+                            payment_method=metodo_pago,
+                            date=fecha_registro, # Misma fecha que el registro/membresía
+                            comment=f"Pago inicial automático - Poblar DB Mes {mes_num}"
                         )
 
                         # 4. HISTORIAL DE ACCESOS

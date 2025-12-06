@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
-from .models import CustomUser, Plan, Membership, AccessLog
+from .models import CustomUser, Plan, Membership, AccessLog, Payment
 import qrcode
 import base64
 from io import BytesIO
@@ -155,3 +155,46 @@ class AccessLogAdmin(admin.ModelAdmin):
     ordering = ('-timestamp',)
     
     readonly_fields = ('timestamp',)
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    # Qué columnas se ven en la lista
+    list_display = ('id', 'get_user_info', 'amount', 'payment_method', 'get_plan_info', 'date')
+    
+    # Filtros laterales
+    list_filter = ('payment_method', 'date', 'plan')
+    
+    # Campos de búsqueda (Busca tanto en el usuario activo como en el respaldo histórico)
+    search_fields = (
+        'user__rut', 'user__first_name', 'user__last_name',  # Búsqueda en usuario vivo
+        'user_backup_name', 'user_backup_rut',               # Búsqueda en respaldo
+        'id'
+    )
+    
+    # Ordenar por fecha descendente (lo más nuevo primero)
+    ordering = ('-date',)
+    
+    # Campos que no deberían editarse manualmente para mantener la integridad histórica
+    readonly_fields = ('date', 'user_backup_name', 'user_backup_rut', 'plan_backup_name')
+
+    # Función personalizada para mostrar el usuario de forma inteligente
+    def get_user_info(self, obj):
+        if obj.user:
+            # Si el usuario existe, mostramos su nombre actual y un link (implícito en el admin)
+            return f"{obj.user.get_full_name()} ({obj.user.rut})"
+        else:
+            # Si el usuario fue borrado, mostramos el respaldo en rojo o con aviso
+            return format_html(
+                '<span style="color: #ff4757; font-style: italic;">{} (Eliminado)</span><br><small>RUT: {}</small>',
+                obj.user_backup_name,
+                obj.user_backup_rut
+            )
+    get_user_info.short_description = 'Usuario'
+    get_user_info.allow_tags = True # Necesario en versiones antiguas de Django, en nuevas format_html es suficiente
+
+    # Función para mostrar el plan (respaldo si el original se borra)
+    def get_plan_info(self, obj):
+        if obj.plan:
+            return obj.plan.name
+        return f"{obj.plan_backup_name} (Plan Borrado)"
+    get_plan_info.short_description = 'Plan Contratado'

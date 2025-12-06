@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from ..models import CustomUser, Plan, Membership
+from ..models import CustomUser, Plan, Membership, Payment
 from ..utils import send_qr_email
 from ..templatetags.qr_tags import generate_qr_base64
 
@@ -238,6 +238,18 @@ def process_registration(request):
             status='active',
             is_active=True,
             notes=f"Registro inicial - Pago mediante {data['paymentMethod']}"
+        )
+
+        Payment.objects.create(
+            user=user,
+            plan=plan,
+            user_backup_name=user.get_full_name(),
+            user_backup_rut=user.rut,
+            plan_backup_name=plan.name,
+            amount=plan.price,
+            payment_method=data['paymentMethod'],
+            date=timezone.now(),
+            comment=f"Registro inicial - Nuevo Socio"
         )
         
         # --- LÓGICA ACTUALIZADA DE EMAIL ---

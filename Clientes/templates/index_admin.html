@@ -479,11 +479,11 @@
                     <table class="modern-table">
                         <thead>
                             <tr>
-                                <th>Nombre del Plan</th>
+                                <th>Plan</th>
                                 <th>Precio</th>
                                 <th>Días de Acceso</th>
-                                <th>Usuarios Inscritos</th>
-                                <th>Ingresos Mes</th>
+                                <th>Inscritos</th>
+                                <th>Ingresos</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -590,41 +590,56 @@
                             </thead>
                             <tbody>
                                 {% for pago in transacciones %}
-                                <tr class="payment-row" data-method="{{ pago.payment_method }}" data-month="{{ pago.payment_date|date:'m' }}">
+                                <tr class="payment-row" data-method="{{ pago.payment_method }}" data-month="{{ pago.date|date:'m' }}">
                                     <td>
                                         <div style="display: flex; flex-direction: column;">
                                             <span style="font-family: 'Courier New', monospace; color: var(--primary-color); font-weight: 700;">#{{ pago.id }}</span>
-                                            <span style="font-size: 0.75rem; color: var(--text-secondary);">{{ pago.payment_date|date:"d M, H:i" }}</span>
+                                            <span style="font-size: 0.75rem; color: var(--text-secondary);">{{ pago.date|date:"d M, H:i" }}</span>
                                         </div>
                                     </td>
                                     
                                     <td>
                                         <div class="user-cell">
                                             <div>
-                                                <div style="font-weight: 600; color: #fff; font-size: 0.9rem;">{{ pago.user.get_full_name }}</div>
-                                                <div style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.5px;">{{ pago.user.rut }}</div>
+                                                {% if pago.user %}
+                                                    <div style="font-weight: 600; color: #fff; font-size: 0.9rem;">
+                                                        {{ pago.user.get_full_name }}
+                                                    </div>
+                                                    <div style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.5px;">
+                                                        {{ pago.user.rut }}
+                                                    </div>
+                                                {% else %}
+                                                    <div style="font-weight: 600; color: #aaa; font-size: 0.9rem; font-style: italic;">
+                                                        {{ pago.user_backup_name }} <span style="font-size: 0.7rem; color: var(--danger-color);">(Eliminado)</span>
+                                                    </div>
+                                                    <div style="font-size: 0.7rem; color: #666;">
+                                                        {{ pago.user_backup_rut }}
+                                                    </div>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </td>
 
                                     <td>
                                         <div class="method-pill {{ pago.payment_method }}">
-                                            {% if pago.payment_method == 'efectivo' %}<i class='bx bx-money'></i> Efectivo
-                                            {% elif pago.payment_method == 'transferencia' %}<i class='bx bx-transfer'></i> Transf.
-                                            {% elif pago.payment_method == 'tarjeta' %}<i class='bx bx-credit-card'></i> Tarjeta{% endif %}
+                                            {% if pago.payment_method == 'efectivo' %}
+                                                <i class='bx bx-money'></i> Efectivo
+                                            {% elif pago.payment_method == 'transferencia' %}
+                                                <i class='bx bx-transfer'></i> Transf.
+                                            {% elif pago.payment_method == 'tarjeta' %}
+                                                <i class='bx bx-credit-card'></i> Tarjeta
+                                            {% else %}
+                                                {{ pago.get_payment_method_display }}
+                                            {% endif %}
                                         </div>
                                     </td>
 
-                                    <td><span style="font-weight: 700; color: #fff;">${{ pago.amount_paid|floatformat:0 }}</span></td>
+                                    <td>
+                                        <span style="font-weight: 700; color: #fff;">${{ pago.amount|floatformat:0 }}</span>
+                                    </td>
 
                                     <td>
-                                        {% if pago.status == 'active' %}
-                                            <i class='bx bxs-check-circle' style="color: var(--success-color); font-size: 1.2rem;" title="Completado"></i>
-                                        {% elif pago.status == 'pending' %}
-                                            <i class='bx bxs-time' style="color: var(--warning-color); font-size: 1.2rem;" title="Pendiente"></i>
-                                        {% else %}
-                                            <i class='bx bxs-x-circle' style="color: var(--danger-color); font-size: 1.2rem;" title="Cancelado"></i>
-                                        {% endif %}
+                                        <i class='bx bxs-check-circle' style="color: var(--success-color); font-size: 1.2rem;" title="Pago Registrado"></i>
                                     </td>
 
                                     <td style="text-align: right;">
@@ -634,7 +649,11 @@
                                     </td>
                                 </tr>
                                 {% empty %}
-                                <tr><td colspan="7" style="text-align: center; padding: 4rem;">No hay transacciones.</td></tr>
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 4rem; color: var(--text-secondary);">
+                                        No hay transacciones registradas.
+                                    </td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>

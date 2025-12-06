@@ -3,140 +3,213 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <style>
-        @page { size: letter; margin: 2cm; }
-        /* Fuente compatible con tildes */
-        body { font-family: Helvetica, sans-serif; font-size: 10px; line-height: 1.5; color: #000; }
-        
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #00ff9d; padding-bottom: 15px; }
-        .header h2 { margin: 0; font-size: 18px; text-transform: uppercase; color: #333; }
-        .header p { margin: 3px 0; font-size: 11px; color: #555; }
-        
-        .section-title { 
-            background-color: #f4f4f4; 
-            padding: 8px; 
-            font-weight: bold; 
-            margin-top: 20px; 
-            border-left: 4px solid #00ff9d; 
-            font-size: 11px; 
-            text-transform: uppercase;
+        /* Configuración de Página Carta Vertical */
+        @page {
+            size: letter;
+            margin: 1.5cm;
+            margin-bottom: 2.5cm; /* Espacio reservado para el footer */
+
+            @frame footer_frame {
+                -pdf-frame-content: footerContent;
+                bottom: 0cm;
+                margin-left: 1.5cm;
+                margin-right: 1.5cm;
+                height: 2cm;
+            }
         }
-        
-        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .data-table td { padding: 6px; border-bottom: 1px solid #eee; vertical-align: top; }
-        .label { font-weight: bold; color: #444; width: 35%; }
-        .value { color: #000; }
-        
-        .clauses { margin-top: 20px; text-align: justify; }
-        .clauses ol { padding-left: 20px; }
-        .clauses li { margin-bottom: 10px; }
-        
-        .footer-text { margin-top: 40px; font-size: 9px; text-align: center; color: #777; }
-        
-        .signatures { margin-top: 60px; width: 100%; }
-        .sig-box { width: 40%; display: inline-block; border-top: 1px solid #000; text-align: center; padding-top: 10px; vertical-align: top;}
+
+        body {
+            font-family: Helvetica, sans-serif;
+            font-size: 10px;
+            color: #333;
+            line-height: 1.3;
+        }
+
+        /* Utilidad de Tablas */
+        table { width: 100%; border-collapse: collapse; }
+        td { vertical-align: top; padding: 4px; }
+
+        /* Encabezado */
+        .header-table {
+            border-bottom: 2px solid #00ff9d;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+        }
+        .company-name { font-size: 18px; font-weight: bold; color: #000; text-transform: uppercase; }
+        .company-info { font-size: 9px; color: #666; }
+
+        /* Título del Documento */
+        .doc-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            color: #000;
+            background-color: #f0f0f0;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        /* Secciones con estilo consistente */
+        .section-header {
+            background-color: #f8f8f8;
+            font-weight: bold;
+            font-size: 11px;
+            color: #000;
+            text-transform: uppercase;
+            padding: 6px;
+            border-left: 5px solid #00ff9d; /* Tu línea verde de marca */
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        /* Tablas de Datos */
+        .data-label {
+            font-weight: bold;
+            color: #555;
+            width: 30%;
+            border-bottom: 1px solid #eee;
+        }
+        .data-value {
+            color: #000;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Cláusulas (Texto denso) */
+        .clauses ol { margin-left: -15px; text-align: justify; }
+        .clauses li { margin-bottom: 6px; font-size: 9px; color: #444; }
+        .clauses strong { color: #000; }
+
+        /* Firmas (Layout de Tabla) */
+        .signatures-table { margin-top: 40px; }
+        .sig-line {
+            border-top: 1px solid #000;
+            margin-top: 40px; /* Espacio para firmar */
+            padding-top: 5px;
+            text-align: center;
+            font-size: 9px;
+        }
+        .sig-name { font-weight: bold; text-transform: uppercase; font-size: 10px; }
+
+        /* Footer Text */
+        .footer-text {
+            font-size: 8px;
+            color: #999;
+            text-align: center;
+            border-top: 1px dotted #ccc;
+            padding-top: 5px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>CLUBHOUSE DIGITAL</h2>
-        <p><strong>Giro:</strong> Centro Deportivo y Gimnasio</p>
-        <p>Camino Monte Grande, Coltauco, O'Higgins</p>
-        <p>Fono: +56 9 6504 9281 | Email: contacto@clubhousedigital.com</p>
-        <p>Fecha de Emisión: {% now "d/m/Y" %}</p>
-    </div>
+    <table class="header-table">
+        <tr>
+            <td align="center">
+                <div class="company-name">CLUBHOUSE DIGITAL</div>
+                <div class="company-info">Giro: Centro Deportivo y Gimnasio</div>
+                <div class="company-info">Camino Monte Grande, Coltauco, O'Higgins</div>
+                <div class="company-info">Contacto: +56 9 6504 9281 | contacto@clubhousedigital.com</div>
+            </td>
+        </tr>
+    </table>
 
-    <div style="text-align: center; font-weight: bold; font-size: 14px; margin: 20px 0; text-transform: uppercase;">
+    <div class="doc-title">
         CONTRATO DE PRESTACIÓN DE SERVICIOS DEPORTIVOS N° {{ user.id|stringformat:"06d" }}
     </div>
 
-    <div class="section-title">1. ANTECEDENTES DEL SOCIO</div>
-    <table class="data-table">
+    <div class="section-header">1. ANTECEDENTES DEL SOCIO</div>
+    <table>
         <tr>
-            <td class="label">Nombre Completo:</td>
-            <td class="value">{{ user.first_name|upper }} {{ user.last_name|upper }}</td>
+            <td class="data-label">Nombre Completo:</td>
+            <td class="data-value">{{ user.first_name|upper }} {{ user.last_name|upper }}</td>
         </tr>
         <tr>
-            <td class="label">R.U.T:</td>
-            <td class="value">{{ user.rut }}</td>
+            <td class="data-label">R.U.T:</td>
+            <td class="data-value">{{ user.rut }}</td>
         </tr>
         <tr>
-            <td class="label">Correo Electrónico:</td>
-            <td class="value">{{ user.email }}</td>
+            <td class="data-label">Correo Electrónico:</td>
+            <td class="data-value">{{ user.email }}</td>
         </tr>
         <tr>
-            <td class="label">Teléfono:</td>
-            <td class="value">{{ user.phone|default:"No registrado" }}</td>
-        </tr>
-        <tr>
-            <td class="label">Fecha Nacimiento:</td>
-            <td class="value">{{ user.birthdate|date:"d/m/Y" }}</td>
+            <td class="data-label">Teléfono:</td>
+            <td class="data-value">{{ user.phone|default:"No registrado" }}</td>
         </tr>
     </table>
 
-    <div class="section-title">2. DETALLES DEL PLAN CONTRATADO</div>
-    <table class="data-table">
+    <div class="section-header">2. DETALLES DEL PLAN CONTRATADO</div>
+    <table>
         <tr>
-            <td class="label">Nombre del Plan:</td>
-            <td class="value"><strong>{{ membership.plan.name|upper }}</strong></td>
+            <td class="data-label">Nombre del Plan:</td>
+            <td class="data-value"><strong>{{ membership.plan.name|upper }}</strong></td>
         </tr>
         <tr>
-            <td class="label">Valor Pagado:</td>
-            <td class="value">${{ membership.amount_paid|floatformat:0 }}</td>
+            <td class="data-label">Valor Pagado:</td>
+            <td class="data-value">${{ membership.amount_paid|floatformat:0 }}</td>
         </tr>
         <tr>
-            <td class="label">Vigencia:</td>
-            <td class="value">Desde {{ membership.start_date|date:"d/m/Y" }} hasta {{ membership.end_date|date:"d/m/Y" }}</td>
+            <td class="data-label">Vigencia:</td>
+            <td class="data-value">Del {{ membership.start_date|date:"d/m/Y" }} al {{ membership.end_date|date:"d/m/Y" }}</td>
         </tr>
         <tr>
-            <td class="label">Días de Acceso:</td>
-            <td class="value">{{ membership.plan.access_days }}</td>
+            <td class="data-label">Días de Acceso:</td>
+            <td class="data-value">{{ membership.plan.access_days }}</td>
         </tr>
         <tr>
-            <td class="label">Forma de Pago:</td>
-            <td class="value">{{ membership.get_payment_method_display|upper }}</td>
+            <td class="data-label">Forma de Pago:</td>
+            <td class="data-value">{{ membership.get_payment_method_display|upper }}</td>
         </tr>
     </table>
 
+    <div class="section-header">3. TÉRMINOS Y CONDICIONES</div>
     <div class="clauses">
-        <div class="section-title">3. TÉRMINOS Y CONDICIONES</div>
         <ol>
-            <li><strong>Declaración de Salud:</strong> El socio declara bajo su responsabilidad que su estado de salud es apto para la práctica de actividad física y libera a <strong>CLUBHOUSE DIGITAL</strong> de responsabilidad por cualquier lesión derivada de condiciones preexistentes no informadas o del mal uso de las instalaciones.</li>
+            <li><strong>Declaración de Salud:</strong> El socio declara bajo su responsabilidad que su estado de salud es apto para la práctica de actividad física y libera a <strong>CLUBHOUSE DIGITAL</strong> de responsabilidad por lesiones derivadas de condiciones no informadas.</li>
             
-            <li><strong>Uso de Instalaciones:</strong> El socio podrá hacer uso de las instalaciones y servicios ofrecidos durante los horarios de funcionamiento y según los días estipulados en su plan contratado ({{ membership.plan.access_days }}).</li>
+            <li><strong>Uso de Instalaciones:</strong> El uso de las instalaciones está sujeto a los horarios de funcionamiento y a los días estipulados en su plan contratado ({{ membership.plan.access_days }}).</li>
             
-            <li><strong>Acceso:</strong> El acceso al recinto es personal e intransferible mediante el uso del Código QR proporcionado en este acto. El mal uso de este código o el préstamo a terceros será causal de término inmediato del contrato.</li>
+            <li><strong>Acceso:</strong> El acceso es personal e intransferible mediante Código QR. El mal uso o préstamo a terceros será causal de término inmediato del contrato.</li>
             
-            <li><strong>Pagos y Devoluciones:</strong> Los servicios se pagan por anticipado. No se realizarán devoluciones de dinero por inasistencia del socio, salvo casos médicos debidamente acreditados con certificado, lo cual permitirá el congelamiento del plan según las políticas vigentes.</li>
+            <li><strong>Pagos y Devoluciones:</strong> No se realizarán devoluciones por inasistencia, salvo casos médicos acreditados que permitan el congelamiento según políticas vigentes.</li>
             
-            <li><strong>Normas de Convivencia:</strong> El socio se obliga a respetar las normas de higiene, seguridad y convivencia del establecimiento, incluyendo el uso de toalla, orden de los implementos y respeto hacia el personal y otros socios.</li>
+            <li><strong>Convivencia:</strong> El socio se obliga a respetar las normas de higiene (uso de toalla obligatorio), orden y respeto hacia el personal y otros socios.</li>
             
-            <li><strong>Pertenencias:</strong> <strong>CLUBHOUSE DIGITAL</strong> no se hace responsable por la pérdida, hurto o daño de objetos personales dejados en casilleros o áreas comunes. Se recomienda no asistir con objetos de alto valor.</li>
+            <li><strong>Pertenencias:</strong> La empresa no se hace responsable por pérdida o daño de objetos personales. Se recomienda no asistir con objetos de alto valor.</li>
             
-            <li><strong>Facultades de la Administración:</strong> La administración se reserva el derecho de admisión y permanencia, pudiendo cancelar la matrícula de quien incumpla gravemente las normas o ponga en riesgo la seguridad del recinto.</li>
+            <li><strong>Administración:</strong> La administración se reserva el derecho de admisión y permanencia ante incumplimientos graves de seguridad o convivencia.</li>
         </ol>
     </div>
 
-    <div class="signatures">
-        <div class="sig-box" style="float: left;">
-            <br><br>
-            <strong>{{ user.get_full_name|upper }}</strong><br>
-            RUT: {{ user.rut }}<br>
-            SOCIO / ALUMNO
-        </div>
-        <div class="sig-box" style="float: right;">
-            <br><br>
-            <strong>ADMINISTRACIÓN</strong><br>
-            CLUBHOUSE DIGITAL<br>
-            COLTAUCO
-        </div>
-    </div>
+    <table class="signatures-table">
+        <tr>
+            <td width="40%" align="center">
+                <div class="sig-line">
+                    <div class="sig-name">{{ user.get_full_name|upper }}</div>
+                    <div>RUT: {{ user.rut }}</div>
+                    <div>SOCIO</div>
+                </div>
+            </td>
+            
+            <td width="20%"></td>
 
-    <div class="footer-text">
-        Este documento es un comprobante válido de la contratación de servicios deportivos en ClubHouse Digital.
-        <br>Generado electrónicamente el {% now "d de F de Y a las H:i" %} hrs.
+            <td width="40%" align="center">
+                <div class="sig-line">
+                    <div class="sig-name">ADMINISTRACIÓN</div>
+                    <div>CLUBHOUSE DIGITAL</div>
+                    <div>COLTAUCO</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div id="footerContent">
+        <div class="footer-text">
+            Este documento es un comprobante válido de la contratación de servicios deportivos en ClubHouse Digital.<br>
+            Generado electrónicamente el {% now "d de F de Y a las H:i" %} hrs.
+        </div>
     </div>
 
 </body>

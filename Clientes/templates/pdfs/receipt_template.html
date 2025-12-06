@@ -4,65 +4,208 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        @page { size: A5 landscape; margin: 1cm; } /* Formato medio folio horizontal, ideal para recibos */
-        body { font-family: Helvetica, sans-serif; color: #000; font-size: 12px; }
+        @page {
+            size: A5 landscape;
+            margin: 1.5cm;
+            margin-bottom: 2cm;
+            
+            @frame footer_frame {
+                -pdf-frame-content: footerContent;
+                bottom: 0cm;
+                margin-left: 1.5cm;
+                margin-right: 1.5cm;
+                height: 1cm;
+            }
+        }
+
+        body {
+            font-family: Helvetica, sans-serif;
+            font-size: 11px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        /* vertical-align: top asegura que si el texto hace saltos de línea, 
+           el título (label) se mantenga arriba alineado */
+        td { vertical-align: top; padding: 2px; }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #000;
+            text-transform: uppercase;
+        }
+        .header-sub { font-size: 9px; color: #666; margin-top: 2px; }
         
-        .header { border-bottom: 2px solid #00ff9d; padding-bottom: 10px; margin-bottom: 20px; }
-        .header h1 { margin: 0; color: #000; text-transform: uppercase; font-size: 24px; }
-        .header span { color: #555; font-size: 10px; }
+        .receipt-box {
+            background-color: #f8f8f8;
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+        }
+        .receipt-number { font-size: 14px; font-weight: bold; color: #000; }
+        .receipt-date { font-size: 10px; color: #555; margin-top: 4px; }
+
+        .separator {
+            border-bottom: 2px solid #00ff9d;
+            margin: 15px 0;
+        }
+
+        .info-label {
+            color: #777;
+            font-size: 9px;
+            text-transform: uppercase;
+            font-weight: bold;
+            width: 80px; /* Ancho fijo para alineación */
+        }
         
-        .receipt-info { float: right; text-align: right; margin-top: -40px; }
-        .receipt-number { font-size: 16px; font-weight: bold; color: #333; }
-        
-        .details-box { width: 100%; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; }
-        .row { width: 100%; margin-bottom: 5px; }
-        .label { font-weight: bold; width: 120px; display: inline-block; color: #555; }
-        
-        .total-section { text-align: right; margin-top: 20px; font-size: 18px; font-weight: bold; border-top: 1px solid #000; padding-top: 10px; }
-        
-        .footer { margin-top: 30px; text-align: center; font-size: 9px; color: #777; border-top: 1px dotted #ccc; padding-top: 5px; }
-        
-        .status-stamp {
-            font-size: 20px; font-weight: bold; color: #00ff9d; 
-            border: 2px solid #00ff9d; padding: 5px 10px; 
-            transform: rotate(-10deg); display: inline-block;
-            position: absolute; top: 120px; right: 30px; opacity: 0.6;
+        .info-value {
+            color: #000;
+            font-size: 11px;
+            font-weight: normal;
+            /* Asegura que textos largos no rompan la tabla */
+            word-wrap: break-word; 
+        }
+
+        .section-box { margin-bottom: 15px; }
+
+        .total-row td {
+            padding-top: 15px;
+            border-top: 1px solid #000;
+        }
+        .total-label {
+            font-size: 14px;
+            font-weight: bold;
+            text-align: right;
+            padding-right: 10px;
+        }
+        .total-amount {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+            text-align: right;
+        }
+
+        .stamp-container {
+            text-align: right;
+            padding-top: 10px;
+        }
+        .stamp {
+            color: #00ff9d;
+            border: 3px solid #00ff9d;
+            padding: 5px 15px;
+            font-weight: bold;
+            font-size: 16px;
+            text-transform: uppercase;
+            display: inline-block;
+            transform: rotate(-10deg);
+            opacity: 0.7;
+        }
+
+        .footer-text {
+            color: #999;
+            font-size: 8px;
+            text-align: center;
+            border-top: 1px dotted #ccc;
+            padding-top: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>ClubHouse Digital</h1>
-        <span>Camino Monte Grande, Coltauco | +56 9 6504 9281</span>
-        <div class="receipt-info">
-            <div class="receipt-number">COMPROBANTE DE PAGO #{{ pago.id }}</div>
-            <div>Fecha: {{ pago.payment_date|date:"d/m/Y H:i" }}</div>
+
+    <table style="margin-bottom: 10px;">
+        <tr>
+            <td width="60%">
+                <div class="header-title">ClubHouse Digital</div>
+                <div class="header-sub">Camino Monte Grande, Coltauco</div>
+                <div class="header-sub">+56 9 6504 9281 | contacto@clubhousedigital.com</div>
+            </td>
+            
+            <td width="40%" align="right">
+                <div class="receipt-box">
+                    <div class="receipt-number">RECIBO DE PAGO #{{ pago.id }}</div>
+                    <div class="receipt-date">Fecha: {{ pago.date|date:"d/m/Y H:i" }}</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="separator"></div>
+
+    <table>
+        <tr>
+            <td width="50%" style="padding-right: 20px;">
+                <div class="section-box">
+                    <div style="font-weight:bold; margin-bottom:5px; font-size:10px; color:#444;">DATOS DEL SOCIO</div>
+                    
+                    <table>
+                        <tr>
+                            <td class="info-label">NOMBRE:</td>
+                            <td class="info-value">{{ cliente_nombre|upper }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">RUT:</td>
+                            <td class="info-value">{{ cliente_rut }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">EMAIL:</td>
+                            <td class="info-value">{{ cliente_email }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+
+            <td width="50%">
+                <div class="section-box">
+                    <div style="font-weight:bold; margin-bottom:5px; font-size:10px; color:#444;">DETALLE DE TRANSACCIÓN</div>
+                    
+                    <table>
+                        <tr>
+                            <td class="info-label">CONCEPTO:</td>
+                            <td class="info-value"><strong>{{ pago.plan_backup_name|upper }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">MÉTODO:</td>
+                            <td class="info-value">{{ pago.get_payment_method_display|upper }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">NOTAS:</td>
+                            <td class="info-value">{{ pago.comment|default:"-" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+
+    <table class="total-row">
+        <tr>
+            <td width="50%" align="center" valign="middle">
+                <div class="stamp-container" style="text-align: center;">
+                    <span class="stamp">PAGADO</span>
+                </div>
+            </td>
+            <td width="50%" align="right">
+                <table>
+                    <tr>
+                        <td class="total-label">TOTAL PAGADO:</td>
+                        <td class="total-amount">${{ pago.amount|floatformat:0 }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <div id="footerContent">
+        <div class="footer-text">
+            Este documento es un comprobante electrónico de historial generado automáticamente por el sistema ClubHouse Digital.<br>
+            Gracias por su preferencia. ¡Tu mejor versión comienza aquí!
         </div>
     </div>
 
-    {% if pago.status == 'active' %}
-    <div class="status-stamp">PAGADO</div>
-    {% endif %}
-
-    <div class="details-box">
-        <div class="row"><span class="label">SOCIO:</span> {{ user.get_full_name|upper }}</div>
-        <div class="row"><span class="label">RUT:</span> {{ user.rut }}</div>
-        <div class="row"><span class="label">EMAIL:</span> {{ user.email }}</div>
-    </div>
-
-    <div class="details-box">
-        <div class="row"><span class="label">CONCEPTO:</span> {{ pago.plan.name }}</div>
-        <div class="row"><span class="label">VIGENCIA:</span> {{ pago.plan.duration_days }} Días ({{ pago.start_date|date:"d/m/Y" }} - {{ pago.end_date|date:"d/m/Y" }})</div>
-        <div class="row"><span class="label">MÉTODO DE PAGO:</span> {{ pago.get_payment_method_display|upper }}</div>
-    </div>
-
-    <div class="total-section">
-        TOTAL PAGADO: ${{ pago.amount_paid|floatformat:0 }}
-    </div>
-
-    <div class="footer">
-        Este documento es un comprobante electrónico generado automáticamente.<br>
-        ClubHouse Digital - Tu mejor versión.
-    </div>
 </body>
 </html>

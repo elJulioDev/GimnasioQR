@@ -89,14 +89,24 @@ def send_qr_email(user, membership, send_qr=False, send_contract=False):
         print(f"Error enviando email: {str(e)}")
         return False
     
-def generate_pdf_receipt(membership):
-    """Genera el PDF del recibo de pago."""
+def generate_pdf_receipt(payment_obj):
+    """
+    Genera el PDF del recibo basado en el modelo Payment (Historial).
+    """
     template_path = 'pdfs/receipt_template.html'
+    
+    # Preparamos los datos. Usamos los datos de RESPALDO para garantizar
+    # que el recibo sea fiel al momento del pago, incluso si el usuario se borró.
     context = {
-        'pago': membership,
-        'user': membership.user,
-        'fecha_emision': timezone.now()
+        'pago': payment_obj,
+        'fecha_emision': timezone.now(),
+        # Datos del cliente (Snapshot histórico)
+        'cliente_nombre': payment_obj.user_backup_name,
+        'cliente_rut': payment_obj.user_backup_rut,
+        # Intentamos obtener el email actual si el usuario existe, sino '-'
+        'cliente_email': payment_obj.user.email if payment_obj.user else "No disponible (Usuario eliminado)"
     }
+    
     html = render_to_string(template_path, context)
     result = BytesIO()
     

@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Q
-from ..models import CustomUser, Plan, Membership
+from ..models import CustomUser, Plan, Membership, Payment
 from ..utils import send_qr_email
 
 def get_plans(request):
@@ -173,6 +173,18 @@ def api_renovar_plan(request):
             notes=f"Gestión por: {request.user.get_full_name()} | {notes}"
         )
 
+        Payment.objects.create(
+            user=user,
+            plan=new_plan,
+            user_backup_name=user.get_full_name(),
+            user_backup_rut=user.rut,
+            plan_backup_name=new_plan.name,
+            amount=new_plan.price,
+            payment_method=payment_method,
+            date=timezone.now(),
+            comment=f"Renovación/Cambio de plan: {notes}"
+        )
+
         # Actualizar estado del usuario
         user.is_active_member = True
         user.save()
@@ -241,6 +253,18 @@ def api_crear_socio_moderador(request):
             status='active',
             is_active=True,
             notes=f"Creado por moderador: {request.user.get_full_name()}"
+        )
+
+        Payment.objects.create(
+            user=user,
+            plan=plan,
+            user_backup_name=user.get_full_name(),
+            user_backup_rut=user.rut,
+            plan_backup_name=plan.name,
+            amount=plan.price,
+            payment_method=data.get('paymentMethod', 'efectivo'),
+            date=timezone.now(),
+            comment="Inscripción presencial por Moderador"
         )
         
         user.is_active_member = True

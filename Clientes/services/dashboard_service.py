@@ -2,7 +2,7 @@ import json
 from django.db.models import Count, Sum, Q, Avg
 from django.utils import timezone
 from datetime import timedelta, date
-from ..models import CustomUser, Plan, Membership, AccessLog
+from ..models import CustomUser, Plan, Membership, AccessLog, Payment
 
 class AdminDashboardService:
     def __init__(self):
@@ -57,8 +57,14 @@ class AdminDashboardService:
 
         # Extras financieros
         year_start = date(self.today.year, 1, 1)
-        annual_revenue = Membership.objects.filter(payment_date__gte=year_start).exclude(status='cancelled').aggregate(t=Sum('amount_paid'))['t'] or 0
-        avg_ticket = Membership.objects.filter(payment_date__year=self.today.year).exclude(status='cancelled').aggregate(a=Avg('amount_paid'))['a'] or 0
+
+        annual_revenue = Payment.objects.filter(
+            date__gte=year_start
+        ).aggregate(t=Sum('amount'))['t'] or 0
+
+        avg_ticket = Payment.objects.filter(
+            date__year=self.today.year
+        ).aggregate(a=Avg('amount'))['a'] or 0
 
         return {
             'usuarios_activos': active_users, 'cambio_usuarios': user_change,
@@ -125,17 +131,23 @@ class AdminDashboardService:
     def get_charts_data(self):
         """Prepara los datos JSON para Chart.js."""
         # Métodos de Pago
-        methods = Membership.objects.filter(payment_date__year=self.today.year).exclude(status='cancelled').values('payment_method').annotate(total=Count('id'), dinero=Sum('amount_paid')).order_by('-dinero')
+        methods = Payment.objects.filter(
+            date__year=self.today.year
+        ).values('payment_method').annotate(
+            total=Count('id'), 
+            dinero=Sum('amount')
+        ).order_by('-dinero')
+
         labels_pago = [m['payment_method'].capitalize() for m in methods]
         data_pago = [float(m['dinero']) for m in methods]
 
         # Ingresos Mensuales
         labels_ingresos = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
         data_ingresos = [0] * 12
-        pagos = Membership.objects.filter(payment_date__year=self.today.year).exclude(status='cancelled').select_related('plan')
+        pagos = Payment.objects.filter(date__year=self.today.year)
         for pago in pagos:
-            mes = pago.payment_date.month - 1
-            data_ingresos[mes] += float(getattr(pago, 'amount_paid', pago.plan.price))
+            mes = pago.date.month - 1
+            data_ingresos[mes] += float(pago.amount)
         
         # Distribución Planes
         planes_dist = Membership.objects.filter(is_active=True).values('plan__name').annotate(total=Count('id'))
@@ -190,7 +202,9 @@ class AdminDashboardService:
         }
 
     def get_transactions(self):
-        """Historial de transacciones."""
-        transacciones = Membership.objects.exclude(status='cancelled').select_related('user', 'plan').order_by('-payment_date')
-        total_historico = Membership.objects.exclude(status='cancelled').aggregate(t=Sum('amount_paid'))['t'] or 0
+        """Historial de transacciones (Desde Payment)."""
+        # Ahora mostramos Payment, que nunca se borra
+        transacciones = Payment.objects.all().order_by('-date')
+        total_historico = Payment.objects.aggregate(t=Sum('amount'))['t'] or 0
+        
         return {'transacciones': transacciones, 'total_historico': total_historico}

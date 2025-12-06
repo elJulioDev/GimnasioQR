@@ -343,3 +343,53 @@ class AccessLog(models.Model):
     
     def __str__(self):
         return f"{self.user.get_full_name()} - {self.status} - {self.timestamp}"
+    
+class Payment(models.Model):
+    """
+    Modelo exclusivo para registro financiero histórico (Libro Mayor).
+    No se borra aunque se elimine el usuario o la membresía.
+    """
+    PAYMENT_METHOD_CHOICES = (
+        ('efectivo', 'Efectivo'),
+        ('transferencia', 'Transferencia'),
+        ('tarjeta', 'Tarjeta'),
+        ('webpay', 'Webpay'),
+    )
+
+    # Relaciones (SET_NULL es vital para que no se borre el pago si se borra el usuario)
+    user = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='payments',
+        verbose_name="Usuario (Referencia)"
+    )
+    plan = models.ForeignKey(
+        Plan, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        verbose_name="Plan Contratado"
+    )
+    
+    # Snapshot de datos (Respaldo de texto por si se borra el usuario/plan)
+    user_backup_name = models.CharField(max_length=150, verbose_name="Nombre Respaldo")
+    user_backup_rut = models.CharField(max_length=20, verbose_name="RUT Respaldo")
+    plan_backup_name = models.CharField(max_length=100, verbose_name="Nombre Plan Respaldo")
+
+    # Datos financieros
+    amount = models.DecimalField(max_digits=10, decimal_places=0, verbose_name="Monto")
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, verbose_name="Método")
+    date = models.DateTimeField(default=timezone.now, verbose_name="Fecha de Transacción")
+    
+    # Contexto
+    comment = models.CharField(max_length=255, blank=True, null=True, verbose_name="Comentario/Contexto")
+
+    class Meta:
+        verbose_name = "Historial de Pago"
+        verbose_name_plural = "Historial de Pagos"
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"Pago #{self.id} - ${self.amount} ({self.date.strftime('%d/%m/%Y')})"
