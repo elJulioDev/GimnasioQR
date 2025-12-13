@@ -2,6 +2,7 @@ import json
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from ..models import CustomUser, AccessLog
 
@@ -138,7 +139,8 @@ def process_qr_scan(request):
     except Exception as e:
         print(f"Error: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    
+
+@login_required(login_url='inicio_sesion')
 def mostrar_Scanner(request):
     """Esta vista renderiza la pagina del Scanner."""
     return render(request, 'QR_Scanner.html')

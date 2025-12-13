@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from ..models import CustomUser, Plan, Membership, AccessLog
 from ..services.dashboard_service import AdminDashboardService
+from datetime import timedelta
 
 # --- VISTAS DE PANELES (con proteccion de rol) ---
 
@@ -50,15 +51,25 @@ def calcular_porcentaje_cambio(valor_anterior, valor_actual):
 
 @login_required(login_url='inicio_sesion')
 def index_moderador(request):
-    """Panel de moderador con estadísticas y tendencias"""
+    """Panel de moderador con estadísticas y tendencias - CORREGIDO ZONA HORARIA"""
     if not request.user.role or request.user.role != 'moderador':
         messages.error(request, 'No tienes permisos para acceder a esta área.')
         return redirect_by_role(request.user)
     
     from django.db.models import Count, Sum, Q
-    from datetime import date, timedelta 
     
-    today = timezone.now().date()
+    # --- FECHAS CON ZONA HORARIA (CHILE) ---
+    now_chile = timezone.localtime(timezone.now())
+    today = now_chile.date()
+
+    # Definir rangos exactos para HOY
+    start_of_day = now_chile.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_day = now_chile.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    # Definir rangos exactos para AYER
+    yesterday_date = now_chile - timedelta(days=1)
+    start_of_yesterday = yesterday_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_yesterday = yesterday_date.replace(hour=23, minute=59, second=59, microsecond=999999)
 
     # --- 1. Usuarios Activos y Tendencia ---
     usuarios_activos = CustomUser.objects.filter(
@@ -74,7 +85,7 @@ def index_moderador(request):
         created_at__lte=mes_pasado
     ).count()
         
-    # Calcular porcentaje (Lógica simplificada aquí mismo)
+    # Calcular porcentaje
     cambio_usuarios = {'porcentaje': 0, 'es_positivo': True}
     if usuarios_mes_pasado > 0:
         diferencia = usuarios_activos - usuarios_mes_pasado
@@ -87,12 +98,17 @@ def index_moderador(request):
         cambio_usuarios = {'porcentaje': 100, 'es_positivo': True}
 
     # --- 2. Accesos Hoy y Tendencia ---
-    accesos_hoy = AccessLog.objects.filter(timestamp__date=today, status='allowed').count()
+    # CORRECCIÓN: Usar rangos (timestamp__range) en lugar de __date
+    accesos_hoy = AccessLog.objects.filter(
+        timestamp__range=(start_of_day, end_of_day), 
+        status='allowed'
+    ).count()
     
-    ayer = today - timedelta(days=1)
-    accesos_ayer = AccessLog.objects.filter(timestamp__date=ayer, status='allowed').count()
+    accesos_ayer = AccessLog.objects.filter(
+        timestamp__range=(start_of_yesterday, end_of_yesterday), 
+        status='allowed'
+    ).count()
     
-    # Necesitas tener la función 'calcular_porcentaje_cambio' definida o importada
     cambio_accesos = calcular_porcentaje_cambio(accesos_ayer, accesos_hoy)
 
     # --- 3. Planes por Vencer ---
@@ -115,19 +131,18 @@ def index_moderador(request):
     cambio_planes = calcular_porcentaje_cambio(planes_venciendo_semana_pasada, planes_vencer)
     
     # --- 4. Tabla de Últimos Accesos (Dashboard) ---
+    # CORRECCIÓN: Mostrar accesos de hoy usando el rango correcto
     ultimos_accesos = AccessLog.objects.filter(
-        timestamp__date=today
+        timestamp__range=(start_of_day, end_of_day)
     ).select_related('user', 'membership', 'membership__plan').order_by('-timestamp')
     
-    # --- 5. Lista de Usuarios para Gestión (Con último acceso) ---
+    # --- 5. Lista de Usuarios para Gestión ---
     socios = CustomUser.objects.filter(role='socio').order_by('-created_at')
     lista_usuarios = []
     planes_renovacion = Plan.objects.filter(is_active=True).order_by('price')
     for socio in socios:
-        # Intentamos obtener la membresía activa
         membership = socio.get_active_membership()
         
-        # Obtener el último acceso permitido del usuario
         ultimo_acceso = AccessLog.objects.filter(user=socio, status='allowed').order_by('-timestamp').first()
         
         lista_usuarios.append({
@@ -136,14 +151,14 @@ def index_moderador(request):
             'status_class': 'active' if socio.is_active_member else 'inactive',
             'status_text': 'Activo' if socio.is_active_member else 'Inactivo',
             'dias_restantes': membership.days_remaining() if membership else 0,
-            'last_access': ultimo_acceso.timestamp if ultimo_acceso else None # Agregamos la fecha al contexto
+            'last_access': ultimo_acceso.timestamp if ultimo_acceso else None
         }) 
         
     context = {
         'usuarios_activos': usuarios_activos,
         'cambio_usuarios': cambio_usuarios, 
         'accesos_hoy': accesos_hoy,
-        'cambio_accesos': cambio_accesos, # Enviamos cambio de accesos
+        'cambio_accesos': cambio_accesos,
         'planes_vencer': planes_vencer,
         'cambio_planes': cambio_planes,
         'ultimos_accesos': ultimos_accesos,
@@ -163,28 +178,36 @@ def index_socio(request):
     # Obtener la membresía activa del socio
     membership = request.user.get_active_membership()
     
-    # Obtener asistencias (últimos 30 días)
-    from datetime import date, timedelta
-    today = date.today()
-    thirty_days_ago = today - timedelta(days=30)
+    # === CORRECCIÓN DE FECHAS ===
+    # Usamos timezone.localtime para obtener la hora real en Chile
+    now_chile = timezone.localtime(timezone.now())
     
-    # Todas las asistencias del último mes
+    # 1. Asistencias (últimos 30 días)
+    # Calculamos la fecha de inicio hace 30 días a las 00:00:00
+    thirty_days_ago = now_chile - timedelta(days=30)
+    thirty_days_ago_start = thirty_days_ago.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Usamos timestamp__gte en lugar de timestamp__date__gte
     access_logs = request.user.access_logs.filter(
-        timestamp__date__gte=thirty_days_ago,
+        timestamp__gte=thirty_days_ago_start,
         status='allowed'
     ).order_by('-timestamp')
     
-    # Asistencias por semana
-    seven_days_ago = today - timedelta(days=7)
+    # 2. Asistencias por semana (últimos 7 días)
+    seven_days_ago = now_chile - timedelta(days=7)
+    seven_days_ago_start = seven_days_ago.replace(hour=0, minute=0, second=0, microsecond=0)
+    
     weekly_access = request.user.access_logs.filter(
-        timestamp__date__gte=seven_days_ago,
+        timestamp__gte=seven_days_ago_start,
         status='allowed'
     ).count()
     
-    # Asistencias del mes actual
-    primer_dia_mes = today.replace(day=1)
+    # 3. Asistencias del mes actual
+    # Primer día del mes actual a las 00:00:00
+    primer_dia_mes = now_chile.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
     monthly_access = request.user.access_logs.filter(
-        timestamp__date__gte=primer_dia_mes,
+        timestamp__gte=primer_dia_mes,
         status='allowed'
     ).count()
     
@@ -194,9 +217,13 @@ def index_socio(request):
     # Calcular racha (días consecutivos)
     streak_days = calculate_streak(request.user)
     
-    # Acceso de hoy
+    # 4. Acceso de hoy
+    # Usamos un rango exacto del día para evitar problemas de conversión de DB
+    start_of_day = now_chile.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_day = now_chile.replace(hour=23, minute=59, second=59, microsecond=999999)
+    
     accessed_today = request.user.access_logs.filter(
-        timestamp__date=today,
+        timestamp__range=(start_of_day, end_of_day),
         status='allowed'
     ).exists()
 
@@ -271,25 +298,34 @@ def edit_profile_socio(request):
     return render(request, 'edit_profile_socio.html', {'user': user})
 
 def calculate_streak(user):
-    """Calcula la racha de días consecutivos de asistencia"""
-    from datetime import date, timedelta
-    
-    today = date.today()
+    """Calcula la racha de días consecutivos de asistencia - CORREGIDO"""
+    # Usamos lógica de rangos para evitar timestamp__date
+    now_chile = timezone.localtime(timezone.now())
+    current_date = now_chile
     streak = 0
-    current_date = today
     
     # Verificar los últimos 30 días
     for i in range(30):
+        # Definir inicio y fin del día que estamos verificando
+        start_of_day = current_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_day = current_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+        
         has_access = AccessLog.objects.filter(
             user=user,
-            timestamp__date=current_date,
+            timestamp__range=(start_of_day, end_of_day), # Uso de rango en lugar de __date
             status='allowed'
         ).exists()
         
         if has_access:
             streak += 1
+            # Retroceder un día
             current_date -= timedelta(days=1)
         else:
+            # Si hoy no vino, permitimos revisar si ayer vino para no romper la racha inmediatamente
+            # (Opcional: Si quieres que la racha se rompa estrictamente si HOY no vino, quita este if)
+            if i == 0: 
+                current_date -= timedelta(days=1)
+                continue
             break
     
     return streak

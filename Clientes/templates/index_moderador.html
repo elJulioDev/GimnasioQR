@@ -626,7 +626,14 @@
             }
         });
 
-        function openQRWindow() { window.open("{% url 'mostrar_Scanner' %}", '_blank', 'width=1920,height=1080'); }
+        function openQRWindow() { 
+            // Definimos características que obliguen al navegador a tratarlo como una ventana segura
+            // 'location=yes' y 'toolbar=yes' son CLAVES para que el navegador permita pedir permisos de cámara
+            const features = 'width=1280,height=720,resizable=yes,scrollbars=yes,status=yes,location=yes,toolbar=yes';
+            
+            // Abrimos la ventana con un nombre específico 'QRScannerWindow' para no abrir múltiples instancias
+            window.open("{% url 'mostrar_Scanner' %}", 'QRScannerWindow', features); 
+        }
 
         // --- PAGOS ---
         document.getElementById('searchUserForm').addEventListener('submit', function(e) {

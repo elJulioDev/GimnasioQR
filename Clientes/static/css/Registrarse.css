@@ -373,7 +373,8 @@ body {
 
 .payment-options-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    /* CAMBIO AQUÍ: De 3 columnas a 2 columnas para que ocupen el 50% cada una */
+    grid-template-columns: repeat(2, 1fr); 
     gap: 1rem;
     margin-bottom: 1.5rem;
 }

@@ -1268,7 +1268,7 @@ select.form-control option:hover {
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 160px; /* Ancho mínimo para que se vean uniformes */
+    min-width: 175px; /* Ancho mínimo para que se vean uniformes */
     
     /* Eliminar estilo por defecto feo y poner flecha personalizada (opcional) */
     appearance: none; 
